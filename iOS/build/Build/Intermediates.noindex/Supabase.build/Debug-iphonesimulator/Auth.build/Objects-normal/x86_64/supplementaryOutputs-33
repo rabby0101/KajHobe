@@ -1,0 +1,23 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/SessionStorage.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/URLOpener.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/AuthLocalStorage.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.swiftdeps"
+  }
+}

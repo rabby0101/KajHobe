@@ -1,0 +1,23 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/supabase-swift/Sources/Helpers/HTTP/HTTPRequest.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPRequest.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPRequest.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPRequest.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPRequest.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPRequest.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/supabase-swift/Sources/Helpers/HTTP/HTTPResponse.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPResponse.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPResponse.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPResponse.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPResponse.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/HTTPResponse.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/supabase-swift/Sources/Helpers/HTTP/LoggerInterceptor.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.swiftdeps"
+  }
+}

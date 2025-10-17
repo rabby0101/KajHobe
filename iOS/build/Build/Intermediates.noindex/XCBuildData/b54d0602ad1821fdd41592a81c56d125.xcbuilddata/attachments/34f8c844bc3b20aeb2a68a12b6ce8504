@@ -1,0 +1,639 @@
+{
+  "" : {
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-primary.dia",
+    "emit-module-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-primary-emit-module.dia",
+    "pch" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-primary.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AccessibilityEnhancements.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AccessibilityEnhancements~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AnimationSystem.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AnimationSystem~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AppDelegate.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AppDelegate~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AuthView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/AuthView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/BaseNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/BaseNetworking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CameraView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CameraView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatBubbleView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatBubbleView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatRoomViewModel.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatRoomViewModel~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatTextFieldView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatTextFieldView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatViewModel.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ChatViewModel~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CompletionRequestView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ContentView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ConversationViewModel.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ConversationViewModel~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CooldownTimerView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CooldownTimerView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DashboardView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DatabaseModels.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealDetailView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealDetailView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealOfferForm.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealOfferForm~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealRejectionNotificationView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealRejectionNotificationView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealResponseView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealResponseView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealsNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DealsNetworking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DesignSystem.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DesignSystem~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DragDropJobBoard.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DragDropJobBoard~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/EnhancedJobSearchView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedJobSearchView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/EnhancedProfileView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/EnhancedProfileView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/GradientBackground.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GradientBackground~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/InterestCooldownManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/InterestCooldownManager~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/IsolatedChatModels.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/IsolatedChatModels~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobCardView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobCardView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobDetailView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobDetailView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsListView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsNetworking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/KajHobeApp.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LanguageManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageManager~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LanguageSelectionView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LanguageSelectionView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LoadingStatesSystem.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LocalStorageManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MainTabView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Managers/NotificationBadgeManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationBadgeManager~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MessagesNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MessagesView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Models.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Networking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Networking/PublicProfileNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileNetworking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationExamples.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationSettingsView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PostJobView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PostJobView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PresenceManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PresenceManager~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ProfileNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileNetworking~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ProfileView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ProfileView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PublicProfileView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PushNotificationManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PushNotificationManager~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/RealtimeTestView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/RealtimeTestView~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/SimpleEmojiTextField.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/SimpleEmojiTextField~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/StartSessionSheet~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Supabase.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Supabase~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ThemeManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ThemeManager~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/NotificationComponents.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationComponents~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/PublicProfileComponents.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/PublicProfileComponents~partial.swiftmodule"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

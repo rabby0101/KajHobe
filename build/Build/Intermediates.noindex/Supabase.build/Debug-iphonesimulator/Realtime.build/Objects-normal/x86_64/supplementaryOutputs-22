@@ -1,0 +1,30 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Exports.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Exports.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Exports.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Exports.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Exports.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Exports.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/PostgresAction.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresAction.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresAction.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresAction.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresAction.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresAction.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/PostgresActionData.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresActionData.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresActionData.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresActionData.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresActionData.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PostgresActionData.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/PresenceAction.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PresenceAction.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PresenceAction.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PresenceAction.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PresenceAction.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PresenceAction.swiftdeps"
+  }
+}

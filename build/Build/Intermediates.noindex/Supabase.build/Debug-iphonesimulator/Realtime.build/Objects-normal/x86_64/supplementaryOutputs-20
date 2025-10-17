@@ -1,0 +1,30 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/HeartbeatTimer.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/PhoenixTransport.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/Presence.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/Push.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.swiftdeps"
+  }
+}

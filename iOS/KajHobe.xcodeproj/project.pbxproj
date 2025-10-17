@@ -1,0 +1,674 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		60AC5CEF2E08850000CB6E23 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 60AC5CEE2E08850000CB6E23 /* Auth */; };
+		60AC5CF12E08850000CB6E23 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 60AC5CF02E08850000CB6E23 /* Functions */; };
+		60AC5CF32E08850000CB6E23 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 60AC5CF22E08850000CB6E23 /* PostgREST */; };
+		60AC5CF52E08850000CB6E23 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 60AC5CF42E08850000CB6E23 /* Realtime */; };
+		60AC5CF72E08850000CB6E23 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 60AC5CF62E08850000CB6E23 /* Storage */; };
+		60FF7DBA2E0887EC008DD5E3 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 60FF7DB92E0887EC008DD5E3 /* Supabase */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		605FF2F52E0871D300C5C463 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 605FF2DF2E0871CF00C5C463 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 605FF2E62E0871CF00C5C463;
+			remoteInfo = KajHobe;
+		};
+		605FF2FF2E0871D300C5C463 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 605FF2DF2E0871CF00C5C463 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 605FF2E62E0871CF00C5C463;
+			remoteInfo = KajHobe;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		605FF2E72E0871CF00C5C463 /* KajHobe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KajHobe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		605FF2F42E0871D300C5C463 /* KajHobeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KajHobeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		605FF2FE2E0871D300C5C463 /* KajHobeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KajHobeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		60DB34812E47E5000097703A /* Exceptions for "KajHobe" folder in "KajHobe" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 605FF2E62E0871CF00C5C463 /* KajHobe */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		605FF2E92E0871CF00C5C463 /* KajHobe */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				60DB34812E47E5000097703A /* Exceptions for "KajHobe" folder in "KajHobe" target */,
+			);
+			path = KajHobe;
+			sourceTree = "<group>";
+		};
+		605FF2F72E0871D300C5C463 /* KajHobeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KajHobeTests;
+			sourceTree = "<group>";
+		};
+		605FF3012E0871D300C5C463 /* KajHobeUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KajHobeUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		605FF2E42E0871CF00C5C463 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				60AC5CF32E08850000CB6E23 /* PostgREST in Frameworks */,
+				60AC5CF12E08850000CB6E23 /* Functions in Frameworks */,
+				60FF7DBA2E0887EC008DD5E3 /* Supabase in Frameworks */,
+				60AC5CEF2E08850000CB6E23 /* Auth in Frameworks */,
+				60AC5CF72E08850000CB6E23 /* Storage in Frameworks */,
+				60AC5CF52E08850000CB6E23 /* Realtime in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		605FF2F12E0871D300C5C463 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		605FF2FB2E0871D300C5C463 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		605FF2DE2E0871CF00C5C463 = {
+			isa = PBXGroup;
+			children = (
+				605FF2E92E0871CF00C5C463 /* KajHobe */,
+				605FF2F72E0871D300C5C463 /* KajHobeTests */,
+				605FF3012E0871D300C5C463 /* KajHobeUITests */,
+				60FF7DB82E0887EC008DD5E3 /* Frameworks */,
+				605FF2E82E0871CF00C5C463 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		605FF2E82E0871CF00C5C463 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				605FF2E72E0871CF00C5C463 /* KajHobe.app */,
+				605FF2F42E0871D300C5C463 /* KajHobeTests.xctest */,
+				605FF2FE2E0871D300C5C463 /* KajHobeUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		60FF7DB82E0887EC008DD5E3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		605FF2E62E0871CF00C5C463 /* KajHobe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 605FF3082E0871D300C5C463 /* Build configuration list for PBXNativeTarget "KajHobe" */;
+			buildPhases = (
+				605FF2E32E0871CF00C5C463 /* Sources */,
+				605FF2E42E0871CF00C5C463 /* Frameworks */,
+				605FF2E52E0871CF00C5C463 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				605FF2E92E0871CF00C5C463 /* KajHobe */,
+			);
+			name = KajHobe;
+			packageProductDependencies = (
+				60AC5CEE2E08850000CB6E23 /* Auth */,
+				60AC5CF02E08850000CB6E23 /* Functions */,
+				60AC5CF22E08850000CB6E23 /* PostgREST */,
+				60AC5CF42E08850000CB6E23 /* Realtime */,
+				60AC5CF62E08850000CB6E23 /* Storage */,
+				60FF7DB92E0887EC008DD5E3 /* Supabase */,
+			);
+			productName = KajHobe;
+			productReference = 605FF2E72E0871CF00C5C463 /* KajHobe.app */;
+			productType = "com.apple.product-type.application";
+		};
+		605FF2F32E0871D300C5C463 /* KajHobeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 605FF30B2E0871D300C5C463 /* Build configuration list for PBXNativeTarget "KajHobeTests" */;
+			buildPhases = (
+				605FF2F02E0871D300C5C463 /* Sources */,
+				605FF2F12E0871D300C5C463 /* Frameworks */,
+				605FF2F22E0871D300C5C463 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				605FF2F62E0871D300C5C463 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				605FF2F72E0871D300C5C463 /* KajHobeTests */,
+			);
+			name = KajHobeTests;
+			packageProductDependencies = (
+			);
+			productName = KajHobeTests;
+			productReference = 605FF2F42E0871D300C5C463 /* KajHobeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		605FF2FD2E0871D300C5C463 /* KajHobeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 605FF30E2E0871D300C5C463 /* Build configuration list for PBXNativeTarget "KajHobeUITests" */;
+			buildPhases = (
+				605FF2FA2E0871D300C5C463 /* Sources */,
+				605FF2FB2E0871D300C5C463 /* Frameworks */,
+				605FF2FC2E0871D300C5C463 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				605FF3002E0871D300C5C463 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				605FF3012E0871D300C5C463 /* KajHobeUITests */,
+			);
+			name = KajHobeUITests;
+			packageProductDependencies = (
+			);
+			productName = KajHobeUITests;
+			productReference = 605FF2FE2E0871D300C5C463 /* KajHobeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		605FF2DF2E0871CF00C5C463 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					605FF2E62E0871CF00C5C463 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					605FF2F32E0871D300C5C463 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = 605FF2E62E0871CF00C5C463;
+					};
+					605FF2FD2E0871D300C5C463 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = 605FF2E62E0871CF00C5C463;
+					};
+				};
+			};
+			buildConfigurationList = 605FF2E22E0871CF00C5C463 /* Build configuration list for PBXProject "KajHobe" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				de,
+				bn,
+			);
+			mainGroup = 605FF2DE2E0871CF00C5C463;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 605FF2E82E0871CF00C5C463 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				605FF2E62E0871CF00C5C463 /* KajHobe */,
+				605FF2F32E0871D300C5C463 /* KajHobeTests */,
+				605FF2FD2E0871D300C5C463 /* KajHobeUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		605FF2E52E0871CF00C5C463 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		605FF2F22E0871D300C5C463 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		605FF2FC2E0871D300C5C463 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		605FF2E32E0871CF00C5C463 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		605FF2F02E0871D300C5C463 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		605FF2FA2E0871D300C5C463 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		605FF2F62E0871D300C5C463 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 605FF2E62E0871CF00C5C463 /* KajHobe */;
+			targetProxy = 605FF2F52E0871D300C5C463 /* PBXContainerItemProxy */;
+		};
+		605FF3002E0871D300C5C463 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 605FF2E62E0871CF00C5C463 /* KajHobe */;
+			targetProxy = 605FF2FF2E0871D300C5C463 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		605FF3062E0871D300C5C463 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		605FF3072E0871D300C5C463 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		605FF3092E0871D300C5C463 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KajHobe/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_NSCameraUsageDescription = "THe camera use to take photo";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tu-berlin.KajHobe";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		605FF30A2E0871D300C5C463 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KajHobe/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_NSCameraUsageDescription = "THe camera use to take photo";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tu-berlin.KajHobe";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		605FF30C2E0871D300C5C463 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tu-berlin.KajHobeTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KajHobe.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KajHobe";
+			};
+			name = Debug;
+		};
+		605FF30D2E0871D300C5C463 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tu-berlin.KajHobeTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KajHobe.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KajHobe";
+			};
+			name = Release;
+		};
+		605FF30F2E0871D300C5C463 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tu-berlin.KajHobeUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = KajHobe;
+			};
+			name = Debug;
+		};
+		605FF3102E0871D300C5C463 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH63SUUTTW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tu-berlin.KajHobeUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = KajHobe;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		605FF2E22E0871CF00C5C463 /* Build configuration list for PBXProject "KajHobe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				605FF3062E0871D300C5C463 /* Debug */,
+				605FF3072E0871D300C5C463 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		605FF3082E0871D300C5C463 /* Build configuration list for PBXNativeTarget "KajHobe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				605FF3092E0871D300C5C463 /* Debug */,
+				605FF30A2E0871D300C5C463 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		605FF30B2E0871D300C5C463 /* Build configuration list for PBXNativeTarget "KajHobeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				605FF30C2E0871D300C5C463 /* Debug */,
+				605FF30D2E0871D300C5C463 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		605FF30E2E0871D300C5C463 /* Build configuration list for PBXNativeTarget "KajHobeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				605FF30F2E0871D300C5C463 /* Debug */,
+				605FF3102E0871D300C5C463 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		60AC5CEE2E08850000CB6E23 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		60AC5CF02E08850000CB6E23 /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		60AC5CF22E08850000CB6E23 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		60AC5CF42E08850000CB6E23 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		60AC5CF62E08850000CB6E23 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		60FF7DB92E0887EC008DD5E3 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 60AC5CED2E08850000CB6E23 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 605FF2DF2E0871CF00C5C463 /* Project object */;
+}

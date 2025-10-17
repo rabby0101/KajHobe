@@ -1,0 +1,23 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthMFA.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthMFA.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthMFA.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthMFA.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthMFA.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthMFA.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Auth/AuthStateChangeListener.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthStateChangeListener.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthStateChangeListener.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthStateChangeListener.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthStateChangeListener.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthStateChangeListener.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/build/SourcePackages/checkouts/supabase-swift/Sources/Auth/Defaults.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/Defaults.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/Defaults.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/Defaults.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/Defaults.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/Defaults.swiftdeps"
+  }
+}

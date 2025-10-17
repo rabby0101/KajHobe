@@ -1,0 +1,72 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/HPKE-Errors.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Errors.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Errors.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Errors.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Errors.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Errors.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/HPKE.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/Key Schedule/HPKE-Context.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Context.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Context.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Context.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Context.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Context.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/Key Schedule/HPKE-KeySchedule.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-KeySchedule.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-KeySchedule.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-KeySchedule.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-KeySchedule.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-KeySchedule.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/Modes/HPKE-Modes.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Modes.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Modes.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Modes.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Modes.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/HPKE-Modes.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Insecure/Insecure.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Insecure/Insecure_HashFunctions.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure_HashFunctions.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure_HashFunctions.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure_HashFunctions.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure_HashFunctions.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/Insecure_HashFunctions.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/KEM/KEM.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/KEM.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/KEM.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/KEM.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/KEM.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/KEM.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Key Agreement/BoringSSL/ECDH_boring.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/ECDH_boring.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/ECDH_boring.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/ECDH_boring.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/ECDH_boring.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/ECDH_boring.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/build/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Key Agreement/DH.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/DH.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/DH.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/DH.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/DH.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/x86_64/DH.swiftdeps"
+  }
+}

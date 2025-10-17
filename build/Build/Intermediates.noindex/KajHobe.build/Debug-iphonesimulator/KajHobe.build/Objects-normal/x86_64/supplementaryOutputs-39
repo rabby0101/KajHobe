@@ -1,0 +1,23 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/KajHobe/KajHobeApp.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobeApp.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/KajHobe/MainTabView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/KajHobe/Message.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Message.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Message.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Message.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Message.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Message.swiftdeps"
+  }
+}

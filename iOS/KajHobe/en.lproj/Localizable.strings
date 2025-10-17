@@ -1,0 +1,129 @@
+/* Main Navigation */
+"dashboard" = "Dashboard";
+"jobs" = "Jobs";
+"messages" = "Messages";
+"notifications" = "Notifications";
+"profile" = "Profile";
+
+/* Dashboard */
+"overview" = "Overview";
+"active_deals" = "Active Deals";
+"completed" = "Completed";
+"total_earned" = "Total Earned";
+"total_spent" = "Total Spent";
+"rating" = "Rating";
+"pending_approval" = "Pending Approval";
+"recent_activity" = "Recent Activity";
+"get_started_first_job" = "Get started with your first job";
+"browse_available_jobs" = "Browse Available Jobs";
+"post_a_job" = "Post a Job";
+
+/* Jobs */
+"search_jobs" = "Search jobs...";
+"all_categories" = "All Categories";
+"apply_filters" = "Apply Filters";
+"clear_filters" = "Clear Filters";
+"budget" = "Budget";
+"location" = "Location";
+"no_jobs_found" = "No jobs found";
+"try_different_filters" = "Try adjusting your search filters";
+"loading_jobs" = "Loading jobs...";
+
+/* Messages */
+"conversations" = "Conversations";
+"no_conversations" = "No conversations";
+"start_messaging" = "Start messaging by showing interest in jobs";
+"type_message" = "Type a message...";
+"send" = "Send";
+"online" = "Online";
+"offline" = "Offline";
+"typing" = "typing...";
+
+/* Notifications */
+"your_activity" = "Your Activity";
+"response_time" = "Response Time";
+"last_seen" = "Last Seen";
+"no_notifications" = "No notifications";
+"notifications_description" = "You'll see interest requests and offers here";
+"get_started_notifications" = "Get started to receive notifications";
+"browse_jobs" = "Browse Jobs";
+"job_interest_request" = "Job Interest Request";
+"new_offer" = "New Offer";
+"completion_request" = "Completion Request";
+"accept" = "Accept";
+"decline" = "Decline";
+
+/* Profile */
+"loading_profile" = "Loading profile...";
+"full_name" = "Full Name";
+"account_type" = "Account Type";
+"service_provider" = "Service Provider";
+"enable_service_provider" = "Enable to apply for jobs and offer services";
+"bio" = "Bio";
+"no_bio" = "No bio";
+"website" = "Website";
+"website_url" = "Website URL";
+"no_website" = "No website";
+"service_provider_stats" = "Service Provider Stats";
+"reviews" = "Reviews";
+"account" = "Account";
+"logout" = "Logout";
+"no_name" = "No name";
+"no_email" = "No email";
+"client" = "Client";
+"edit" = "Edit";
+"save" = "Save";
+"cancel" = "Cancel";
+"no_profile_found" = "No profile found";
+"reload" = "Reload";
+
+/* Authentication */
+"sign_in" = "Sign In";
+"sign_up" = "Sign Up";
+"email" = "Email";
+"password" = "Password";
+"forgot_password" = "Forgot Password?";
+"create_account" = "Create Account";
+"already_have_account" = "Already have an account?";
+
+/* Common Actions */
+"ok" = "OK";
+"done" = "Done";
+"error" = "Error";
+"success" = "Success";
+"loading" = "Loading";
+"retry" = "Retry";
+"delete" = "Delete";
+"update" = "Update";
+"create" = "Create";
+"search" = "Search";
+"filter" = "Filter";
+"sort" = "Sort";
+
+/* Settings */
+"settings" = "Settings";
+"language" = "Language";
+"select_language" = "Select Language";
+"app_language" = "App Language";
+"language_changed" = "Language Changed";
+"language_change_message" = "The app language has been changed successfully";
+
+/* Time and Date */
+"unknown" = "Unknown";
+"just_now" = "Just now";
+"minutes_ago" = "%d minutes ago";
+"hours_ago" = "%d hours ago";
+"days_ago" = "%d days ago";
+
+/* Status */
+"pending" = "Pending";
+"approved" = "Approved";
+"rejected" = "Rejected";
+"in_progress" = "In Progress";
+"completed_status" = "Completed";
+
+/* Error Messages */
+"failed_to_load" = "Failed to load";
+"network_error" = "Network error";
+"try_again" = "Please try again";
+"something_went_wrong" = "Something went wrong";

@@ -1,0 +1,58 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LoadingStatesSystem.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LoadingStatesSystem.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LocalStorageManager.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/LocalStorageManager.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MainTabView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MainTabView.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MessagesNetworking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesNetworking.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MessagesView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/MessagesView.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Models.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Models.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Networking.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/Networking.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationExamples.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/iOS/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationExamples.swiftdeps"
+  }
+}

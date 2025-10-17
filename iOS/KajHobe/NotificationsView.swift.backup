@@ -1,0 +1,1480 @@
+import SwiftUI
+import Supabase
+
+struct NotificationsView: View {
+    @State private var notifications: [Notification] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var processingNotificationIds: Set<String> = []
+    @State private var showingSuccessAlert = false
+    @State private var successMessage = ""
+    @State private var shouldNavigateToConversations = false
+    @State private var showingDealRejectionView = false
+    @State private var selectedDealRejectionNotification: Notification?
+    @State private var realtimeChannel: RealtimeChannelV2?
+    @State private var showingClearAllConfirmation = false
+    @State private var isClearingAll = false
+    @State private var currentUserProfile: Profile?
+    @State private var sessionStats: SessionStats = SessionStats()
+    @ObservedObject private var presenceManager = PresenceManager.shared
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                // Modern gradient background
+                LinearGradient(
+                    gradient: Gradient(colors: [Color(.systemBackground), Color(.systemGroupedBackground)]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                
+                Group {
+                    if isLoading && notifications.isEmpty {
+                        VStack(spacing: 20) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .tint(.blue)
+                            
+                            Text("Loading notifications...")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if notifications.isEmpty {
+                        ScrollView {
+                            VStack(spacing: 24) {
+                                // Session information section
+                                sessionInfoSection()
+                                
+                                // Empty state
+                                VStack(spacing: 16) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.blue.opacity(0.1))
+                                            .frame(width: 100, height: 100)
+                                        
+                                        Image(systemName: "bell.slash")
+                                            .font(.system(size: 40, weight: .light))
+                                            .foregroundColor(.blue)
+                                    }
+                                    
+                                    VStack(spacing: 8) {
+                                        Text("No notifications")
+                                            .font(.title2)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.primary)
+                                        
+                                        Text("You'll see interest requests and offers here")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                    }
+                            
+                            // Add helpful call-to-action for empty notifications
+                            VStack(spacing: 12) {
+                                Text("Get started to receive notifications")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.top, 8)
+                                
+                                VStack(spacing: 8) {
+                                    NavigationLink(destination: JobsListView(onOpenConversation: { _ in })) {
+                                        HStack {
+                                            Image(systemName: "briefcase")
+                                            Text("Browse Jobs")
+                                        }
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 12)
+                                        .background(Color.blue)
+                                        .cornerRadius(12)
+                                    }
+                                    
+                                    NavigationLink(destination: PostJobView()) {
+                                        HStack {
+                                            Image(systemName: "plus")
+                                            Text("Post a Job")
+                                        }
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.blue)
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 12)
+                                        .background(Color.blue.opacity(0.1))
+                                        .cornerRadius(12)
+                                    }
+                                }
+                            }
+                        }
+                        }
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 16) {
+                                // Session information section
+                                sessionInfoSection()
+                                
+                                // Notifications header
+                                HStack {
+                                    Text("Recent Activity")
+                                        .font(.title3)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    Text("\(notifications.count) notification\(notifications.count == 1 ? "" : "s")")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color(.systemGray6))
+                                        .cornerRadius(8)
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.top, 8)
+                                
+                                ForEach(notifications) { notification in
+                                    ModernNotificationCard(
+                                        notification: notification,
+                                        isProcessing: processingNotificationIds.contains(notification.id),
+                                        onAccept: {
+                                            handleNotificationAction(notification: notification, accept: true)
+                                        },
+                                        onReject: {
+                                            handleNotificationAction(notification: notification, accept: false)
+                                        },
+                                        onDealRejection: { notification in
+                                            selectedDealRejectionNotification = notification
+                                            showingDealRejectionView = true
+                                        },
+                                        onClear: {
+                                            clearIndividualNotification(notificationId: notification.id)
+                                        }
+                                    )
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(action: {
+                                            clearIndividualNotification(notificationId: notification.id)
+                                        }) {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                        .tint(.red)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                    }
+                }
+                
+                // Loading Overlay for refresh
+                if isLoading && !notifications.isEmpty {
+                    VStack {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Refreshing...")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color(.systemBackground).opacity(0.9))
+                        .cornerRadius(20)
+                        .shadow(radius: 4)
+                        
+                        Spacer()
+                    }
+                    .padding(.top, 8)
+                }
+            }
+            .navigationTitle("Notifications")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if !notifications.isEmpty {
+                        Button(action: {
+                            showingClearAllConfirmation = true
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 14))
+                                Text("Clear All")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .foregroundColor(.red)
+                        }
+                        .disabled(isClearingAll || isLoading)
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 12) {
+                        // Online status indicator
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(presenceManager.isOnline ? Color.green : Color.gray)
+                                .frame(width: 8, height: 8)
+                            
+                            Text(presenceManager.isOnline ? "Online" : "Offline")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Button(action: {
+                            loadNotifications(forceRefresh: true)
+                        }) {
+                            if isClearingAll {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                        }
+                        .disabled(isLoading || isClearingAll)
+                    }
+                }
+            }
+            .alert("Success", isPresented: $showingSuccessAlert) {
+                Button("OK") { }
+            } message: {
+                Text(successMessage)
+            }
+            .alert("Error", isPresented: .constant(errorMessage != nil)) {
+                Button("OK") {
+                    errorMessage = nil
+                }
+            } message: {
+                if let error = errorMessage {
+                    Text(error)
+                }
+            }
+            .sheet(isPresented: $showingDealRejectionView) {
+                if let notification = selectedDealRejectionNotification {
+                    DealRejectionNotificationView(
+                        notification: notification,
+                        isPresented: $showingDealRejectionView
+                    )
+                }
+            }
+            .confirmationDialog("Clear All Notifications", isPresented: $showingClearAllConfirmation) {
+                Button("Clear All", role: .destructive) {
+                    clearAllNotifications()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This will permanently delete all notifications. This action cannot be undone.")
+            }
+        }
+        .onAppear {
+            loadNotifications()
+            loadUserProfile()
+            updateSessionStats()
+            Task {
+                await setupRealtimeSubscription()
+            }
+        }
+        .onDisappear {
+            Task {
+                await cleanupRealtimeSubscription()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("RefreshNotifications"))) { _ in
+            loadNotifications(forceRefresh: true)
+        }
+        .refreshable {
+            // Add haptic feedback for pull-to-refresh
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+            
+            loadNotifications(forceRefresh: true)
+        }
+        }
+    }
+    
+    private func loadNotifications(forceRefresh: Bool = false) {
+        if notifications.isEmpty || forceRefresh {
+            isLoading = true
+        }
+        
+        Task {
+            do {
+                let fetchedNotifications = try await Networking.shared.fetchInterestNotifications(forceRefresh: forceRefresh)
+                
+                await MainActor.run {
+                    self.notifications = fetchedNotifications
+                    self.isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoading = false
+                }
+            }
+        }
+    }
+    
+    private func handleNotificationAction(notification: Notification, accept: Bool) {
+        processingNotificationIds.insert(notification.id)
+        
+        Task {
+            do {
+                // Handle different notification types
+                if notification.isCompletionRequest {
+                    // Handle completion request response
+                    guard let completionRequestId = notification.completion_request_id else {
+                        throw NetworkingError.invalidData("Missing completion request ID")
+                    }
+                    try await Networking.shared.respondToCompletionRequest(
+                        requestId: completionRequestId, 
+                        approve: accept, 
+                        message: nil
+                    )
+                } else {
+                    // Handle interest requests and offers
+                    try await Networking.shared.respondToInterest(notificationId: notification.id, accept: accept)
+                }
+                
+                await MainActor.run {
+                    // Remove the notification from the list after action
+                    notifications.removeAll { $0.id == notification.id }
+                    processingNotificationIds.remove(notification.id)
+                    
+                    // Show success message based on action and type
+                    if accept {
+                        if notification.isInterestRequest {
+                            if let providerName = notification.from_profile?.full_name {
+                                successMessage = "Interest request from \(providerName) accepted! You can now chat and negotiate."
+                            } else {
+                                successMessage = "Interest request accepted! You can now chat and negotiate."
+                            }
+                        } else if notification.isOfferReceived {
+                            successMessage = "Offer accepted! A deal has been created."
+                        } else if notification.isCompletionRequest {
+                            successMessage = "Task completion approved!"
+                        }
+                    } else {
+                        if notification.isInterestRequest {
+                            if let providerName = notification.from_profile?.full_name {
+                                successMessage = "Interest request from \(providerName) declined."
+                            } else {
+                                successMessage = "Interest request declined."
+                            }
+                        } else if notification.isOfferReceived {
+                            successMessage = "Offer declined."
+                        } else if notification.isCompletionRequest {
+                            successMessage = "Completion request rejected."
+                        }
+                    }
+                    
+                    shouldNavigateToConversations = false
+                    showingSuccessAlert = true
+                    
+                    // Update notification badge count and refresh dashboard
+                    NotificationCenter.default.post(name: NSNotification.Name("RefreshNotificationCount"), object: nil)
+                    NotificationCenter.default.post(name: NSNotification.Name("DealUpdated"), object: nil)
+                }
+            } catch {
+                await MainActor.run {
+                    processingNotificationIds.remove(notification.id)
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    private func clearAllNotifications() {
+        isClearingAll = true
+        
+        Task {
+            do {
+                try await Networking.shared.clearAllNotifications()
+                
+                await MainActor.run {
+                    notifications.removeAll()
+                    isClearingAll = false
+                    successMessage = "All notifications cleared successfully"
+                    showingSuccessAlert = true
+                    
+                    // Update notification badge count
+                    NotificationCenter.default.post(name: NSNotification.Name("RefreshNotificationCount"), object: nil)
+                }
+            } catch {
+                await MainActor.run {
+                    isClearingAll = false
+                    errorMessage = "Failed to clear notifications: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    private func clearIndividualNotification(notificationId: String) {
+        processingNotificationIds.insert(notificationId)
+        
+        Task {
+            do {
+                try await Networking.shared.clearNotification(notificationId: notificationId)
+                
+                await MainActor.run {
+                    notifications.removeAll { $0.id == notificationId }
+                    processingNotificationIds.remove(notificationId)
+                    
+                    // Update notification badge count
+                    NotificationCenter.default.post(name: NSNotification.Name("RefreshNotificationCount"), object: nil)
+                }
+            } catch {
+                await MainActor.run {
+                    processingNotificationIds.remove(notificationId)
+                    errorMessage = "Failed to clear notification: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    // MARK: - Real-time Functions
+    
+    private func setupRealtimeSubscription() async {
+        do {
+            let user = try await supabase.auth.user()
+            
+            // print("🔔 Setting up real-time subscription for notifications")
+            
+            // Create a channel for this user's notifications
+            let channel = supabase.realtimeV2.channel("notifications:\(user.id)")
+            
+            // Listen for new notifications for this user
+            await channel.onPostgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "notifications",
+                filter: "to_user_id=eq.\(user.id.uuidString)"
+            ) { action in
+                Task { @MainActor in
+                    // print("🔔 Real-time notification update received: \(action)")
+                    
+                    switch action {
+                    case .insert(let change):
+                        if let newNotification = try? JSONDecoder().decode(Notification.self, from: JSONSerialization.data(withJSONObject: change.record)) {
+                            // print("🔔 New notification received: \(newNotification.type)")
+                            
+                            // Don't add duplicate notifications
+                            if !self.notifications.contains(where: { $0.id == newNotification.id }) {
+                                self.notifications.insert(newNotification, at: 0)
+                            }
+                        }
+                    case .update(let change):
+                        if let updatedNotification = try? JSONDecoder().decode(Notification.self, from: JSONSerialization.data(withJSONObject: change.record)) {
+                            // print("🔔 Notification updated: \(updatedNotification.id)")
+                            
+                            if let index = self.notifications.firstIndex(where: { $0.id == updatedNotification.id }) {
+                                self.notifications[index] = updatedNotification
+                            }
+                        }
+                    case .delete(let change):
+                        if let deletedNotificationId = change.oldRecord["id"] as? String {
+                            // print("🔔 Notification deleted: \(deletedNotificationId)")
+                            self.notifications.removeAll { $0.id == deletedNotificationId }
+                        }
+                    }
+                }
+            }
+            
+            // Subscribe to the channel
+            await channel.subscribe()
+            
+            // Store the channel for cleanup
+            await MainActor.run {
+                self.realtimeChannel = channel
+            }
+            
+            // print("✅ Real-time notification subscription setup complete")
+        } catch {
+            // print("❌ Error setting up real-time notifications: \(error)")
+        }
+    }
+    
+    private func cleanupRealtimeSubscription() async {
+        // print("🔔 Cleaning up real-time notification subscription")
+        
+        if let channel = realtimeChannel {
+            await channel.unsubscribe()
+            await MainActor.run {
+                self.realtimeChannel = nil
+            }
+        }
+    }
+}
+
+struct NotificationCard: View {
+    let notification: Notification
+    let isProcessing: Bool
+    let onAccept: () -> Void
+    let onReject: () -> Void
+    let onDealRejection: (Notification) -> Void
+    let onClear: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Clean header section
+            HStack(alignment: .top, spacing: 12) {
+                // Simple status dot
+                Circle()
+                    .fill(notificationColor)
+                    .frame(width: 8, height: 8)
+                    .padding(.top, 6)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    // Simplified title with service provider name
+                    HStack {
+                        Text(cleanNotificationTitle)
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                        
+                        if let fromProfile = notification.from_profile {
+                            Text("from \(fromProfile.full_name ?? "User")")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    // Show job title prominently for interest requests
+                    if notification.isInterestRequest {
+                        if let job = notification.job {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Job: \(job.title)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.blue)
+                                
+                                Text("Budget: ৳\(job.budget) • \(job.location)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        } else if let jobTitle = extractJobTitle(from: notification.message) {
+                            Text("Job: \(jobTitle)")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    // Show custom message from service provider
+                    if notification.isInterestRequest, let customMessage = extractCustomMessage(from: notification.message) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Message:")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                            
+                            Text("\"\(customMessage)\"")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                        }
+                    }
+                    
+                    // Show offer amount prominently for offers
+                    if notification.isOfferReceived, let offerData = notification.offer_data {
+                        Text("Offer: ৳\(offerData.amount)")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.green)
+                            .padding(.top, 2)
+                    }
+                }
+                
+                Spacer()
+                
+                // Actions in corner
+                VStack(alignment: .trailing, spacing: 4) {
+                    // Clear button
+                    Button(action: {
+                        onClear()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.secondary)
+                            .opacity(0.6)
+                    }
+                    .disabled(isProcessing)
+                    
+                    // Timestamp
+                    Text(shortFormatDate(notification.created_at))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            // Action buttons for pending notifications
+            if notification.isPending && shouldShowActionButtons {
+                if notification.type == "deal_rejected" {
+                    Button(action: {
+                        onDealRejection(notification)
+                    }) {
+                        Text("View Details")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                } else {
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            impactFeedback.impactOccurred()
+                            onReject()
+                        }) {
+                            Text(simpleRejectText)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(Color(.systemGray5))
+                                .foregroundColor(.primary)
+                                .cornerRadius(8)
+                        }
+                        .disabled(isProcessing)
+                        
+                        Button(action: {
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                            impactFeedback.impactOccurred()
+                            onAccept()
+                        }) {
+                            HStack {
+                                if isProcessing {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Text(simpleAcceptText)
+                                }
+                            }
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(notificationColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
+                        .disabled(isProcessing)
+                    }
+                }
+            } else if !notification.isPending {
+                // Simple status indicator
+                HStack {
+                    Image(systemName: notification.status == "accepted" ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .foregroundColor(notification.status == "accepted" ? .green : .gray)
+                        .font(.subheadline)
+                    
+                    Text(notification.status == "accepted" ? "Accepted" : "Declined")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(notification.status == "accepted" ? .green : .gray)
+                    
+                    Spacer()
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.systemGray5), lineWidth: 1)
+        )
+    }
+    
+    // MARK: - Computed Properties for Notification Display
+    private var notificationIcon: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "hand.raised.fill"
+        case "offer_received":
+            return "tag.fill"
+        case "completion_request":
+            return "checkmark.circle.fill"
+        case "completion_approved":
+            return "checkmark.seal.fill"
+        case "completion_rejected":
+            return "xmark.circle.fill"
+        case "interest_rejected":
+            return "xmark.circle.fill"
+        default:
+            return "bell.fill"
+        }
+    }
+    
+    private var notificationColor: Color {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return .blue
+        case "offer_received":
+            return .green
+        case "completion_request":
+            return .orange
+        case "completion_approved":
+            return .green
+        case "completion_rejected":
+            return .red
+        case "interest_rejected":
+            return .red
+        default:
+            return .gray
+        }
+    }
+    
+    private var cleanNotificationTitle: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "Job Interest Request"
+        case "offer_received":
+            return "New Offer"
+        case "completion_request":
+            return "Completion Request"
+        case "completion_approved":
+            return "Task Completed"
+        case "completion_rejected":
+            return "Completion Rejected"
+        case "interest_rejected":
+            return "Interest Rejected"
+        default:
+            return "Notification"
+        }
+    }
+    
+    private var cleanDescription: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            if let profile = notification.from_profile {
+                return "\(profile.full_name ?? "Someone") wants to work on your job"
+            } else {
+                return "Someone wants to work on your job"
+            }
+        case "offer_received":
+            return "You received a job offer"
+        case "completion_request":
+            return "Approve if the work is complete"
+        case "completion_approved":
+            return "Your completion was approved"
+        case "completion_rejected":
+            return "Your completion was rejected"
+        case "interest_rejected":
+            return "Your interest was not accepted"
+        default:
+            return "New notification"
+        }
+    }
+    
+    private var simpleAcceptText: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "Accept"
+        case "offer_received":
+            return "Accept Offer"
+        case "completion_request":
+            return "Approve"
+        default:
+            return "Accept"
+        }
+    }
+    
+    private var simpleRejectText: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "Decline"
+        case "offer_received":
+            return "Decline"
+        case "completion_request":
+            return "Reject"
+        default:
+            return "Decline"
+        }
+    }
+    
+    private var shouldShowActionButtons: Bool {
+        // Don't show action buttons for informational notifications
+        return !["completion_approved", "completion_rejected", "interest_rejected"].contains(notification.type)
+    }
+    
+    private func extractJobTitle(from message: String?) -> String? {
+        guard let message = message else { return nil }
+        
+        // Extract job title from message like "John showed interest on your task: Fix my toilet"
+        if let range = message.range(of: "task: ") {
+            return String(message[range.upperBound...])
+        } else if let range = message.range(of: "job: ") {
+            return String(message[range.upperBound...])
+        }
+        
+        return nil
+    }
+    
+    private func extractCustomMessage(from message: String?) -> String? {
+        guard let message = message else { return nil }
+        
+        // The database RPC function should store the custom message in the notification message field
+        // Since we're using the RPC function, the message might be formatted differently
+        // Let's check for various formats and extract the custom message
+        
+        // If the message contains quotes, extract the quoted content
+        if let startQuote = message.firstIndex(of: "\""),
+           let endQuote = message.lastIndex(of: "\""),
+           startQuote != endQuote {
+            let customMessage = String(message[message.index(after: startQuote)..<endQuote])
+            return customMessage.isEmpty ? nil : customMessage
+        }
+        
+        // If it's a simple message format, check if it's not the default system message
+        let systemMessages = [
+            "Someone showed interest in your job",
+            "I'm interested in this job!",
+            "showed interest on your task",
+            "showed interest in your job"
+        ]
+        
+        // If it doesn't match system messages and is substantial, treat it as custom message
+        if !systemMessages.contains(where: { message.contains($0) }) && message.count > 10 {
+            return message
+        }
+        
+        return nil
+    }
+    
+    private func formatDate(_ dateString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: dateString) {
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateStyle = .medium
+            displayFormatter.timeStyle = .short
+            return displayFormatter.string(from: date)
+        }
+        
+        return dateString
+    }
+    
+    private func shortFormatDate(_ dateString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: dateString) {
+            let now = Date()
+            let interval = now.timeIntervalSince(date)
+            
+            if interval < 60 {
+                return "now"
+            } else if interval < 3600 {
+                let minutes = Int(interval / 60)
+                return "\(minutes)m"
+            } else if interval < 86400 {
+                let hours = Int(interval / 3600)
+                return "\(hours)h"
+            } else {
+                let days = Int(interval / 86400)
+                return "\(days)d"
+            }
+        }
+        
+        return "•"
+    }
+    
+    // MARK: - Session Info Section
+    @ViewBuilder
+    private func sessionInfoSection() -> some View {
+        VStack(spacing: 16) {
+            // Session stats card
+            VStack(spacing: 12) {
+                HStack {
+                    Text("Your Activity")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(presenceManager.isOnline ? Color.green : Color.gray)
+                            .frame(width: 10, height: 10)
+                        
+                        Text(presenceManager.isOnline ? "Online" : "Offline")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(presenceManager.isOnline ? .green : .gray)
+                    }
+                }
+                
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 16) {
+                    SessionStatCard(
+                        title: "Response Time",
+                        value: currentUserProfile?.averageResponseTimeText ?? "Unknown",
+                        icon: "clock",
+                        color: .blue
+                    )
+                    
+                    SessionStatCard(
+                        title: "Last Seen",
+                        value: currentUserProfile?.formattedLastSeen ?? "Unknown",
+                        icon: "eye",
+                        color: .green
+                    )
+                    
+                    SessionStatCard(
+                        title: "Notifications",
+                        value: "\(notifications.count)",
+                        icon: "bell",
+                        color: .orange
+                    )
+                }
+            }
+            .padding(20)
+            .background(Color(.systemBackground))
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+    }
+    
+    // MARK: - Load User Profile
+    private func loadUserProfile() {
+        Task {
+            do {
+                let profile = try await Networking.shared.getCurrentUserProfile()
+                await MainActor.run {
+                    self.currentUserProfile = profile
+                }
+            } catch {
+                print("❌ Failed to load user profile: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - Update Session Stats
+    private func updateSessionStats() {
+        sessionStats.lastUpdated = Date()
+        sessionStats.isOnline = presenceManager.isOnline
+    }
+}
+
+// MARK: - Modern Notification Card
+struct ModernNotificationCard: View {
+    let notification: Notification
+    let isProcessing: Bool
+    let onAccept: () -> Void
+    let onReject: () -> Void
+    let onDealRejection: (Notification) -> Void
+    let onClear: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header with avatar and status
+            HStack(alignment: .top, spacing: 12) {
+                // User avatar or notification icon
+                ZStack {
+                    Circle()
+                        .fill(notificationColor.opacity(0.15))
+                        .frame(width: 50, height: 50)
+                    
+                    if let avatarUrl = notification.from_profile?.avatar_url, !avatarUrl.isEmpty {
+                        AsyncImage(url: URL(string: avatarUrl)) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Image(systemName: notificationIcon)
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(notificationColor)
+                        }
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color(.systemGray5), lineWidth: 1))
+                    } else {
+                        Image(systemName: notificationIcon)
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(notificationColor)
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    // Title and user info
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(cleanNotificationTitle)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                            
+                            if let fromProfile = notification.from_profile {
+                                HStack(spacing: 4) {
+                                    Text("from")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text(fromProfile.full_name ?? "User")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.primary)
+                                    
+                                    // Online status for the user
+                                    if fromProfile.isOnline {
+                                        Circle()
+                                            .fill(Color.green)
+                                            .frame(width: 6, height: 6)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Button(action: onClear) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.secondary)
+                                    .opacity(0.6)
+                            }
+                            .disabled(isProcessing)
+                            
+                            Text(shortFormatDate(notification.created_at))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    // Content based on notification type
+                    notificationContent()
+                }
+            }
+            
+            // Action buttons
+            if notification.isPending && shouldShowActionButtons {
+                actionButtons()
+            } else if !notification.isPending {
+                statusIndicator()
+            }
+        }
+        .padding(20)
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(notificationColor.opacity(0.1), lineWidth: 1)
+        )
+    }
+    
+    @ViewBuilder
+    private func notificationContent() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Job information for interest requests
+            if notification.isInterestRequest {
+                if let job = notification.job {
+                    jobInfoCard(job: job)
+                }
+                
+                // Custom message
+                if let customMessage = extractCustomMessage(from: notification.message) {
+                    customMessageCard(message: customMessage)
+                }
+            }
+            
+            // Offer amount for offers
+            if notification.isOfferReceived, let offerData = notification.offer_data {
+                offerInfoCard(offerData: offerData)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func jobInfoCard(job: Job) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "briefcase")
+                    .font(.system(size: 14))
+                    .foregroundColor(.blue)
+                
+                Text("Job Details")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.blue)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(job.title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                
+                HStack {
+                    Text("৳\(job.budget)")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.green)
+                    
+                    Text("•")
+                        .foregroundColor(.secondary)
+                    
+                    Text(job.location)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(12)
+        .background(Color(.systemGray6).opacity(0.5))
+        .cornerRadius(10)
+    }
+    
+    @ViewBuilder
+    private func customMessageCard(message: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "quote.bubble")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                
+                Text("Message")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            }
+            
+            Text("\"\(message)\"")
+                .font(.subheadline)
+                .foregroundColor(.primary)
+                .italic()
+        }
+        .padding(12)
+        .background(Color.blue.opacity(0.05))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+        )
+    }
+    
+    @ViewBuilder
+    private func offerInfoCard(offerData: OfferData) -> some View {
+        HStack {
+            Image(systemName: "tag.fill")
+                .font(.system(size: 16))
+                .foregroundColor(.green)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Offer Amount")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text("৳\(offerData.amount)")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(.green)
+            }
+            
+            Spacer()
+        }
+        .padding(12)
+        .background(Color.green.opacity(0.05))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.green.opacity(0.2), lineWidth: 1)
+        )
+    }
+    
+    @ViewBuilder
+    private func actionButtons() -> some View {
+        if notification.type == "deal_rejected" {
+            Button(action: {
+                onDealRejection(notification)
+            }) {
+                HStack {
+                    Image(systemName: "info.circle")
+                    Text("View Details")
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+        } else {
+            HStack(spacing: 12) {
+                Button(action: {
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                    onReject()
+                }) {
+                    Text(simpleRejectText)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color(.systemGray5))
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
+                }
+                .disabled(isProcessing)
+                
+                Button(action: {
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                    impactFeedback.impactOccurred()
+                    onAccept()
+                }) {
+                    HStack {
+                        if isProcessing {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "checkmark")
+                            Text(simpleAcceptText)
+                        }
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(notificationColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .disabled(isProcessing)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func statusIndicator() -> some View {
+        HStack {
+            Image(systemName: notification.status == "accepted" ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundColor(notification.status == "accepted" ? .green : .gray)
+                .font(.subheadline)
+            
+            Text(notification.status == "accepted" ? "Accepted" : "Declined")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(notification.status == "accepted" ? .green : .gray)
+            
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6).opacity(0.5))
+        .cornerRadius(8)
+    }
+    
+    // MARK: - Computed Properties (reused from NotificationCard)
+    private var notificationIcon: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "hand.raised.fill"
+        case "offer_received":
+            return "tag.fill"
+        case "completion_request":
+            return "checkmark.circle.fill"
+        case "completion_approved":
+            return "checkmark.seal.fill"
+        case "completion_rejected":
+            return "xmark.circle.fill"
+        case "interest_rejected":
+            return "xmark.circle.fill"
+        default:
+            return "bell.fill"
+        }
+    }
+    
+    private var notificationColor: Color {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return .blue
+        case "offer_received":
+            return .green
+        case "completion_request":
+            return .orange
+        case "completion_approved":
+            return .green
+        case "completion_rejected":
+            return .red
+        case "interest_rejected":
+            return .red
+        default:
+            return .gray
+        }
+    }
+    
+    private var cleanNotificationTitle: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "Job Interest Request"
+        case "offer_received":
+            return "New Offer"
+        case "completion_request":
+            return "Completion Request"
+        case "completion_approved":
+            return "Task Completed"
+        case "completion_rejected":
+            return "Completion Rejected"
+        case "interest_rejected":
+            return "Interest Rejected"
+        default:
+            return "Notification"
+        }
+    }
+    
+    private var simpleAcceptText: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "Accept"
+        case "offer_received":
+            return "Accept Offer"
+        case "completion_request":
+            return "Approve"
+        default:
+            return "Accept"
+        }
+    }
+    
+    private var simpleRejectText: String {
+        switch notification.type {
+        case "interest_request", "show_interest":
+            return "Decline"
+        case "offer_received":
+            return "Decline"
+        case "completion_request":
+            return "Reject"
+        default:
+            return "Decline"
+        }
+    }
+    
+    private var shouldShowActionButtons: Bool {
+        return !["completion_approved", "completion_rejected", "interest_rejected"].contains(notification.type)
+    }
+    
+    private func extractCustomMessage(from message: String?) -> String? {
+        guard let message = message else { return nil }
+        
+        if let startQuote = message.firstIndex(of: "\""),
+           let endQuote = message.lastIndex(of: "\""),
+           startQuote != endQuote {
+            let customMessage = String(message[message.index(after: startQuote)..<endQuote])
+            return customMessage.isEmpty ? nil : customMessage
+        }
+        
+        let systemMessages = [
+            "Someone showed interest in your job",
+            "I'm interested in this job!",
+            "showed interest on your task",
+            "showed interest in your job"
+        ]
+        
+        if !systemMessages.contains(where: { message.contains($0) }) && message.count > 10 {
+            return message
+        }
+        
+        return nil
+    }
+    
+    private func shortFormatDate(_ dateString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        if let date = formatter.date(from: dateString) {
+            let now = Date()
+            let interval = now.timeIntervalSince(date)
+            
+            if interval < 60 {
+                return "now"
+            } else if interval < 3600 {
+                let minutes = Int(interval / 60)
+                return "\(minutes)m"
+            } else if interval < 86400 {
+                let hours = Int(interval / 3600)
+                return "\(hours)h"
+            } else {
+                let days = Int(interval / 86400)
+                return "\(days)d"
+            }
+        }
+        
+        return "•"
+    }
+}
+
+// MARK: - Session Stats Model
+struct SessionStats {
+    var lastUpdated: Date = Date()
+    var isOnline: Bool = false
+    var notificationCount: Int = 0
+    
+    var formattedLastUpdated: String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: lastUpdated)
+    }
+}
+
+// MARK: - Session Stat Card
+struct SessionStatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 40, height: 40)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(color)
+            }
+            
+            VStack(spacing: 2) {
+                Text(value)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+#Preview {
+    NotificationsView()
+} 

@@ -1,0 +1,30 @@
+{
+  "/Users/skfazlarabby/projects/KajHobe/KajHobe/CompletionRequestView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/CompletionRequestView.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/KajHobe/ContentView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/ContentView.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/KajHobe/DashboardView.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DashboardView.swiftdeps"
+  },
+  "/Users/skfazlarabby/projects/KajHobe/KajHobe/DatabaseModels.swift" : {
+    "const-values" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.swiftconstvalues",
+    "dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.d",
+    "diagnostics" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.dia",
+    "object" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.o",
+    "swift-dependencies" : "/Users/skfazlarabby/projects/KajHobe/build/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/DatabaseModels.swiftdeps"
+  }
+}

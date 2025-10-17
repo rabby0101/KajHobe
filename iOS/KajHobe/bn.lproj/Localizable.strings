@@ -1,0 +1,129 @@
+/* Main Navigation */
+"dashboard" = "ড্যাশবোর্ড";
+"jobs" = "চাকরি";
+"messages" = "বার্তা";
+"notifications" = "বিজ্ঞপ্তি";
+"profile" = "প্রোফাইল";
+
+/* Dashboard */
+"overview" = "বিবরণ";
+"active_deals" = "সক্রিয় চুক্তি";
+"completed" = "সম্পন্ন";
+"total_earned" = "মোট আয়";
+"total_spent" = "মোট খরচ";
+"rating" = "রেটিং";
+"pending_approval" = "অনুমোদনের অপেক্ষায়";
+"recent_activity" = "সাম্প্রতিক কার্যকলাপ";
+"get_started_first_job" = "আপনার প্রথম কাজ দিয়ে শুরু করুন";
+"browse_available_jobs" = "উপলব্ধ কাজ দেখুন";
+"post_a_job" = "পোস্ট";
+
+/* Jobs */
+"search_jobs" = "কাজ খুঁজুন...";
+"all_categories" = "সব ক্যাটেগরি";
+"apply_filters" = "ফিল্টার প্রয়োগ করুন";
+"clear_filters" = "ফিল্টার পরিষ্কার করুন";
+"budget" = "বাজেট";
+"location" = "অবস্থান";
+"no_jobs_found" = "কোনো কাজ পাওয়া যায়নি";
+"try_different_filters" = "আপনার অনুসন্ধান ফিল্টার পরিবর্তন করে দেখুন";
+"loading_jobs" = "কাজ লোড হচ্ছে...";
+
+/* Messages */
+"conversations" = "কথোপকথন";
+"no_conversations" = "কোনো কথোপকথন নেই";
+"start_messaging" = "কাজে আগ্রহ দেখিয়ে বার্তা শুরু করুন";
+"type_message" = "একটি বার্তা টাইপ করুন...";
+"send" = "পাঠান";
+"online" = "অনলাইন";
+"offline" = "অফলাইন";
+"typing" = "টাইপ করছে...";
+
+/* Notifications */
+"your_activity" = "আপনার কার্যকলাপ";
+"response_time" = "প্রতিক্রিয়ার সময়";
+"last_seen" = "শেষ দেখা";
+"no_notifications" = "কোনো বিজ্ঞপ্তি নেই";
+"notifications_description" = "আপনি এখানে আগ্রহের অনুরোধ এবং অফার দেখতে পাবেন";
+"get_started_notifications" = "বিজ্ঞপ্তি পেতে শুরু করুন";
+"browse_jobs" = "কাজ দেখুন";
+"job_interest_request" = "কাজের আগ্রহের অনুরোধ";
+"new_offer" = "নতুন অফার";
+"completion_request" = "সম্পন্নের অনুরোধ";
+"accept" = "গ্রহণ করুন";
+"decline" = "প্রত্যাখ্যান করুন";
+
+/* Profile */
+"loading_profile" = "প্রোফাইল লোড হচ্ছে...";
+"full_name" = "পূর্ণ নাম";
+"account_type" = "অ্যাকাউন্টের ধরন";
+"service_provider" = "সেবা প্রদানকারী";
+"enable_service_provider" = "কাজের জন্য আবেদন এবং সেবা প্রদানের জন্য সক্রিয় করুন";
+"bio" = "জীবনী";
+"no_bio" = "কোনো জীবনী নেই";
+"website" = "ওয়েবসাইট";
+"website_url" = "ওয়েবসাইট URL";
+"no_website" = "কোনো ওয়েবসাইট নেই";
+"service_provider_stats" = "সেবা প্রদানকারীর পরিসংখ্যান";
+"reviews" = "পর্যালোচনা";
+"account" = "অ্যাকাউন্ট";
+"logout" = "লগআউট";
+"no_name" = "কোনো নাম নেই";
+"no_email" = "কোনো ইমেইল নেই";
+"client" = "ক্লায়েন্ট";
+"edit" = "সম্পাদনা";
+"save" = "সংরক্ষণ";
+"cancel" = "বাতিল";
+"no_profile_found" = "কোনো প্রোফাইল পাওয়া যায়নি";
+"reload" = "পুনরায় লোড";
+
+/* Authentication */
+"sign_in" = "সাইন ইন";
+"sign_up" = "সাইন আপ";
+"email" = "ইমেইল";
+"password" = "পাসওয়ার্ড";
+"forgot_password" = "পাসওয়ার্ড ভুলে গেছেন?";
+"create_account" = "অ্যাকাউন্ট তৈরি করুন";
+"already_have_account" = "ইতিমধ্যে একটি অ্যাকাউন্ট আছে?";
+
+/* Common Actions */
+"ok" = "ঠিক আছে";
+"done" = "সম্পন্ন";
+"error" = "ত্রুটি";
+"success" = "সফল";
+"loading" = "লোড হচ্ছে";
+"retry" = "পুনরায় চেষ্টা";
+"delete" = "মুছুন";
+"update" = "আপডেট";
+"create" = "তৈরি";
+"search" = "খুঁজুন";
+"filter" = "ফিল্টার";
+"sort" = "সাজান";
+
+/* Settings */
+"settings" = "সেটিংস";
+"language" = "ভাষা";
+"select_language" = "ভাষা নির্বাচন করুন";
+"app_language" = "অ্যাপের ভাষা";
+"language_changed" = "ভাষা পরিবর্তিত";
+"language_change_message" = "অ্যাপের ভাষা সফলভাবে পরিবর্তিত হয়েছে";
+
+/* Time and Date */
+"unknown" = "অজানা";
+"just_now" = "এখনই";
+"minutes_ago" = "%d মিনিট আগে";
+"hours_ago" = "%d ঘন্টা আগে";
+"days_ago" = "%d দিন আগে";
+
+/* Status */
+"pending" = "অপেক্ষমান";
+"approved" = "অনুমোদিত";
+"rejected" = "প্রত্যাখ্যাত";
+"in_progress" = "চলমান";
+"completed_status" = "সম্পন্ন";
+
+/* Error Messages */
+"failed_to_load" = "লোড করতে ব্যর্থ";
+"network_error" = "নেটওয়ার্ক ত্রুটি";
+"try_again" = "দয়া করে আবার চেষ্টা করুন";
+"something_went_wrong" = "কিছু ভুল হয়েছে";

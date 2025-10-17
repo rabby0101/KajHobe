@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>11</integer>
+	<key>logs</key>
+	<dict>
+		<key>AB7BCAAA-8C16-4C89-BE3E-9CD7C541BFD7</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>AB7BCAAA-8C16-4C89-BE3E-9CD7C541BFD7.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>KajHobe project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>KajHobe</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Cleaning project KajHobe with scheme KajHobe</string>
+			<key>timeStartedRecording</key>
+			<real>780589018.290025</real>
+			<key>timeStoppedRecording</key>
+			<real>780589022.18799305</real>
+			<key>title</key>
+			<string>Cleaning project KajHobe with scheme KajHobe</string>
+			<key>uniqueIdentifier</key>
+			<string>AB7BCAAA-8C16-4C89-BE3E-9CD7C541BFD7</string>
+		</dict>
+		<key>D849FF97-E3C5-4DF2-BEFC-128D0EB8B855</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>D849FF97-E3C5-4DF2-BEFC-128D0EB8B855.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>KajHobe project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>KajHobe</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Cleaning project KajHobe with scheme KajHobe</string>
+			<key>timeStartedRecording</key>
+			<real>775854578.86345994</real>
+			<key>timeStoppedRecording</key>
+			<real>775854581.11115694</real>
+			<key>title</key>
+			<string>Cleaning project KajHobe with scheme KajHobe</string>
+			<key>uniqueIdentifier</key>
+			<string>D849FF97-E3C5-4DF2-BEFC-128D0EB8B855</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

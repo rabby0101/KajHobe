@@ -1,0 +1,715 @@
+Command line invocation:
+    /Applications/Xcode-beta.app/Contents/Developer/usr/bin/xcodebuild -project KajHobe.xcodeproj -scheme KajHobe -destination "platform=iOS Simulator,name=iPhone 16" build
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  Supabase: https://github.com/supabase/supabase-swift.git @ 2.29.3
+  swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.3.1
+  swift-http-types: https://github.com/apple/swift-http-types.git @ 1.4.0
+  swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.3.2
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 3.12.3
+  xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.5.2
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (27 targets)
+    Target 'KajHobe' in project 'KajHobe'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Supabase' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Storage' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Realtime' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Auth' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'Crypto' in project 'swift-crypto'
+        ➜ Explicit dependency on target 'swift-crypto_Crypto' in project 'swift-crypto'
+    Target 'swift-crypto_Crypto' in project 'swift-crypto' (no dependencies)
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Functions' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'PostgREST' in project 'Supabase'
+        ➜ Explicit dependency on target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'Helpers' in project 'Supabase'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'XCTestDynamicOverlay' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'Clocks' in project 'swift-clocks'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay'
+        ➜ Explicit dependency on target 'IssueReporting' in project 'xctest-dynamic-overlay'
+    Target 'IssueReporting' in project 'xctest-dynamic-overlay' (no dependencies)
+    Target 'HTTPTypes' in project 'swift-http-types'
+        ➜ Explicit dependency on target 'HTTPTypes' in project 'swift-http-types'
+    Target 'HTTPTypes' in project 'swift-http-types' (no dependencies)
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+        ➜ Explicit dependency on target 'ConcurrencyExtras' in project 'swift-concurrency-extras'
+    Target 'ConcurrencyExtras' in project 'swift-concurrency-extras' (no dependencies)
+
+GatherProvisioningInputs
+
+2025-08-28 15:21:38.956 xcodebuild[8169:113486]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c4fde0 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea8c5f _dispatch_sync_invoke_and_complete_recurse + 65
+	8   libdispatch.dylib                   0x00007ff803ea87a0 _dispatch_sync_f_slow + 199
+	9   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	10  DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	11  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	12  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	13  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	14  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	15  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	16  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	17  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	18  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	19  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	20  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	21  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	22  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	23  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Assets.xcassets
+2025-08-28 15:21:42.456 xcodebuild[8169:113426]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c5d260 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:21:45.163 xcodebuild[8169:113351]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c62e80 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:21:48.363 xcodebuild[8169:113426]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c352c0 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+ReadFileContents /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/share/docc/features.json
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+2025-08-28 15:21:51.196 xcodebuild[8169:113486]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c5c300 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+Build description signature: 3adb5bfc8f4371a4cad627831343aa23
+Build description path: /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/XCBuildData/3adb5bfc8f4371a4cad627831343aa23.xcbuilddata
+ClangStatCache /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A5260k-fc862078e33f881139a9d2f83bd1a9d0.sdkstatcache
+    cd /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe.xcodeproj
+    /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -o /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A5260k-fc862078e33f881139a9d2f83bd1a9d0.sdkstatcache
+
+ProcessInfoPlistFile /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist (in target 'swift-crypto_Crypto' from project 'swift-crypto')
+    cd /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/SourcePackages/checkouts/swift-crypto
+    builtin-infoPlistUtility /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/swift-crypto_Crypto.build/empty-swift-crypto_Crypto.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/swift-crypto_Crypto.bundle/Info.plist
+
+CompileAssetCatalogVariant thinned /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/KajHobe.app /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Assets.xcassets (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    /Applications/Xcode-beta.app/Contents/Developer/usr/bin/actool /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Assets.xcassets --compile /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --filter-for-thinning-device-configuration iPhone17,3 --filter-for-device-os-version 26.0 --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 18.0 --platform iphonesimulator
+2025-08-28 15:21:55.290 xcodebuild[8169:113351]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c5c360 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:21:59.562 xcodebuild[8169:113360]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c3da10 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:22:03.824 xcodebuild[8169:113486]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c38f00 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:22:09.686 xcodebuild[8169:113160]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c36ac0 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:22:16.276 xcodebuild[8169:113360]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c32a00 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:22:26.308 xcodebuild[8169:113486]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c25230 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:22:36.359 xcodebuild[8169:114754]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c380c0 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+2025-08-28 15:22:45.639 xcodebuild[8169:114754]  DTDKRemoteDeviceConnection: Failed to start remote service "com.apple.mobile.notification_proxy" on device. Error: Error Domain=com.apple.dtdevicekit Code=811 "Failed to start remote service "com.apple.mobile.notification_proxy" on device." UserInfo={NSUnderlyingError=0x600003c36d00 {Error Domain=com.apple.dt.MobileDeviceErrorDomain Code=-402653158 "The device is passcode protected." UserInfo={MobileDeviceErrorCode=(0xE800001A), com.apple.dtdevicekit.stacktrace=(
+	0   DTDeviceKitBase                     0x000000010f2f75b7 DTDKCreateNSErrorFromAMDErrorCode + 224
+	1   DTDeviceKitBase                     0x000000010f304b37 __63-[DTDKRemoteDeviceConnection startFirstServiceOf:unlockKeybag:]_block_invoke + 601
+	2   DTDeviceKitBase                     0x000000010f304206 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_4 + 22
+	3   DTDeviceKitBase                     0x000000010f2f97b1 __DTDKExecuteInSession_block_invoke_2 + 52
+	4   DTDeviceKitBase                     0x000000010f2f8f13 __DTDKExecuteWithConnection_block_invoke_2 + 219
+	5   DTDeviceKitBase                     0x000000010f2f8e0d __DTDKExecuteWithConnection_block_invoke + 106
+	6   libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	7   libdispatch.dylib                   0x00007ff803ea88e0 _dispatch_lane_barrier_sync_invoke_and_complete + 60
+	8   DVTFoundation                       0x0000000107d00670 DVTDispatchBarrierSync + 148
+	9   DVTFoundation                       0x0000000107d0188d -[DVTDispatchLock performLockedBlock:] + 60
+	10  DTDeviceKitBase                     0x000000010f2f8d10 DTDKExecuteWithConnection + 221
+	11  DTDeviceKitBase                     0x000000010f2f9649 DTDKExecuteInSession + 275
+	12  DTDeviceKitBase                     0x000000010f303fc5 __48-[DTDKRemoteDeviceConnection futureWithSession:]_block_invoke_2 + 216
+	13  DVTFoundation                       0x0000000107cff927 __DVT_CALLING_CLIENT_BLOCK__ + 7
+	14  DVTFoundation                       0x0000000107d0036c __DVTDispatchAsync_block_invoke + 196
+	15  libdispatch.dylib                   0x00007ff803e9b6b9 _dispatch_call_block_and_release + 12
+	16  libdispatch.dylib                   0x00007ff803eb1bee _dispatch_client_callout + 6
+	17  libdispatch.dylib                   0x00007ff803ea245b _dispatch_lane_serial_drain + 779
+	18  libdispatch.dylib                   0x00007ff803ea2ea9 _dispatch_lane_invoke + 382
+	19  libdispatch.dylib                   0x00007ff803eabd42 _dispatch_root_queue_drain_deferred_wlh + 275
+	20  libdispatch.dylib                   0x00007ff803eab705 _dispatch_workloop_worker_thread + 871
+	21  libsystem_pthread.dylib             0x00007ff8040518bd _pthread_wqthread + 298
+	22  libsystem_pthread.dylib             0x00007ff804050843 start_wqthread + 15
+), DVTRadarComponentKey=261622, NSLocalizedDescription=The device is passcode protected.}}, NSLocalizedRecoverySuggestion=Please check your connection to your device., DVTRadarComponentKey=261622, NSLocalizedDescription=Failed to start remote service "com.apple.mobile.notification_proxy" on device.}
+
+SwiftDriver KajHobe normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    builtin-SwiftDriver -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name KajHobe -Onone -enforce-exclusivity\=checked @/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -target x86_64-apple-ios18.0-simulator -g -module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Index.noindex/DataStore -swift-version 5 -I /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A5260k-fc862078e33f881139a9d2f83bd1a9d0.sdkstatcache -output-file-map /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe_const_extract_protocols.json -Xcc -iquote -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-generated-files.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-own-target-headers.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe-533f41d4694551012c4124bfbea33972-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-project-headers.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources-normal/x86_64 -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources/x86_64 -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-Swift.h -working-directory /Users/skfazlarabby/projects/KajHobe/iOS -experimental-emit-module-separately -disable-cmo
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ KajHobe (in target 'KajHobe' from project 'KajHobe')
+
+EmitSwiftModule normal x86_64 (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:52:5: warning: '@State' used inline will not work unless tagged with '@Previewable' (from macro 'Preview')
+    @State var isPresented = true
+    ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:52:5: note: Add '@Previewable'
+    @State var isPresented = true
+    ^~~~~~
+    @Previewable @State
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:53:5: warning: '@State' used inline will not work unless tagged with '@Previewable' (from macro 'Preview')
+    @State var session: Any? = nil
+    ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:53:5: note: Add '@Previewable'
+    @State var session: Any? = nil
+    ^~~~~~
+    @Previewable @State
+
+SwiftCompile normal x86_64 Compiling\ CooldownTimerView.swift,\ DashboardView.swift,\ DatabaseModels.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CooldownTimerView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DashboardView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DatabaseModels.swift (in target 'KajHobe' from project 'KajHobe')
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CooldownTimerView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DashboardView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DatabaseModels.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 Compiling\ ChatView.swift,\ CompletionRequestView.swift,\ ContentView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CompletionRequestView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ContentView.swift (in target 'KajHobe' from project 'KajHobe')
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CompletionRequestView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ContentView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 Compiling\ RealtimeTestView.swift,\ StartSessionSheet.swift,\ ThemeManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/RealtimeTestView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ThemeManager.swift (in target 'KajHobe' from project 'KajHobe')
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/RealtimeTestView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:52:5: warning: '@State' used inline will not work unless tagged with '@Previewable' (from macro 'Preview')
+    @State var isPresented = true
+    ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:52:5: note: Add '@Previewable'
+    @State var isPresented = true
+    ^~~~~~
+    @Previewable @State
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:53:5: warning: '@State' used inline will not work unless tagged with '@Previewable' (from macro 'Preview')
+    @State var session: Any? = nil
+    ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:53:5: note: Add '@Previewable'
+    @State var session: Any? = nil
+    ^~~~~~
+    @Previewable @State
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ThemeManager.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 Compiling\ NotificationsView.swift,\ PostJobView.swift,\ ProfileView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PostJobView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ProfileView.swift (in target 'KajHobe' from project 'KajHobe')
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PostJobView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ProfileView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 Compiling\ NotificationBadgeManager.swift,\ EnhancedNotificationsView.swift,\ NotificationComponents.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Managers/NotificationBadgeManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/EnhancedNotificationsView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/NotificationComponents.swift (in target 'KajHobe' from project 'KajHobe')
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Managers/NotificationBadgeManager.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/EnhancedNotificationsView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/NotificationComponents.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 Compiling\ JobsListView.swift,\ NotificationSettingsView.swift,\ NotificationsNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsListView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationSettingsView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift (in target 'KajHobe' from project 'KajHobe')
+Failed frontend command:
+/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Managers/NotificationBadgeManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/EnhancedNotificationsView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Views/NotificationComponents.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AccessibilityEnhancements.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AnimationSystem.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AppDelegate.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AuthView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/BaseNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CameraView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatBubbleView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatRoomViewModel.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatTextFieldView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatViewModel.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CompletionRequestView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ContentView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ConversationViewModel.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/CooldownTimerView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DashboardView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DatabaseModels.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealOfferForm.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealRejectionNotificationView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealResponseView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DealsNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DesignSystem.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/DragDropJobBoard.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/EnhancedJobSearchView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/EnhancedProfileView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/InterestCooldownManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/IsolatedChatModels.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobCardView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobDetailView.swift -primary-file /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsListView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/KajHobeApp.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LanguageManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LanguageSelectionView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LoadingStatesSystem.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/LocalStorageManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MainTabView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MessagesNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/MessagesView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Models.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Networking.swift -primary-file /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationSettingsView.swift -primary-file /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PostJobView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PresenceManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ProfileNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ProfileView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/PushNotificationManager.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/RealtimeTestView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/SimpleEmojiTextField.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/Supabase.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ThemeManager.swift /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources/GeneratedAssetSymbols.swift -supplementary-output-file-map /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/supplementaryOutputs-6 -emit-localized-strings -emit-localized-strings-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64 -target x86_64-apple-ios18.0-simulator -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -module-can-import-version SwiftUI 7.0.67.1 7.0.67 -module-can-import-version UIKit 9071.1.106 9071.1.106 -disable-cross-import-overlay-search -swift-module-cross-import PhotosUI /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/WidgetKit.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/SwiftUI.swiftoverlay -swift-module-cross-import PhotosUI /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk/System/Library/Frameworks/PhotosUI.framework/Modules/PhotosUI.swiftcrossimport/WidgetKit.swiftoverlay -load-resolved-plugin /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-dependencies-1.json -enable-objc-interop -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -I /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=5 -module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -profile-generate -profile-coverage-mapping -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe_const_extract_protocols.json -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -default-isolation\=MainActor -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/skfazlarabby/projects/KajHobe/iOS -enable-anonymous-context-mangled-names -file-compilation-dir /Users/skfazlarabby/projects/KajHobe/iOS -Xcc -ivfsstatcache -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A5260k-fc862078e33f881139a9d2f83bd1a9d0.sdkstatcache -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-generated-files.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-own-target-headers.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe-533f41d4694551012c4124bfbea33972-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-project-headers.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources-normal/x86_64 -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources/x86_64 -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name KajHobe -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.0 -target-sdk-name iphonesimulator26.0 -clang-target x86_64-apple-ios26.0-simulator -o /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.o -o /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.o -o /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.o -index-unit-output-path /KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/JobsListView.o -index-unit-output-path /KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationSettingsView.o -index-unit-output-path /KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/NotificationsNetworking.o -index-store-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsListView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:52:5: warning: '@State' used inline will not work unless tagged with '@Previewable' (from macro 'Preview')
+    @State var isPresented = true
+    ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:52:5: note: Add '@Previewable'
+    @State var isPresented = true
+    ^~~~~~
+    @Previewable @State
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:53:5: warning: '@State' used inline will not work unless tagged with '@Previewable' (from macro 'Preview')
+    @State var session: Any? = nil
+    ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/StartSessionSheet.swift:53:5: note: Add '@Previewable'
+    @State var session: Any? = nil
+    ^~~~~~
+    @Previewable @State
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsListView.swift:650:21: warning: no 'async' operations occur within 'await' expression
+            let _ = await channel.onPostgresChange(
+                    ^
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationSettingsView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift:38:43: warning: conditional cast from '[String : AnyJSON]' to '[String : Any]' always succeeds
+            if let record = change.record as? [String: Any],
+                                          ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift:51:43: warning: conditional cast from '[String : AnyJSON]' to '[String : Any]' always succeeds
+            if let record = change.record as? [String: Any],
+                                          ^
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift:127:31: error: value of type 'PostgrestTransformBuilder' has no member 'eq'
+                query = query.eq("notification_state", value: state.rawValue)
+                        ~~~~~ ^~
+/Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift:1352:34: warning: 'postgresChange(_:schema:table:filter:)' is deprecated: Use the new filter syntax instead.
+        let insertions = channel.postgresChange(
+                                 ^
+
+SwiftCompile normal x86_64 Compiling\ EnhancedProfileView.swift,\ JobCardView.swift,\ JobDetailView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/EnhancedProfileView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobCardView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobDetailView.swift (in target 'KajHobe' from project 'KajHobe')
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/EnhancedProfileView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobCardView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobDetailView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling RealtimeTestView.swift, StartSessionSheet.swift, ThemeManager.swift (in target 'KajHobe' from project 'KajHobe')
+
+SwiftCompile normal x86_64 Compiling\ AccessibilityEnhancements.swift,\ AnimationSystem.swift,\ ChatBubbleView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AccessibilityEnhancements.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AnimationSystem.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatBubbleView.swift (in target 'KajHobe' from project 'KajHobe')
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AccessibilityEnhancements.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/AnimationSystem.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/ChatBubbleView.swift (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    
+
+SwiftDriverJobDiscovery normal x86_64 Emitting module for KajHobe (in target 'KajHobe' from project 'KajHobe')
+
+SwiftDriver\ Compilation\ Requirements KajHobe normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'KajHobe' from project 'KajHobe')
+    cd /Users/skfazlarabby/projects/KajHobe/iOS
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name KajHobe -Onone -enforce-exclusivity\=checked @/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -target x86_64-apple-ios18.0-simulator -g -module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Index.noindex/DataStore -swift-version 5 -I /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A5260k-fc862078e33f881139a9d2f83bd1a9d0.sdkstatcache -output-file-map /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe_const_extract_protocols.json -Xcc -iquote -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-generated-files.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-own-target-headers.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe-533f41d4694551012c4124bfbea33972-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/KajHobe-project-headers.hmap -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources-normal/x86_64 -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources/x86_64 -Xcc -I/Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/skfazlarabby/Library/Developer/Xcode/DerivedData/KajHobe-abwtmezfssvnnvgllcbepuecfobf/Build/Intermediates.noindex/KajHobe.build/Debug-iphonesimulator/KajHobe.build/Objects-normal/x86_64/KajHobe-Swift.h -working-directory /Users/skfazlarabby/projects/KajHobe/iOS -experimental-emit-module-separately -disable-cmo
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal x86_64 Compiling\ JobsListView.swift,\ NotificationSettingsView.swift,\ NotificationsNetworking.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/JobsListView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationSettingsView.swift /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift (in target 'KajHobe' from project 'KajHobe')
+	SwiftCompile normal x86_64 /Users/skfazlarabby/projects/KajHobe/iOS/KajHobe/NotificationsNetworking.swift (in target 'KajHobe' from project 'KajHobe')
+	Building project KajHobe with scheme KajHobe
+(3 failures)

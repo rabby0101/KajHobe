@@ -1,0 +1,129 @@
+/* Main Navigation */
+"dashboard" = "Dashboard";
+"jobs" = "Jobs";
+"messages" = "Nachrichten";
+"notifications" = "Benachrichtigungen";
+"profile" = "Profil";
+
+/* Dashboard */
+"overview" = "Übersicht";
+"active_deals" = "Aktive Verträge";
+"completed" = "Abgeschlossen";
+"total_earned" = "Gesamteinnahmen";
+"total_spent" = "Gesamtausgaben";
+"rating" = "Bewertung";
+"pending_approval" = "Ausstehende Genehmigung";
+"recent_activity" = "Letzte Aktivität";
+"get_started_first_job" = "Beginnen Sie mit Ihrem ersten Job";
+"browse_available_jobs" = "Verfügbare Jobs durchsuchen";
+"post_a_job" = "Einen Job posten";
+
+/* Jobs */
+"search_jobs" = "Jobs suchen...";
+"all_categories" = "Alle Kategorien";
+"apply_filters" = "Filter anwenden";
+"clear_filters" = "Filter löschen";
+"budget" = "Budget";
+"location" = "Standort";
+"no_jobs_found" = "Keine Jobs gefunden";
+"try_different_filters" = "Versuchen Sie andere Suchfilter";
+"loading_jobs" = "Jobs werden geladen...";
+
+/* Messages */
+"conversations" = "Unterhaltungen";
+"no_conversations" = "Keine Unterhaltungen";
+"start_messaging" = "Beginnen Sie mit Nachrichten, indem Sie Interesse an Jobs zeigen";
+"type_message" = "Nachricht eingeben...";
+"send" = "Senden";
+"online" = "Online";
+"offline" = "Offline";
+"typing" = "schreibt...";
+
+/* Notifications */
+"your_activity" = "Ihre Aktivität";
+"response_time" = "Antwortzeit";
+"last_seen" = "Zuletzt gesehen";
+"no_notifications" = "Keine Benachrichtigungen";
+"notifications_description" = "Hier sehen Sie Interessensanfragen und Angebote";
+"get_started_notifications" = "Beginnen Sie, um Benachrichtigungen zu erhalten";
+"browse_jobs" = "Jobs durchsuchen";
+"job_interest_request" = "Job-Interessensanfrage";
+"new_offer" = "Neues Angebot";
+"completion_request" = "Abschlussanfrage";
+"accept" = "Akzeptieren";
+"decline" = "Ablehnen";
+
+/* Profile */
+"loading_profile" = "Profil wird geladen...";
+"full_name" = "Vollständiger Name";
+"account_type" = "Kontotyp";
+"service_provider" = "Dienstleister";
+"enable_service_provider" = "Aktivieren, um sich für Jobs zu bewerben und Dienstleistungen anzubieten";
+"bio" = "Biografie";
+"no_bio" = "Keine Biografie";
+"website" = "Website";
+"website_url" = "Website URL";
+"no_website" = "Keine Website";
+"service_provider_stats" = "Dienstleister-Statistiken";
+"reviews" = "Bewertungen";
+"account" = "Konto";
+"logout" = "Abmelden";
+"no_name" = "Kein Name";
+"no_email" = "Keine E-Mail";
+"client" = "Kunde";
+"edit" = "Bearbeiten";
+"save" = "Speichern";
+"cancel" = "Abbrechen";
+"no_profile_found" = "Kein Profil gefunden";
+"reload" = "Neu laden";
+
+/* Authentication */
+"sign_in" = "Anmelden";
+"sign_up" = "Registrieren";
+"email" = "E-Mail";
+"password" = "Passwort";
+"forgot_password" = "Passwort vergessen?";
+"create_account" = "Konto erstellen";
+"already_have_account" = "Haben Sie bereits ein Konto?";
+
+/* Common Actions */
+"ok" = "OK";
+"done" = "Fertig";
+"error" = "Fehler";
+"success" = "Erfolg";
+"loading" = "Wird geladen";
+"retry" = "Wiederholen";
+"delete" = "Löschen";
+"update" = "Aktualisieren";
+"create" = "Erstellen";
+"search" = "Suchen";
+"filter" = "Filter";
+"sort" = "Sortieren";
+
+/* Settings */
+"settings" = "Einstellungen";
+"language" = "Sprache";
+"select_language" = "Sprache auswählen";
+"app_language" = "App-Sprache";
+"language_changed" = "Sprache geändert";
+"language_change_message" = "Die App-Sprache wurde erfolgreich geändert";
+
+/* Time and Date */
+"unknown" = "Unbekannt";
+"just_now" = "Gerade eben";
+"minutes_ago" = "vor %d Minuten";
+"hours_ago" = "vor %d Stunden";
+"days_ago" = "vor %d Tagen";
+
+/* Status */
+"pending" = "Ausstehend";
+"approved" = "Genehmigt";
+"rejected" = "Abgelehnt";
+"in_progress" = "In Bearbeitung";
+"completed_status" = "Abgeschlossen";
+
+/* Error Messages */
+"failed_to_load" = "Laden fehlgeschlagen";
+"network_error" = "Netzwerkfehler";
+"try_again" = "Bitte versuchen Sie es erneut";
+"something_went_wrong" = "Etwas ist schief gelaufen";
