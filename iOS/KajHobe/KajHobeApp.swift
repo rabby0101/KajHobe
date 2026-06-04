@@ -41,12 +41,12 @@ struct AppEntryView: View {
         Group {
             if isLoading {
                 VStack(spacing: 20) {
-                    Text("KajHobe")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.white)
+                    Image("AppLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 100)
                         .pulse(color: .white, duration: 2.0)
-                    
+
                     // Simple loading indicator
                     HStack(spacing: 8) {
                         ForEach(0..<3) { index in
@@ -63,7 +63,7 @@ struct AppEntryView: View {
                                 )
                         }
                     }
-                    
+
                     Text("Checking authentication...")
                         .foregroundStyle(.white.opacity(0.8))
                 }

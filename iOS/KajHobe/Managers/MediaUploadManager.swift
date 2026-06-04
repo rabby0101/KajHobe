@@ -233,8 +233,8 @@ class MediaUploadManager: ObservableObject {
         try await supabase.storage
             .from(storageBucket)
             .upload(
-                path: path,
-                file: data,
+                path,
+                data: data,
                 options: .init(contentType: contentType)
             )
 
@@ -282,7 +282,7 @@ class MediaUploadManager: ObservableObject {
     // MARK: - Video Thumbnail Generation
 
     private func generateVideoThumbnail(from videoURL: URL, itemId: String) async throws -> String {
-        let asset = AVAsset(url: videoURL)
+        let asset = AVURLAsset(url: videoURL)
         let imageGenerator = AVAssetImageGenerator(asset: asset)
         imageGenerator.appliesPreferredTrackTransform = true
 

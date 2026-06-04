@@ -3,7 +3,19 @@
     "allow": [
       "Bash(xcodebuild:*)",
       "Bash(xcrun simctl install:*)",
-      "Bash(swift:*)"
+      "Bash(swift:*)",
+      "Bash(find /Users/skfazlarabby/Documents/GitHub/KajHobe -type d -name \"Android\" -o -name \"*android*\" -o -name \"*flutter*\" | head -20)",
+      "Bash(xargs -I {} basename {})",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "WebSearch",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(ls -la /Users/skfazlarabby/.claude/plans/ 2>/dev/null || echo \"plans dir does not exist yet\")",
+      "Bash(cd /Users/skfazlarabby/Documents/GitHub/KajHobe/iOS/KajHobe; echo \"=== getJobCount ===\"; grep -n \"func getJobCount\" JobsListView.swift; sed -n \"/func getJobCount/,/^    }/p\" JobsListView.swift | head -20; echo \"=== favorite_categories in models ===\"; grep -n \"favorite_categories\" DatabaseModels.swift; echo \"=== favorite categories selector view files ===\"; grep -rilE \"FavoriteCategoriesSelector|favorite_categories|updateFavorite\" *.swift; echo \"=== ProfileNetworking favorite ===\"; grep -n \"favorite\" ProfileNetworking.swift)",
+      "Bash(./gradlew installDebug)",
+      "Bash(/Users/skfazlarabby/Library/Android/sdk/platform-tools/adb shell *)",
+      "Bash(/Users/skfazlarabby/Library/Android/sdk/platform-tools/adb exec-out *)",
+      "Bash(git add *)",
+      "Bash(git restore *)"
     ]
   },
   "outputStyle": "Explanatory"
