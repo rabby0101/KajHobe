@@ -2,6 +2,7 @@ package com.kajhobe.app.di
 
 import com.kajhobe.app.data.cache.JobsCache
 import com.kajhobe.app.data.createKajHobeSupabaseClient
+import com.kajhobe.app.data.media.MediaUploadManager
 import com.kajhobe.app.data.repository.AuthRepository
 import com.kajhobe.app.data.repository.DealsRepository
 import com.kajhobe.app.data.repository.JobsRepository
@@ -34,6 +35,7 @@ val appModule = module {
     single<SupabaseClient> { createKajHobeSupabaseClient() }
     single { NavigationEventBus() }
     single { JobsCache(androidContext()) }
+    single { MediaUploadManager(androidContext(), get()) }
 
     // Repositories
     singleOf(::ProfileRepository)

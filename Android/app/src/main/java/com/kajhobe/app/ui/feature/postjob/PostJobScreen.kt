@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kajhobe.app.data.model.HardcodedServiceCategory
 import com.kajhobe.app.data.model.KhulnaLocations
+import com.kajhobe.app.ui.components.MediaPicker
 import com.kajhobe.app.ui.components.PremiumInputField
 import com.kajhobe.app.ui.components.PrimaryButton
 import com.kajhobe.app.ui.theme.KajHobeTheme
@@ -82,6 +83,22 @@ fun PostJobScreen(
             onSelect = { idx -> viewModel.onCategoryChange(HardcodedServiceCategory.categories[idx].name) },
         )
 
+        // Photos & Videos (optional) — mirrors iOS PostJobView media section.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Photos & Videos", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text("Optional", style = MaterialTheme.typography.bodySmall, color = KajHobeTheme.colors.textSecondary)
+        }
+        MediaPicker(
+            selected = state.selectedMedia,
+            maxSelections = MAX_MEDIA_SELECTIONS,
+            onAdd = viewModel::addMedia,
+            onRemove = viewModel::removeMedia,
+        )
+
         LabeledDropdown(
             label = "Location",
             options = KhulnaLocations.all,
@@ -122,7 +139,11 @@ fun PostJobScreen(
 
         Spacer(Modifier.height(KajHobeTheme.spacing.sm))
         PrimaryButton(
-            text = if (state.isSubmitting) "Posting…" else "Post Job",
+            text = when {
+                state.isUploadingMedia -> "Uploading media…"
+                state.isSubmitting -> "Posting…"
+                else -> "Post Job"
+            },
             onClick = viewModel::submit,
             enabled = state.isValid && !state.isSubmitting,
         )
