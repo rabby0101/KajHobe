@@ -131,7 +131,7 @@ fun HomeScreen(
                             subtitle = "Opportunities in your area",
                             jobs = state.jobsNearYou,
                             cardWidth = 280.dp,
-                            isNew = state::isNew,
+                            status = state::statusOf,
                             onViewAll = { onViewAll(JobListKind.NEAR_YOU) },
                             onJobClick = onJobClick,
                         )
@@ -143,7 +143,7 @@ fun HomeScreen(
                             subtitle = "High-value and urgent opportunities",
                             jobs = state.featuredJobs,
                             cardWidth = 320.dp,
-                            isNew = state::isNew,
+                            status = state::statusOf,
                             onViewAll = { onViewAll(JobListKind.FEATURED) },
                             onJobClick = onJobClick,
                         )
@@ -155,7 +155,7 @@ fun HomeScreen(
                             subtitle = "Latest opportunities",
                             jobs = state.recentJobs,
                             cardWidth = 300.dp,
-                            isNew = state::isNew,
+                            status = state::statusOf,
                             onViewAll = { onViewAll(JobListKind.RECENT) },
                             onJobClick = onJobClick,
                         )

@@ -98,7 +98,7 @@ fun AllJobsScreen(
                     verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
                 ) {
                     items(visible, key = { it.id }) { job ->
-                        JobCard(job = job, onClick = { onJobClick(job.id) }, isNew = state.isNew(job))
+                        JobCard(job = job, onClick = { onJobClick(job.id) }, status = state.statusOf(job))
                     }
                 }
             }

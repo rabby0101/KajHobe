@@ -180,6 +180,23 @@ class JobsRepository(
         }.getOrDefault(emptySet())
     }
 
+    /**
+     * Job ids the current user has shown interest in (iOS job_interests, provider side).
+     * Drives the "Interested" status pill. Empty if signed out / on error.
+     */
+    suspend fun fetchInterestedJobIds(): Set<String> {
+        val uid = currentUserId ?: return emptySet()
+        return runCatching {
+            postgrest.from("job_interests")
+                .select(Columns.list("job_id")) {
+                    filter { eq("provider_id", uid) }
+                }
+                .decodeList<JobIdRow>()
+                .map { it.job_id }
+                .toSet()
+        }.getOrDefault(emptySet())
+    }
+
     @Serializable
     private data class JobViewInsert(
         val job_id: String,
@@ -222,12 +239,13 @@ class JobsRepository(
     /** In-memory snapshot, or read from disk (DataStore) — for cold-start seeding. */
     suspend fun warmCache(): CachedJobs? = cache.load()
 
-    /** Fetch jobs + viewed ids in one go and persist to cache. */
+    /** Fetch jobs + viewed ids + interested ids in one go and persist to cache. */
     suspend fun loadJobsAndViews(): CachedJobs {
         val jobs = fetchJobs()
         val viewed = fetchViewedJobIds()
-        cache.save(jobs, viewed)
-        return CachedJobs(jobs, viewed)
+        val interested = fetchInterestedJobIds()
+        cache.save(jobs, viewed, interested)
+        return CachedJobs(jobs, viewed, interested)
     }
 
     companion object {

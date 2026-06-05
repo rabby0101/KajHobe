@@ -27,6 +27,7 @@ import com.kajhobe.app.data.model.HardcodedServiceCategory
 import com.kajhobe.app.data.model.Job
 import com.kajhobe.app.ui.components.PremiumCard
 import com.kajhobe.app.ui.feature.jobs.JobCard
+import com.kajhobe.app.ui.feature.jobs.JobCardStatus
 import com.kajhobe.app.ui.theme.KajHobeTheme
 
 /** Section header: title + subtitle on the left, an optional action (e.g. "View All"/"Edit") right. */
@@ -140,7 +141,7 @@ fun JobCarousel(
     subtitle: String?,
     jobs: List<Job>,
     cardWidth: Dp,
-    isNew: (Job) -> Boolean,
+    status: (Job) -> JobCardStatus,
     onViewAll: () -> Unit,
     onJobClick: (String) -> Unit,
 ) {
@@ -154,7 +155,7 @@ fun JobCarousel(
                 JobCard(
                     job = job,
                     onClick = { onJobClick(job.id) },
-                    isNew = isNew(job),
+                    status = status(job),
                     modifier = Modifier.width(cardWidth),
                 )
             }

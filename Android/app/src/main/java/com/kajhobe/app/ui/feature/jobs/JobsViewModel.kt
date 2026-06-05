@@ -19,6 +19,7 @@ data class JobsUiState(
     val isRefreshing: Boolean = false,
     val jobs: List<Job> = emptyList(),
     val viewedJobIds: Set<String> = emptySet(),
+    val interestedJobIds: Set<String> = emptySet(),
     val currentUserId: String? = null,
     val selectedCategory: String? = null,
     val searchQuery: String = "",
@@ -37,6 +38,14 @@ data class JobsUiState(
     /** A job is "New" if the user hasn't opened it yet and didn't post it. */
     fun isNew(job: Job): Boolean =
         job.id !in viewedJobIds && job.client_id != currentUserId
+
+    /** Status pill for a card — mirrors iOS JobCardView (New/Viewed/Interested/Your Job). */
+    fun statusOf(job: Job): JobCardStatus = when {
+        job.client_id == currentUserId -> JobCardStatus.OWN
+        job.id in interestedJobIds -> JobCardStatus.INTERESTED
+        job.id in viewedJobIds -> JobCardStatus.VIEWED
+        else -> JobCardStatus.NEW
+    }
 }
 
 class JobsViewModel(
@@ -72,6 +81,7 @@ class JobsViewModel(
                 isLoading = false,
                 jobs = snapshot.jobs,
                 viewedJobIds = snapshot.viewedIds,
+                interestedJobIds = snapshot.interestedIds,
                 currentUserId = jobsRepository.currentUserIdOrNull(),
             )
         }
@@ -99,6 +109,7 @@ class JobsViewModel(
                             isRefreshing = false,
                             jobs = snapshot.jobs,
                             viewedJobIds = snapshot.viewedIds,
+                            interestedJobIds = snapshot.interestedIds,
                             currentUserId = jobsRepository.currentUserIdOrNull(),
                             errorMessage = null,
                         )

@@ -98,7 +98,7 @@ fun JobsListScreen(
                             JobCard(
                                 job = job,
                                 onClick = { onJobClick(job.id) },
-                                isNew = state.isNew(job),
+                                status = state.statusOf(job),
                             )
                         }
                     }

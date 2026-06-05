@@ -7,6 +7,7 @@ import com.kajhobe.app.data.model.HardcodedServiceCategory
 import com.kajhobe.app.data.model.Job
 import com.kajhobe.app.data.repository.JobsRepository
 import com.kajhobe.app.data.repository.ProfileRepository
+import com.kajhobe.app.ui.feature.jobs.JobCardStatus
 import com.kajhobe.app.ui.feature.jobs.LoadMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,7 @@ data class HomeUiState(
     val hasData: Boolean = false,
     val jobs: List<Job> = emptyList(),
     val viewedJobIds: Set<String> = emptySet(),
+    val interestedJobIds: Set<String> = emptySet(),
     val currentUserId: String? = null,
     val favoriteCategoryNames: List<String> = emptyList(),
     val userLocation: String = DEFAULT_LOCATION,
@@ -56,6 +58,14 @@ data class HomeUiState(
         jobs.count { it.category.contains(categoryName, ignoreCase = true) }
 
     fun isNew(job: Job): Boolean = job.id !in viewedJobIds && job.client_id != currentUserId
+
+    /** Status pill for a card — mirrors iOS JobCardView (New/Viewed/Interested/Your Job). */
+    fun statusOf(job: Job): JobCardStatus = when {
+        job.client_id == currentUserId -> JobCardStatus.OWN
+        job.id in interestedJobIds -> JobCardStatus.INTERESTED
+        job.id in viewedJobIds -> JobCardStatus.VIEWED
+        else -> JobCardStatus.NEW
+    }
 
     companion object {
         const val DEFAULT_LOCATION = "Khulna"
@@ -97,6 +107,7 @@ class HomeViewModel(
                 hasData = true,
                 jobs = snapshot.jobs,
                 viewedJobIds = snapshot.viewedIds,
+                interestedJobIds = snapshot.interestedIds,
                 currentUserId = jobsRepository.currentUserIdOrNull(),
             )
         }
@@ -121,6 +132,7 @@ class HomeViewModel(
                             hasData = true,
                             jobs = snapshot.jobs,
                             viewedJobIds = snapshot.viewedIds,
+                            interestedJobIds = snapshot.interestedIds,
                             currentUserId = jobsRepository.currentUserIdOrNull(),
                             errorMessage = null,
                         )

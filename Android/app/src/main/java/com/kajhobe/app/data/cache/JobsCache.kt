@@ -11,8 +11,15 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.builtins.serializer
 
-/** Snapshot of the jobs list plus the set of job ids the user has already opened. */
-data class CachedJobs(val jobs: List<Job>, val viewedIds: Set<String>)
+/**
+ * Snapshot of the jobs list plus the sets of job ids the user has already opened
+ * ([viewedIds]) and shown interest in ([interestedIds]) — drives the card status pill.
+ */
+data class CachedJobs(
+    val jobs: List<Job>,
+    val viewedIds: Set<String>,
+    val interestedIds: Set<String> = emptySet(),
+)
 
 private val Context.jobsDataStore by preferencesDataStore("jobs_cache")
 
@@ -28,6 +35,7 @@ class JobsCache(private val context: Context) {
 
     private val jobsKey = stringPreferencesKey("jobs_json")
     private val viewedKey = stringPreferencesKey("viewed_ids_json")
+    private val interestedKey = stringPreferencesKey("interested_ids_json")
 
     /** Synchronous in-memory snapshot — null on a cold start (use [load] to read disk). */
     fun peek(): CachedJobs? = memory
@@ -39,23 +47,29 @@ class JobsCache(private val context: Context) {
             val prefs = context.jobsDataStore.data.first()
             val jobsJson = prefs[jobsKey] ?: return null
             val viewedJson = prefs[viewedKey]
+            val interestedJson = prefs[interestedKey]
             val jobs = AppJson.decodeFromString(ListSerializer(Job.serializer()), jobsJson)
             val viewed = viewedJson
                 ?.let { AppJson.decodeFromString(SetSerializer(String.serializer()), it) }
                 .orEmpty()
-            CachedJobs(jobs, viewed).also { memory = it }
+            val interested = interestedJson
+                ?.let { AppJson.decodeFromString(SetSerializer(String.serializer()), it) }
+                .orEmpty()
+            CachedJobs(jobs, viewed, interested).also { memory = it }
         }.getOrNull()
     }
 
     /** Update the in-memory mirror and persist to disk. */
-    suspend fun save(jobs: List<Job>, viewedIds: Set<String>) {
-        memory = CachedJobs(jobs, viewedIds)
+    suspend fun save(jobs: List<Job>, viewedIds: Set<String>, interestedIds: Set<String>) {
+        memory = CachedJobs(jobs, viewedIds, interestedIds)
         runCatching {
             val jobsJson = AppJson.encodeToString(ListSerializer(Job.serializer()), jobs)
             val viewedJson = AppJson.encodeToString(SetSerializer(String.serializer()), viewedIds)
+            val interestedJson = AppJson.encodeToString(SetSerializer(String.serializer()), interestedIds)
             context.jobsDataStore.edit {
                 it[jobsKey] = jobsJson
                 it[viewedKey] = viewedJson
+                it[interestedKey] = interestedJson
             }
         }
     }

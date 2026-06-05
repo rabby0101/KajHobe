@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kajhobe.app.data.model.Job
 import com.kajhobe.app.data.repository.JobsRepository
 import com.kajhobe.app.data.repository.ProfileRepository
+import com.kajhobe.app.ui.feature.jobs.JobCardStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,11 +16,20 @@ data class AllJobsUiState(
     val isLoading: Boolean = true,
     val jobs: List<Job> = emptyList(),
     val viewedJobIds: Set<String> = emptySet(),
+    val interestedJobIds: Set<String> = emptySet(),
     val currentUserId: String? = null,
     val userLocation: String = HomeUiState.DEFAULT_LOCATION,
     val query: String = "",
 ) {
     fun isNew(job: Job): Boolean = job.id !in viewedJobIds && job.client_id != currentUserId
+
+    /** Status pill for a card — mirrors iOS JobCardView (New/Viewed/Interested/Your Job). */
+    fun statusOf(job: Job): JobCardStatus = when {
+        job.client_id == currentUserId -> JobCardStatus.OWN
+        job.id in interestedJobIds -> JobCardStatus.INTERESTED
+        job.id in viewedJobIds -> JobCardStatus.VIEWED
+        else -> JobCardStatus.NEW
+    }
 }
 
 /**
@@ -38,7 +48,7 @@ class AllJobsViewModel(
     init {
         jobsRepository.cachedSnapshot()?.let {
             _uiState.update { s ->
-                s.copy(isLoading = false, jobs = it.jobs, viewedJobIds = it.viewedIds, currentUserId = jobsRepository.currentUserIdOrNull())
+                s.copy(isLoading = false, jobs = it.jobs, viewedJobIds = it.viewedIds, interestedJobIds = it.interestedIds, currentUserId = jobsRepository.currentUserIdOrNull())
             }
         }
         load()
@@ -60,6 +70,7 @@ class AllJobsViewModel(
                             isLoading = false,
                             jobs = snap.jobs,
                             viewedJobIds = snap.viewedIds,
+                            interestedJobIds = snap.interestedIds,
                             currentUserId = jobsRepository.currentUserIdOrNull(),
                         )
                     }
