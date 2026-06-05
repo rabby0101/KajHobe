@@ -2,6 +2,7 @@ package com.kajhobe.app.ui.feature.messages
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kajhobe.app.data.media.MediaUploadManager
 import com.kajhobe.app.data.model.ChatMessage
 import com.kajhobe.app.data.repository.MessagesRepository
 import io.github.jan.supabase.realtime.RealtimeChannel
@@ -13,6 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 data class ChatUiState(
     val isLoading: Boolean = true,
@@ -23,10 +27,28 @@ data class ChatUiState(
     val isSending: Boolean = false,
     val currentUserId: String? = null,
     val errorMessage: String? = null,
-)
+    // Deal + photo state
+    val clientId: String? = null,
+    val providerId: String? = null,
+    val jobId: String? = null,
+    val offerCount: Int = 0,
+    val hasUnansweredOffer: Boolean = false,
+    val existingDealExists: Boolean = false,
+    val isSendingDealOffer: Boolean = false,
+    val isUploadingImage: Boolean = false,
+    // offerId → "pending" | "accepted" | "rejected", derived from deal_response messages.
+    val dealStatuses: Map<String, String> = emptyMap(),
+) {
+    /** Only the service provider may send deal offers (iOS rule). */
+    val isProvider: Boolean get() = currentUserId != null && currentUserId == providerId
+
+    /** iOS canSendOffer: no existing deal, < 2 offers, no unanswered offer. */
+    val canSendOffer: Boolean get() = !existingDealExists && offerCount < 2 && !hasUnansweredOffer
+}
 
 class ChatViewModel(
     private val repository: MessagesRepository,
+    private val mediaUploadManager: MediaUploadManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -48,12 +70,20 @@ class ChatViewModel(
             runCatching { repository.fetchConversationHeader(conversationId) }.getOrNull()?.let { h ->
                 _uiState.update { it.copy(title = h.otherPartyName ?: "Chat", subtitle = h.jobTitle) }
             }
+            // Conversation meta (role + ids for the deal flow).
+            runCatching { repository.fetchConversation(conversationId) }.getOrNull()?.let { c ->
+                _uiState.update { it.copy(clientId = c.client_id, providerId = c.provider_id, jobId = c.job_id) }
+            }
             // Initial messages.
             runCatching { repository.fetchMessages(conversationId) }
-                .onSuccess { msgs -> _uiState.update { it.copy(isLoading = false, messages = msgs) } }
+                .onSuccess { msgs ->
+                    _uiState.update { it.copy(isLoading = false, messages = msgs, dealStatuses = dealStatusesFrom(msgs)) }
+                }
                 .onFailure { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
             // Mark received messages read so the conversation-list unread badge clears.
             runCatching { repository.markConversationRead(conversationId) }
+            // Offer status (gates the deal button).
+            refreshOfferStatus()
         }
 
         subscribe(conversationId)
@@ -73,7 +103,43 @@ class ChatViewModel(
     private fun appendIfNew(msg: ChatMessage) {
         _uiState.update { state ->
             if (state.messages.any { it.id == msg.id }) state
-            else state.copy(messages = state.messages + msg)
+            else {
+                val merged = state.messages + msg
+                state.copy(messages = merged, dealStatuses = dealStatusesFrom(merged))
+            }
+        }
+        // A deal response changes whether the provider can send another offer.
+        if (msg.message_type == "deal_response") {
+            viewModelScope.launch { refreshOfferStatus() }
+        }
+    }
+
+    /** Build offerId → status map from the conversation's deal_response messages. */
+    private fun dealStatusesFrom(messages: List<ChatMessage>): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        for (m in messages) {
+            if (m.message_type != "deal_response") continue
+            val obj = m.negotiation_data?.jsonObject ?: continue
+            val offerId = obj["original_deal_offer_id"]?.jsonPrimitive?.contentOrNull ?: continue
+            val response = obj["response"]?.jsonPrimitive?.contentOrNull ?: continue
+            map[offerId] = response
+        }
+        return map
+    }
+
+    private suspend fun refreshOfferStatus() {
+        val convId = conversationId ?: return
+        val state = _uiState.value
+        val providerId = state.providerId ?: return
+        val jobId = state.jobId
+        val status = runCatching { repository.getOfferStatus(convId, providerId) }.getOrNull()
+        val dealExists = jobId?.let { runCatching { repository.dealExistsForJob(it) }.getOrDefault(false) } ?: false
+        _uiState.update {
+            it.copy(
+                offerCount = status?.totalOffers ?: it.offerCount,
+                hasUnansweredOffer = status?.hasUnansweredOffer ?: it.hasUnansweredOffer,
+                existingDealExists = dealExists,
+            )
         }
     }
 
@@ -92,6 +158,58 @@ class ChatViewModel(
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(isSending = false, draft = text, errorMessage = e.message ?: "Send failed") }
+                }
+        }
+    }
+
+    fun sendDealOffer(amount: Int, terms: String?, timeline: String?, additionalMessage: String?) {
+        val convId = conversationId ?: return
+        val s = _uiState.value
+        val providerId = s.providerId ?: return
+        val clientId = s.clientId ?: return
+        val jobId = s.jobId ?: return
+        if (s.isSendingDealOffer || !s.canSendOffer) return
+        _uiState.update { it.copy(isSendingDealOffer = true, errorMessage = null) }
+        viewModelScope.launch {
+            runCatching {
+                repository.sendDealOffer(convId, providerId, clientId, jobId, amount, terms, timeline, additionalMessage)
+            }
+                .onSuccess {
+                    refreshOfferStatus()
+                    _uiState.update { it.copy(isSendingDealOffer = false) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isSendingDealOffer = false, errorMessage = e.message ?: "Failed to send deal offer") }
+                }
+        }
+    }
+
+    fun respondToDeal(message: ChatMessage, accept: Boolean) {
+        val convId = conversationId ?: return
+        val offerId = message.negotiation_data?.jsonObject?.get("deal_offer_id")?.jsonPrimitive?.contentOrNull ?: return
+        viewModelScope.launch {
+            runCatching { repository.respondToDealOffer(offerId, convId, accept) }
+                .onSuccess { refreshOfferStatus() }
+                .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message ?: "Failed to respond to deal") } }
+        }
+    }
+
+    fun sendImage(uri: String) {
+        val convId = conversationId ?: return
+        if (_uiState.value.isUploadingImage) return
+        _uiState.update { it.copy(isUploadingImage = true, errorMessage = null) }
+        viewModelScope.launch {
+            runCatching {
+                val url = mediaUploadManager.uploadChatImage(uri, convId)
+                    ?: error("Image upload failed")
+                repository.sendImageMessage(convId, url)
+            }
+                .onSuccess { sent ->
+                    appendIfNew(sent)
+                    _uiState.update { it.copy(isUploadingImage = false) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isUploadingImage = false, errorMessage = e.message ?: "Failed to send photo") }
                 }
         }
     }

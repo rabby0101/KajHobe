@@ -49,6 +49,22 @@ class MediaUploadManager(
         }.getOrNull()
     }
 
+    /**
+     * Upload a chat photo to the `chat-images` bucket and return its public URL, or null on
+     * failure. Direct port of iOS `MessagesNetworking.sendImageMessage`: compress to max
+     * 1200px / JPEG 0.7, path `messages/{conversationId}_{ts}_image_{uuid}.jpg`.
+     */
+    suspend fun uploadChatImage(uri: String, conversationId: String): String? = withContext(Dispatchers.IO) {
+        runCatching {
+            val bytes = compressImage(Uri.parse(uri), CHAT_IMAGE_DIMENSION, CHAT_IMAGE_QUALITY) ?: return@runCatching null
+            val chatBucket = client.storage.from(CHAT_BUCKET)
+            val ts = System.currentTimeMillis() / 1000
+            val path = "messages/${conversationId}_${ts}_image_${UUID.randomUUID()}.jpg"
+            chatBucket.upload(path, bytes) { contentType = ContentType.Image.JPEG }
+            chatBucket.publicUrl(path)
+        }.getOrNull()
+    }
+
     private suspend fun uploadImage(uri: Uri): MediaItem? {
         val bytes = compressImage(uri) ?: return null
         val path = "jobs/${UUID.randomUUID()}.jpg"
@@ -77,13 +93,17 @@ class MediaUploadManager(
         )
     }
 
-    private fun compressImage(uri: Uri): ByteArray? {
+    private fun compressImage(
+        uri: Uri,
+        maxDimension: Int = MAX_IMAGE_DIMENSION,
+        quality: Int = 80,
+    ): ByteArray? {
         val original = context.contentResolver.openInputStream(uri)?.use {
             BitmapFactory.decodeStream(it)
         } ?: return null
-        val scaled = scaleDown(original, MAX_IMAGE_DIMENSION)
+        val scaled = scaleDown(original, maxDimension)
         val out = ByteArrayOutputStream()
-        scaled.compress(Bitmap.CompressFormat.JPEG, 80, out)
+        scaled.compress(Bitmap.CompressFormat.JPEG, quality, out)
         if (scaled !== original) scaled.recycle()
         original.recycle()
         return out.toByteArray()
@@ -117,5 +137,9 @@ class MediaUploadManager(
         const val BUCKET = "job-media"
         const val MAX_IMAGE_DIMENSION = 1920
         const val MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50 MB, matches iOS
+        // Chat photos (iOS MessagesNetworking.sendImageMessage): smaller + lighter.
+        const val CHAT_BUCKET = "chat-images"
+        const val CHAT_IMAGE_DIMENSION = 1200
+        const val CHAT_IMAGE_QUALITY = 70
     }
 }
