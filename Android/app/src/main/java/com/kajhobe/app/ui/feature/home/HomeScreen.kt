@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -32,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -93,15 +93,9 @@ fun HomeScreen(
             Image(
                 painter = painterResource(R.drawable.app_logo),
                 contentDescription = "KajHobe",
-                modifier = Modifier.height(36.dp),
+                modifier = Modifier.height(34.dp),
             )
-            Text(
-                "KajHobe",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f),
-            )
+            Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = onOpenSearch) {
                 Icon(Icons.Filled.Search, contentDescription = "Search")
             }

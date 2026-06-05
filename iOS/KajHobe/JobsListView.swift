@@ -16,6 +16,9 @@ struct JobsListView: View {
     @State private var userProfile: Profile?
     @State private var showingFavoriteCategoriesSelector = false
     @State private var showingSearchSheet = false
+    @State private var didCheckCache = false
+    // Seeded from UserDefaults so favorites never flash "first 4 defaults" on cold start.
+    @State private var cachedFavoriteCategories: [String]? = JobsCache.shared.peekFavoriteCategories()
     
     // Use hardcoded categories for better performance
     private let serviceCategories = HardcodedServiceCategory.categories
@@ -84,17 +87,27 @@ struct JobsListView: View {
         return Array(serviceCategories.prefix(4))
     }
     
-    // Get favorite categories from user profile
+    // Get favorite categories from user profile.
+    // Priority: live profile → cached names from last session (UserDefaults) → first 4 defaults.
+    // This means the favorites grid never shows the wrong categories during load — it shows
+    // the same categories the user saw last time, with no flash.
     var favoriteCategories: [HardcodedServiceCategory] {
-        guard let profile = userProfile, 
-              let favCategories = profile.favorite_categories,
-              !favCategories.isEmpty else {
-            return Array(serviceCategories.prefix(4)) // Default first 4 categories
+        // 1. Use the live profile if available.
+        if let profile = userProfile,
+           let favCategories = profile.favorite_categories,
+           !favCategories.isEmpty {
+            return favCategories.compactMap { name in
+                serviceCategories.first { $0.name == name }
+            }
         }
-        
-        return favCategories.compactMap { categoryName in
-            serviceCategories.first { $0.name == categoryName }
+        // 2. Fall back to the cached names from the previous session (no flash on cold start).
+        if let cached = cachedFavoriteCategories, !cached.isEmpty {
+            return cached.compactMap { name in
+                serviceCategories.first { $0.name == name }
+            }
         }
+        // 3. True first launch: use the first 4 hardcoded categories.
+        return Array(serviceCategories.prefix(4))
     }
     
     // Get jobs for favorite categories
@@ -398,7 +411,11 @@ struct JobsListView: View {
                     ScrollView {
                         VStack(spacing: 0) {
                             // Main Content
-                            if searchText.isEmpty {
+                            if jobs.isEmpty && (isLoading || !didCheckCache) {
+                                // First cold start with no cached jobs: show a skeleton
+                                // that mirrors the home layout until the first data arrives.
+                                JobsHomeSkeleton()
+                            } else if searchText.isEmpty {
                                 VStack(spacing: 24) {
                                     // Favorite Categories Section
                                     favoriteCategoriesSection
@@ -450,8 +467,8 @@ struct JobsListView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
                 
-                // Empty state with better UX
-                if !isLoading && jobs.isEmpty {
+                // Empty state with better UX (only after we've checked the cache and finished loading)
+                if didCheckCache && !isLoading && jobs.isEmpty {
                     VStack(spacing: 24) {
                         Image(systemName: "briefcase.badge.plus")
                             .font(.system(size: 60))
@@ -511,8 +528,26 @@ struct JobsListView: View {
                 }
             }
             .task {
-                await loadJobs()
-                await loadUserProfile()
+                // Seed the jobs list instantly (in-memory → disk) so the home paints
+                // immediately. favorite_categories are already seeded from UserDefaults
+                // via @State initializer, so the favorites grid shows the right tiles
+                // from the very first frame — no flash.
+                if jobs.isEmpty {
+                    if let cached = JobsCache.shared.peek() {
+                        jobs = cached
+                    } else if let disk = await JobsCache.shared.load() {
+                        jobs = disk
+                    }
+                }
+                didCheckCache = true
+
+                // Run both network fetches in parallel so jobs and profile land together
+                // — no second render of the favorites grid when the profile finally arrives.
+                let seeded = !jobs.isEmpty
+                async let jobsLoad: Void = loadJobs(silent: seeded)
+                async let profileLoad: Void = loadUserProfile()
+                _ = await (jobsLoad, profileLoad)
+
                 await setupRealtimeSubscription()
             }
             .refreshable {
@@ -529,7 +564,9 @@ struct JobsListView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("RefreshJobs"))) { _ in
                 Task {
-                    await loadJobs(forceRefresh: true)
+                    // Refresh silently if we already have data (e.g. after posting a job).
+                    // Only show a spinner if the list is empty (first load fallback).
+                    await loadJobs(forceRefresh: true, silent: !jobs.isEmpty)
                 }
             }
             .sheet(isPresented: $showingAllCategories) {
@@ -589,46 +626,61 @@ struct JobsListView: View {
     }
     
     @MainActor
-    func loadJobs(forceRefresh: Bool = false) async {
-        // For real-time updates, don't block concurrent loads
-        if jobs.isEmpty || forceRefresh {
+    func loadJobs(forceRefresh: Bool = false, silent: Bool = false) async {
+        // Silent loads (cache-seeded first load, tab resume, realtime) never show a
+        // spinner/skeleton. Otherwise show the loading state when there's nothing yet
+        // or the user explicitly asked to refresh.
+        if !silent && (jobs.isEmpty || forceRefresh) {
             isLoading = true
         }
         error = nil
-        
+
         do {
             // First test database connection
             try await Networking.shared.testDatabaseConnection()
             let newJobs = try await Networking.shared.fetchJobs(forceRefresh: forceRefresh)
-            
+
             // Add smooth animation for updates
             withAnimation(.easeInOut(duration: 0.3)) {
                 jobs = newJobs
             }
-            
+
+            // Persist to the cache so the next cold start paints instantly.
+            JobsCache.shared.save(newJobs)
+
             // print("📋 Jobs data refreshed successfully - \(jobs.count) jobs")
         } catch {
             self.error = error
             // print("❌ Error in loadJobs: \(error)")
         }
-        
+
         isLoading = false
     }
     
     @MainActor
     func loadUserProfile() async {
         do {
-            userProfile = try await ProfileNetworking.shared.ensureUserProfile()
+            let profile = try await ProfileNetworking.shared.ensureUserProfile()
+            userProfile = profile
+            // Persist favorites so the next cold start shows them immediately
+            // (before the network returns) — eliminates the default-4 → real-favorites flash.
+            if let favs = profile.favorite_categories, !favs.isEmpty {
+                cachedFavoriteCategories = favs
+                JobsCache.shared.saveFavoriteCategories(favs)
+            }
         } catch {
             print("❌ Error loading user profile: \(error)")
         }
     }
-    
+
     @MainActor
     func updateFavoriteCategories(_ categories: [String]) async {
         do {
             let updatedProfile = try await ProfileNetworking.shared.updateFavoriteCategories(categories)
             userProfile = updatedProfile
+            // Keep the cache in sync when the user edits their favorites.
+            cachedFavoriteCategories = categories
+            JobsCache.shared.saveFavoriteCategories(categories)
             showingFavoriteCategoriesSelector = false
         } catch {
             print("❌ Error updating favorite categories: \(error)")
@@ -658,8 +710,9 @@ struct JobsListView: View {
                     // Add haptic feedback for new jobs
                     let impactFeedback = UIImpactFeedbackGenerator(style: .light)
                     impactFeedback.impactOccurred()
-                    
-                    await self.loadJobs(forceRefresh: true)
+
+                    // Refresh silently — realtime updates should not flash a spinner.
+                    await self.loadJobs(forceRefresh: true, silent: true)
                 }
             }
             

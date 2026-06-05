@@ -13,7 +13,7 @@ struct AuthView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Logo header section
-            Image("AppLogo")
+            Image("AppLogoOnDark")
                 .resizable()
                 .scaledToFit()
                 .frame(height: 80)

@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "Gemini_Generated_Image_lg06ynlg06ynlg06 (1).png",
+      "filename" : "AppIcon-any.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Gemini_Generated_Image_lg06ynlg06ynlg06 (1) 1.png",
+      "filename" : "AppIcon-dark.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "Gemini_Generated_Image_lg06ynlg06ynlg06 (1) 2.png",
+      "filename" : "AppIcon-tinted.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

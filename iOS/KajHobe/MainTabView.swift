@@ -64,7 +64,11 @@ struct MainTabView: View {
         }
         .onChange(of: selectedTab) { _, newValue in
             if newValue == 0 { // Jobs tab
-                NotificationCenter.default.post(name: NSNotification.Name("RefreshJobs"), object: nil)
+                // Do NOT post RefreshJobs here — the realtime subscription + .task already
+                // keep the list fresh. Posting it on every tab switch caused a forced
+                // spinner reload every time the user returned to the home tab.
+                // Other screens (e.g. PostJobView) can still post RefreshJobs explicitly
+                // when they need to force a reload after a mutation.
             } else if newValue == 1 { // Messages tab
                 // Messaging disabled - no refresh needed
             } else if newValue == 2 { // Post Job tab

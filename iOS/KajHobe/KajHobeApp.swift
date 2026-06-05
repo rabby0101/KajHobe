@@ -41,7 +41,7 @@ struct AppEntryView: View {
         Group {
             if isLoading {
                 VStack(spacing: 20) {
-                    Image("AppLogo")
+                    Image("AppLogoOnDark")
                         .resizable()
                         .scaledToFit()
                         .frame(height: 100)
