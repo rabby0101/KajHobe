@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kajhobe.app.data.model.HardcodedServiceCategory
+import com.kajhobe.app.ui.components.MediaCarouselView
 import com.kajhobe.app.ui.components.PremiumCard
 import com.kajhobe.app.ui.components.PremiumLoadingView
 import com.kajhobe.app.ui.components.PrimaryButton
@@ -111,9 +112,14 @@ fun JobDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
-                        .verticalScroll(rememberScrollState())
-                        .padding(KajHobeTheme.spacing.lg),
+                        .verticalScroll(rememberScrollState()),
                 ) {
+                    // Media carousel (full-bleed, if available) — iOS JobDetailView top section.
+                    if (!job.media_urls.isNullOrEmpty()) {
+                        MediaCarouselView(mediaItems = job.media_urls!!, height = 300.dp)
+                    }
+
+                    Column(modifier = Modifier.padding(KajHobeTheme.spacing.lg)) {
                     val icon = HardcodedServiceCategory.byName(job.category)?.icon ?: "🔧"
                     Text("$icon  ${job.category}", style = MaterialTheme.typography.labelLarge, color = KajHobeTheme.colors.textSecondary)
                     Spacer(Modifier.height(KajHobeTheme.spacing.sm))
@@ -168,6 +174,7 @@ fun JobDetailScreen(
                         Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
                     }
                     Spacer(Modifier.height(KajHobeTheme.spacing.xl))
+                    }
                 }
             }
         }
