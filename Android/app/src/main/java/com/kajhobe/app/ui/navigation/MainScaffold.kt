@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -11,26 +13,31 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kajhobe.app.data.notifications.NotificationBadgeManager
 import com.kajhobe.app.ui.components.PrimaryButton
 import com.kajhobe.app.ui.feature.home.AllJobsScreen
 import com.kajhobe.app.ui.feature.home.HomeScreen
 import com.kajhobe.app.ui.feature.home.JobListKind
 import com.kajhobe.app.ui.feature.jobs.JobDetailScreen
 import com.kajhobe.app.ui.feature.dashboard.DashboardScreen
+import com.kajhobe.app.ui.feature.dashboard.DealDetailScreen
 import com.kajhobe.app.ui.feature.messages.ChatScreen
 import com.kajhobe.app.ui.feature.messages.ConversationsScreen
 import com.kajhobe.app.ui.feature.notifications.NotificationsScreen
 import com.kajhobe.app.ui.feature.postjob.PostJobScreen
 import com.kajhobe.app.ui.theme.KajHobeTheme
+import org.koin.compose.koinInject
 
 /**
  * Authenticated shell: bottom navigation over a nested NavHost (iOS MainTabView).
@@ -39,6 +46,10 @@ import com.kajhobe.app.ui.theme.KajHobeTheme
 @Composable
 fun MainScaffold(onSignOut: () -> Unit) {
     val navController = rememberNavController()
+    val badgeManager = koinInject<NotificationBadgeManager>()
+    val unreadCount by badgeManager.unreadCount.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) { badgeManager.refreshCounts() }
 
     Scaffold(
         bottomBar = {
@@ -47,6 +58,7 @@ fun MainScaffold(onSignOut: () -> Unit) {
                 val currentDestination = navBackStackEntry?.destination
                 TopLevelDestination.entries.forEach { dest ->
                     val selected = currentDestination?.hierarchy?.any { it.route == dest.route } == true
+                    val showBadge = dest == TopLevelDestination.NOTIFICATIONS && unreadCount > 0
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
@@ -56,7 +68,15 @@ fun MainScaffold(onSignOut: () -> Unit) {
                                 restoreState = true
                             }
                         },
-                        icon = { Icon(dest.icon, contentDescription = dest.label) },
+                        icon = {
+                            if (showBadge) {
+                                BadgedBox(badge = { Badge { Text(if (unreadCount > 99) "99+" else "$unreadCount") } }) {
+                                    Icon(dest.icon, contentDescription = dest.label)
+                                }
+                            } else {
+                                Icon(dest.icon, contentDescription = dest.label)
+                            }
+                        },
                         label = { Text(dest.label) },
                     )
                 }
@@ -127,9 +147,23 @@ fun MainScaffold(onSignOut: () -> Unit) {
                     }
                 })
             }
-            composable(TopLevelDestination.NOTIFICATIONS.route) { NotificationsScreen() }
+            composable(TopLevelDestination.NOTIFICATIONS.route) {
+                NotificationsScreen(
+                    onOpenDeal = { dealId -> navController.navigate(Routes.dealDetail(dealId)) },
+                )
+            }
             composable(TopLevelDestination.DASHBOARD.route) {
-                DashboardScreen(onSignOut = onSignOut, onDealClick = {})
+                DashboardScreen(
+                    onSignOut = onSignOut,
+                    onDealClick = { dealId -> navController.navigate(Routes.dealDetail(dealId)) },
+                )
+            }
+            composable(Routes.DEAL_DETAIL) { entry ->
+                DealDetailScreen(
+                    dealId = entry.arguments?.getString("dealId").orEmpty(),
+                    onBack = { navController.popBackStack() },
+                    onOpenChat = { conversationId -> navController.navigate(Routes.chat(conversationId)) },
+                )
             }
         }
     }

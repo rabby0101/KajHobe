@@ -14,6 +14,23 @@ import kotlinx.serialization.Serializable
 /** Notifications + interest requests — mirrors iOS NotificationsNetworking. */
 class NotificationsRepository(client: SupabaseClient) : BaseRepository(client) {
 
+    companion object {
+        /**
+         * Notification types kept OUT of the business feed (iOS `fetchBusinessNotifications`):
+         * chat lives in Messages; `interest_request`/`show_interest` duplicate the `job_interests`
+         * row already shown as an Interest card; the offer types are superseded by `deal_created`.
+         * Applied client-side because supabase-kt does not reliably AND these `neq` filters with
+         * the `or(to_user_id,user_id)` group.
+         */
+        val EXCLUDED_BUSINESS_TYPES = setOf(
+            "message_received",
+            "show_interest",
+            "interest_request",
+            "deal_offer_received",
+            "deal_offer_responded",
+        )
+    }
+
     @Serializable
     private data class ConversationInsert(
         val job_id: String,
@@ -77,7 +94,70 @@ class NotificationsRepository(client: SupabaseClient) : BaseRepository(client) {
         }
     }
 
-    /** Enhanced notifications addressed to the current user (informational feed). */
+    /**
+     * All interest requests on the current user's jobs — **every** status, newest first — so
+     * the unified feed can show accepted/rejected ones as dulled rows with a status pill (the
+     * badge still counts only pending, via [fetchEnrichedJobInterests]). Mirrors the iOS
+     * interest-feed fetch (`jobs!inner(...)`, `eq jobs.client_id = uid`).
+     */
+    suspend fun fetchInterestsForFeed(): List<EnrichedJobInterest> {
+        val uid = currentUserId ?: return emptyList()
+
+        val interests = runCatching {
+            postgrest.from("job_interests")
+                .select(Columns.raw("*, jobs!inner(client_id)")) {
+                    filter { eq("jobs.client_id", uid) }
+                    order("created_at", Order.DESCENDING)
+                }
+                .decodeList<JobInterest>()
+        }.getOrDefault(emptyList())
+        if (interests.isEmpty()) return emptyList()
+
+        val jobs = runCatching {
+            postgrest.from("jobs")
+                .select { filter { isIn("id", interests.map { it.job_id }.distinct()) } }
+                .decodeList<Job>()
+                .associateBy { it.id }
+        }.getOrDefault(emptyMap())
+
+        val providers = runCatching {
+            postgrest.from("profiles")
+                .select { filter { isIn("id", interests.map { it.provider_id }.distinct()) } }
+                .decodeList<Profile>()
+                .associateBy { it.id }
+        }.getOrDefault(emptyMap())
+
+        return interests.map { interest ->
+            val job = jobs[interest.job_id]
+            val provider = providers[interest.provider_id]
+            EnrichedJobInterest(
+                id = interest.id,
+                job_id = interest.job_id,
+                provider_id = interest.provider_id,
+                status = interest.status,
+                message = interest.message,
+                created_at = interest.created_at,
+                actioned_at = interest.actioned_at,
+                job_title = job?.title ?: "Your job",
+                job_client_id = job?.client_id ?: uid,
+                job_budget = job?.budget,
+                job_location = job?.location,
+                provider_name = provider?.full_name,
+                provider_avatar_url = provider?.avatar_url,
+                provider_rating = provider?.average_rating,
+            )
+        }
+    }
+
+    /** Current authenticated user id (exposes the protected base accessor to view models). */
+    fun currentUid(): String? = currentUserId
+
+    /**
+     * Enhanced notifications addressed to the current user (informational feed).
+     * Excludes the same types as iOS `fetchBusinessNotifications`: chat lives in Messages,
+     * interest requests come from `job_interests`, and the offer types are superseded by
+     * `deal_created` — so a single event is never shown twice.
+     */
     suspend fun fetchEnhancedNotifications(): List<EnhancedNotification> {
         val uid = currentUserId ?: return emptyList()
         return runCatching {
@@ -85,9 +165,10 @@ class NotificationsRepository(client: SupabaseClient) : BaseRepository(client) {
                 .select {
                     filter { or { eq("to_user_id", uid); eq("user_id", uid) } }
                     order("created_at", Order.DESCENDING)
-                    limit(50)
+                    limit(80)
                 }
                 .decodeList<EnhancedNotification>()
+                .filterNot { it.type in EXCLUDED_BUSINESS_TYPES }
         }.getOrDefault(emptyList())
     }
 

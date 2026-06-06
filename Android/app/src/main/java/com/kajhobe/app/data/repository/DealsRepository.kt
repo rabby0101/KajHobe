@@ -73,6 +73,9 @@ class DealsRepository(client: SupabaseClient) : BaseRepository(client) {
         recent_deals = null,
     )
 
+    /** Current authenticated user id (exposes the protected base accessor to view models). */
+    fun currentUid(): String? = currentUserId
+
     /** Active/in-progress deals for the user, with job + both profiles joined. */
     suspend fun fetchActiveDeals(): List<Deal> {
         val uid = currentUserId ?: return emptyList()

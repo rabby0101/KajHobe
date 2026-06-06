@@ -1,5 +1,6 @@
 package com.kajhobe.app.ui.feature.dashboard
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -106,7 +107,7 @@ private fun StatCard(label: String, value: String, modifier: Modifier = Modifier
 
 @Composable
 private fun DealRow(deal: Deal, onClick: () -> Unit) {
-    PremiumCard(modifier = Modifier.fillMaxWidth()) {
+    PremiumCard(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Text(
             deal.job?.title ?: "Deal",
             style = MaterialTheme.typography.titleMedium,

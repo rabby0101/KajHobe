@@ -2,7 +2,9 @@ package com.kajhobe.app.di
 
 import com.kajhobe.app.data.cache.JobsCache
 import com.kajhobe.app.data.createKajHobeSupabaseClient
+import com.kajhobe.app.data.local.NotificationLocalState
 import com.kajhobe.app.data.media.MediaUploadManager
+import com.kajhobe.app.data.notifications.NotificationBadgeManager
 import com.kajhobe.app.data.repository.AuthRepository
 import com.kajhobe.app.data.repository.DealsRepository
 import com.kajhobe.app.data.repository.JobsRepository
@@ -11,6 +13,7 @@ import com.kajhobe.app.data.repository.NotificationsRepository
 import com.kajhobe.app.data.repository.ProfileRepository
 import com.kajhobe.app.ui.feature.auth.AuthViewModel
 import com.kajhobe.app.ui.feature.dashboard.DashboardViewModel
+import com.kajhobe.app.ui.feature.dashboard.DealDetailViewModel
 import com.kajhobe.app.ui.feature.home.AllJobsViewModel
 import com.kajhobe.app.ui.feature.home.HomeViewModel
 import com.kajhobe.app.ui.feature.jobs.JobDetailViewModel
@@ -37,6 +40,10 @@ val appModule = module {
     single { JobsCache(androidContext()) }
     single { MediaUploadManager(androidContext(), get()) }
 
+    // Notification device-local state + bell badge
+    single { NotificationLocalState(androidContext()) }
+    single { NotificationBadgeManager(get(), get()) }
+
     // Repositories
     singleOf(::ProfileRepository)
     singleOf(::AuthRepository)
@@ -54,6 +61,7 @@ val appModule = module {
     viewModelOf(::JobDetailViewModel)
     viewModelOf(::PostJobViewModel)
     viewModelOf(::DashboardViewModel)
+    viewModelOf(::DealDetailViewModel)
     viewModelOf(::NotificationsViewModel)
     viewModelOf(::ConversationsViewModel)
     viewModelOf(::ChatViewModel)
