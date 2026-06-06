@@ -127,7 +127,7 @@ struct DealRejectionNotificationView: View {
         
         do {
             // Find the conversation for this job and provider
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("conversations")

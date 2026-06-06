@@ -337,7 +337,7 @@ struct ProfileView: View {
         
         Task {
             do {
-                let user = try await supabase.auth.user()
+                let user = try supabase.auth.requireCurrentUser()
                 let fetchedProfile = try await Networking.shared.fetchProfile(userId: user.id.uuidString)
                 await MainActor.run {
                     self.profile = fetchedProfile
@@ -371,7 +371,7 @@ struct ProfileView: View {
         
         Task {
             do {
-                let user = try await supabase.auth.user()
+                let user = try supabase.auth.requireCurrentUser()
                 
                 // Create a properly encodable update structure
                 let updates = ProfileUpdate(

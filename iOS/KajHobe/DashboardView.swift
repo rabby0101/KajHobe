@@ -435,7 +435,7 @@ struct DashboardView: View {
         await cleanupRealtimeSubscription()
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // print("📊 Setting up real-time subscription for dashboard")
             
@@ -658,7 +658,7 @@ struct ActiveDealCard: View {
         .onAppear {
             Task {
                 do {
-                    currentUser = try await supabase.auth.user()
+                    currentUser = try supabase.auth.requireCurrentUser()
                 } catch {
                     // print("Error getting current user: \(error)")
                 }

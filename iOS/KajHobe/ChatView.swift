@@ -982,7 +982,7 @@ struct DealOfferBubble: View {
     
     // MARK: - Functions
     private func getCurrentUser() async {
-        if (try? await supabase.auth.user()) != nil {
+        if supabase.auth.currentUser != nil {
             currentUserProfile = try? await ProfileNetworking.shared.getCurrentUserProfile()
         }
     }

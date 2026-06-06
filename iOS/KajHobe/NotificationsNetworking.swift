@@ -102,7 +102,7 @@ class NotificationsNetworking: BaseNetworking {
         return try await withCheckedThrowingContinuation { continuation in
             Task.detached {
                 do {
-                    let user = try await supabase.auth.user()
+                    let user = try supabase.auth.requireCurrentUser()
                     print("🔍 Fetching enhanced notifications for user: \(user.id.uuidString) with state: \(state?.rawValue ?? "all")")
                     
                     // Use raw response approach to avoid Sendable conformance issues
@@ -150,7 +150,7 @@ class NotificationsNetworking: BaseNetworking {
     /// Update notification state (unread -> read -> archived)
     func updateNotificationState(_ notificationId: String, to state: NotificationState) async throws {
         do {
-            let _ = try await supabase.auth.user()
+            let _ = try supabase.auth.requireCurrentUser()
             print("🔄 Updating notification \(notificationId) to state: \(state.rawValue)")
             
             let now = ISO8601DateFormatter().string(from: Date())
@@ -182,7 +182,7 @@ class NotificationsNetworking: BaseNetworking {
     /// Mark multiple notifications as read
     func markNotificationsAsRead(_ notificationIds: [String]) async throws {
         do {
-            let _ = try await supabase.auth.user()
+            let _ = try supabase.auth.requireCurrentUser()
             let now = ISO8601DateFormatter().string(from: Date())
             
             let updateData = AnyEncodable([
@@ -208,7 +208,7 @@ class NotificationsNetworking: BaseNetworking {
         return try await withCheckedThrowingContinuation { continuation in
             Task.detached {
                 do {
-                    let user = try await supabase.auth.user()
+                    let user = try supabase.auth.requireCurrentUser()
                     let userId = user.id.uuidString
                     print("🔢 Getting notification counts for user: \(userId)")
 
@@ -275,7 +275,7 @@ class NotificationsNetworking: BaseNetworking {
     // MARK: - Legacy Notification Management
     func fetchNotifications() async throws -> [NotificationItem] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("notifications")
@@ -297,7 +297,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func markNotificationAsRead(notificationId: String) async throws {
         do {
-            let _ = try await supabase.auth.user()
+            let _ = try supabase.auth.requireCurrentUser()
             print("Marking notification as read: \(notificationId)")
             
             let updateData = AnyEncodable(["read": true])
@@ -392,7 +392,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func fetchPendingNotificationCount() async throws -> Int {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("notifications")
@@ -419,7 +419,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func clearNotification(notificationId: String) async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🗑️ Clearing individual notification: \(notificationId)")
             
             try await supabase
@@ -439,7 +439,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func clearAllNotifications() async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🗑️ Clearing all notifications for user: \(user.id.uuidString)")
             
             try await supabase
@@ -460,7 +460,7 @@ class NotificationsNetworking: BaseNetworking {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🌐 Fetching interest notifications from network...")
             print("🔍 User ID: \(user.id.uuidString)")
             
@@ -495,7 +495,7 @@ class NotificationsNetworking: BaseNetworking {
     // MARK: - Interest Management
     func getInterestStatus(jobId: String) async throws -> String? {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("job_interests")
@@ -529,7 +529,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func getInterestCooldownInfo(jobId: String) async throws -> (canShowInterest: Bool, remainingCooldown: TimeInterval?, interestCount: Int, lastStatus: String?) {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔍 getInterestCooldownInfo - JobId: \(jobId), UserId: \(user.id.uuidString)")
             
             // Count attempts from notifications table (actual attempts)
@@ -690,7 +690,7 @@ class NotificationsNetworking: BaseNetworking {
     }
     
     func showInterestWithMessage(jobId: String, message: String) async throws {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         print("🔔 Showing interest in job \(jobId) with message: \(message)")
         print("🔍 Current auth user ID: \(user.id.uuidString)")
         
@@ -700,7 +700,7 @@ class NotificationsNetworking: BaseNetworking {
     }
     
     func createInterestAttempt(jobId: String, message: String) async throws {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         
         // First check the simple interest status
         let interestStatus = try await getSimpleInterestStatus(
@@ -1077,7 +1077,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func respondToInterest(notificationId: String, accept: Bool) async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get notification details
             let notificationResponse = try await supabase
@@ -1292,7 +1292,7 @@ class NotificationsNetworking: BaseNetworking {
     
     /// Fetch enriched job interests for real-time notifications
     func fetchEnrichedJobInterests() async throws -> [EnrichedJobInterest] {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         
         print("🔍 Fetching enriched job interests for user: \(user.id.uuidString)")
         
@@ -1393,7 +1393,7 @@ class NotificationsNetworking: BaseNetworking {
     
     /// Subscribe to real-time job interest changes
     func subscribeToJobInterests(onNewInterest: @escaping (EnrichedJobInterest) -> Void) async throws -> RealtimeChannelV2 {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         
         print("🔄 Setting up real-time subscription for notifications")
         
@@ -1512,7 +1512,7 @@ class NotificationsNetworking: BaseNetworking {
         return try await withCheckedThrowingContinuation { continuation in
             Task.detached {
                 do {
-                    let user = try await supabase.auth.user()
+                    let user = try supabase.auth.requireCurrentUser()
                     print("🔍 Fetching business notifications for user: \(user.id.uuidString)")
 
                     let response = try await supabase

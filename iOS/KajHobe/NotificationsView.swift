@@ -260,7 +260,7 @@ struct NotificationsView: View {
     // MARK: - Deal Offer Notifications
     private func loadDealOfferNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get deal offers where the current user is the client (receiving offers)
             let response = try await supabase
@@ -369,7 +369,7 @@ struct NotificationsView: View {
     // MARK: - Completion Request Notifications
     private func loadCompletionRequestNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get completion requests where the current user needs to respond (client or provider)
             let response = try await supabase
@@ -492,7 +492,7 @@ struct NotificationsView: View {
     // MARK: - Deal Notifications
     private func loadDealNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get deals where the current user is involved (client or provider)
             let response = try await supabase
@@ -603,7 +603,7 @@ struct NotificationsView: View {
     // MARK: - Message Notifications
     private func loadMessageNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get recent messages where the current user is not the sender
             // We'll limit this to prevent too many message notifications
@@ -1084,7 +1084,7 @@ struct NotificationsView: View {
             }
             .onAppear {
                 loadingTask = Task {
-                    if let uid = try? await supabase.auth.user().id.uuidString {
+                    if let uid = supabase.auth.currentUser?.id.uuidString {
                         await MainActor.run { NotificationLocalState.shared.configure(userId: uid) }
                     }
                     await safeLoadUnifiedNotifications()
@@ -1299,7 +1299,7 @@ struct NotificationsView: View {
             // Get current user with error handling for cancelled requests
             let user: User
             do {
-                user = try await supabase.auth.user()
+                user = try supabase.auth.requireCurrentUser()
                 print("🔍 Loading notifications for user: \(user.id.uuidString)")
             } catch {
                 // Handle cancelled request specifically

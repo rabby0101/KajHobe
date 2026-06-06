@@ -13,6 +13,12 @@ class PresenceManager: ObservableObject {
     private init() {}
     
     func startPresenceManagement() {
+        // Idempotent: invalidate any existing timers first. The run loop retains scheduled timers,
+        // so without this a repeat call (e.g. multiple auth events) would stack duplicate timers,
+        // each firing its own presence network write.
+        presenceUpdateTimer?.invalidate()
+        responseTimeCalculationTimer?.invalidate()
+
         // Update presence every 5 minutes
         presenceUpdateTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
             Task {

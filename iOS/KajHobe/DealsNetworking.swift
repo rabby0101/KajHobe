@@ -18,7 +18,7 @@ class DealsNetworking: ObservableObject {
     // MARK: - Deal Offers
     func createDealOffer(conversationId: String, amount: Int, terms: String?, timeline: String?) async throws -> DealOffer {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔄 [DEAL CREATION START] User: \(user.id), Conversation: \(conversationId), Amount: \(amount)")
             
             // Get conversation details to verify user is provider
@@ -115,7 +115,7 @@ class DealsNetworking: ObservableObject {
     
     func respondToDealOffer(dealOfferId: String, response: String, message: String?) async throws -> DealOffer {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get deal offer details
             let dealOfferResponse = try await supabase
@@ -356,7 +356,7 @@ class DealsNetworking: ObservableObject {
     
     func fetchMyDeals() async throws -> [Deal] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let userIdUpper = user.id.uuidString.uppercased()
             let userIdLower = user.id.uuidString.lowercased()
             
@@ -379,7 +379,7 @@ class DealsNetworking: ObservableObject {
     // MARK: - Task Completion
     func requestTaskCompletion(dealId: String, message: String?) async throws -> CompletionRequest {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔍 [COMPLETION REQUEST] User requesting completion: \(user.id)")
             
             // First get the deal to determine if user is client or provider
@@ -451,7 +451,7 @@ class DealsNetworking: ObservableObject {
     
     func respondToCompletionRequest(requestId: String, approve: Bool, message: String?) async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let status = approve ? "approved" : "rejected"
             let now = ISO8601DateFormatter().string(from: Date())
             
@@ -542,7 +542,7 @@ class DealsNetworking: ObservableObject {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("📊 Fetching dashboard data for user: \(user.id)")
             
             // First try using the database function to get dashboard data efficiently
@@ -708,7 +708,7 @@ class DealsNetworking: ObservableObject {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔍 [ACTIVE DEALS] Fetching for user: \(user.id)")
             
             let userIdUpper = user.id.uuidString.uppercased()
@@ -773,7 +773,7 @@ class DealsNetworking: ObservableObject {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("completion_requests")

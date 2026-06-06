@@ -17,6 +17,15 @@ struct JobsListView: View {
     @State private var showingFavoriteCategoriesSelector = false
     @State private var showingSearchSheet = false
     @State private var didCheckCache = false
+    // Coalesces overlapping loadJobs() triggers (.refreshable + .task + RefreshJobs + realtime can
+    // fire together). They all fetch the same list, so a concurrent duplicate only causes the
+    // in-flight request to be cancelled (-999); skip it instead.
+    @State private var isFetchingJobs = false
+    // Bulk-resolved per-card data, computed once at the list level (instead of ~5 queries per card).
+    // Injected into JobCardView so cards render ownership/status with zero per-card network calls.
+    @State private var currentUserId: String? = supabase.auth.currentUser?.id.uuidString
+    @State private var interestedJobIds: Set<String> = []
+    @State private var viewedJobIds: Set<String> = []
     // Seeded from UserDefaults so favorites never flash "first 4 defaults" on cold start.
     @State private var cachedFavoriteCategories: [String]? = JobsCache.shared.peekFavoriteCategories()
     
@@ -249,6 +258,9 @@ struct JobsListView: View {
                     ForEach(jobsNearYou.prefix(6)) { job in
                         JobCardView(
                             job: job,
+                            currentUserId: currentUserId,
+                            interestedJobIds: interestedJobIds,
+                            viewedJobIds: viewedJobIds,
                             onJobDeleted: { Task { await loadJobs() } }
                         )
                         .frame(width: 280)
@@ -288,6 +300,9 @@ struct JobsListView: View {
                     ForEach(featuredJobs.prefix(4)) { job in
                         JobCardView(
                             job: job,
+                            currentUserId: currentUserId,
+                            interestedJobIds: interestedJobIds,
+                            viewedJobIds: viewedJobIds,
                             onJobDeleted: { Task { await loadJobs() } }
                         )
                         .frame(width: 320)
@@ -327,6 +342,9 @@ struct JobsListView: View {
                     ForEach(recentJobs) { job in
                         JobCardView(
                             job: job,
+                            currentUserId: currentUserId,
+                            interestedJobIds: interestedJobIds,
+                            viewedJobIds: viewedJobIds,
                             onJobDeleted: { Task { await loadJobs() } }
                         )
                         .frame(width: 300)
@@ -357,6 +375,9 @@ struct JobsListView: View {
                 ForEach(filteredJobs) { job in
                     JobCardView(
                         job: job,
+                        currentUserId: currentUserId,
+                        interestedJobIds: interestedJobIds,
+                        viewedJobIds: viewedJobIds,
                         onJobDeleted: { Task { await loadJobs() } }
                     )
                 }
@@ -627,6 +648,13 @@ struct JobsListView: View {
     
     @MainActor
     func loadJobs(forceRefresh: Bool = false, silent: Bool = false) async {
+        // Coalesce overlapping triggers. fetchJobs always hits the network (no client cache),
+        // so a concurrent duplicate fetches the identical list — skipping it loses nothing and
+        // prevents the overlapping requests from cancelling each other (the -999 churn).
+        if isFetchingJobs { return }
+        isFetchingJobs = true
+        defer { isFetchingJobs = false }
+
         // Silent loads (cache-seeded first load, tab resume, realtime) never show a
         // spinner/skeleton. Otherwise show the loading state when there's nothing yet
         // or the user explicitly asked to refresh.
@@ -636,8 +664,9 @@ struct JobsListView: View {
         error = nil
 
         do {
-            // First test database connection
-            try await Networking.shared.testDatabaseConnection()
+            // Go straight to the fetch — no separate connection probe. A real connectivity
+            // failure surfaces here and is handled below; a redundant probe only added a
+            // serialized round-trip and was the first call to throw on cancellation.
             let newJobs = try await Networking.shared.fetchJobs(forceRefresh: forceRefresh)
 
             // Add smooth animation for updates
@@ -648,15 +677,62 @@ struct JobsListView: View {
             // Persist to the cache so the next cold start paints instantly.
             JobsCache.shared.save(newJobs)
 
-            // print("📋 Jobs data refreshed successfully - \(jobs.count) jobs")
+            // Resolve per-card interest/viewed status in bulk (2 queries) instead of letting
+            // each card run its own lookups.
+            await loadJobStatuses()
+        } catch is CancellationError {
+            // Superseded by a newer load or view teardown — not a real failure, ignore.
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            // URLSession request cancelled (-999) — benign supersede, ignore.
         } catch {
-            self.error = error
-            // print("❌ Error in loadJobs: \(error)")
+            // Defensive: some cancellations surface as a plain NSError -999.
+            if (error as NSError).code != NSURLErrorCancelled {
+                self.error = error
+            }
         }
 
         isLoading = false
     }
-    
+
+    /// Bulk-fetch the current user's interest/viewed sets for the visible jobs in two parallel
+    /// queries — replacing the ~2 lookups each card used to run on its own. Injected into the
+    /// cards via `interestedJobIds`/`viewedJobIds`. Non-critical: failures/cancellation are ignored.
+    @MainActor
+    func loadJobStatuses() async {
+        guard let userId = supabase.auth.currentUser?.id.uuidString else { return }
+        currentUserId = userId
+
+        let jobIds = jobs.map { $0.id }
+        guard !jobIds.isEmpty else {
+            interestedJobIds = []
+            viewedJobIds = []
+            return
+        }
+
+        struct JobIdRow: Decodable { let job_id: String }
+        do {
+            async let interestsResp = supabase
+                .from("job_interests")
+                .select("job_id")
+                .eq("provider_id", value: userId)
+                .in("job_id", values: jobIds)
+                .execute()
+            async let viewsResp = supabase
+                .from("job_views")
+                .select("job_id")
+                .eq("user_id", value: userId)
+                .in("job_id", values: jobIds)
+                .execute()
+
+            let (interests, views) = try await (interestsResp, viewsResp)
+            let decoder = JSONDecoder()
+            interestedJobIds = Set(try decoder.decode([JobIdRow].self, from: interests.data).map { $0.job_id })
+            viewedJobIds = Set(try decoder.decode([JobIdRow].self, from: views.data).map { $0.job_id })
+        } catch {
+            // Non-critical status data — ignore failures/cancellation, keep any existing sets.
+        }
+    }
+
     @MainActor
     func loadUserProfile() async {
         do {
@@ -691,7 +767,7 @@ struct JobsListView: View {
     
     private func setupRealtimeSubscription() async {
         do {
-            let _ = try await supabase.auth.user()
+            let _ = try supabase.auth.requireCurrentUser()
             
             // print("📋 Setting up real-time subscription for jobs")
             

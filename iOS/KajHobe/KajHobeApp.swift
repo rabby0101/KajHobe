@@ -97,16 +97,22 @@ struct AppEntryView: View {
             presenceManager.handleAppTerminate()
         }
         .task {
-            await checkAuthenticationState()
-            
-            // Then listen for auth state changes
+            // Optimistic launch: no blocking networked session check on the critical path.
+            // `authStateChanges` emits `.initialSession` immediately with the locally-stored
+            // session (or nil) once the SDK has loaded it — that first event ends the launch gate
+            // with the correct value, and the token refreshes lazily in the background. Heavy
+            // post-auth work runs only on sign-in events, NOT on every `.tokenRefreshed` (which
+            // previously stacked presence timers and cancelled in-flight badge queries).
             for await state in supabase.auth.authStateChanges {
                 await MainActor.run {
-                    isAuthenticated = state.session != nil
-                    print("🔄 Auth state changed: \(state.event), authenticated: \(isAuthenticated)")
-                    
-                    // Start/stop presence management based on auth state
-                    if isAuthenticated {
+                    let isAuthed = state.session != nil
+                    isAuthenticated = isAuthed
+                    if isLoading { isLoading = false }
+                    print("🔄 Auth state changed: \(state.event), authenticated: \(isAuthed)")
+
+                    switch state.event {
+                    case .initialSession, .signedIn:
+                        guard isAuthed else { break }
                         presenceManager.startPresenceManagement()
 
                         // Request push notification permission when user logs in
@@ -114,14 +120,12 @@ struct AppEntryView: View {
                             await pushNotificationManager.requestNotificationPermission()
                         }
 
-                        // (Re)bind the realtime badge subscriptions for the signed-in
-                        // user. This runs AFTER the launch-time refreshSupabaseSchema()
-                        // removeAllChannels() teardown, so the channels survive.
+                        // (Re)bind the realtime badge subscriptions for the signed-in user.
                         Task {
                             await NotificationBadgeManager.shared.start()
                             await MessageBadgeManager.shared.start()
                         }
-                    } else {
+                    case .signedOut:
                         presenceManager.stopPresenceManagement()
 
                         // Tear down badge subscriptions + reset counts on sign-out.
@@ -129,43 +133,13 @@ struct AppEntryView: View {
                             await NotificationBadgeManager.shared.stop()
                             await MessageBadgeManager.shared.stop()
                         }
+                    default:
+                        // .tokenRefreshed / .userUpdated / etc. — no heavy fan-out re-run.
+                        break
                     }
                 }
             }
         }
     }
     
-    private func checkAuthenticationState() async {
-        do {
-            let _ = try await supabase.auth.session
-            if supabase.auth.currentUser != nil {
-                print("✅ Recovered existing session")
-                await MainActor.run {
-                    isAuthenticated = true
-                }
-            } else {
-                print("❌ No existing session found")
-                await MainActor.run {
-                    isAuthenticated = false
-                }
-            }
-        } catch {
-            print("⚠️ Session recovery failed: \(error)")
-            
-            // If broken auth state, force sign out and redirect to login
-            if error.localizedDescription.contains("sessionMissing") || 
-               error.localizedDescription.contains("invalid") {
-                print("🚨 Detected broken auth state - forcing sign out")
-                try? await supabase.auth.signOut()
-            }
-            
-            await MainActor.run {
-                isAuthenticated = false
-            }
-        }
-        
-        await MainActor.run {
-            isLoading = false
-        }
-    }
 }

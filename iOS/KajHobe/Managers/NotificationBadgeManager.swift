@@ -68,7 +68,7 @@ class NotificationBadgeManager: ObservableObject {
     /// count from device-local read/cleared state.
     func refreshCounts() async {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let userId = user.id.uuidString
             await MainActor.run { NotificationLocalState.shared.configure(userId: userId) }
 
@@ -181,7 +181,7 @@ class NotificationBadgeManager: ObservableObject {
         defer { isStarting = false }
 
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             currentUserId = user.id.uuidString
 
             // Drop the old channel before re-subscribing (idempotent re-bind).

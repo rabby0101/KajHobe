@@ -88,7 +88,15 @@ class PushNotificationManager: NSObject, ObservableObject {
             print("❌ No authenticated user to associate device token with")
             return
         }
-        
+
+        // Skip the write when this exact token was already uploaded — avoids a redundant profiles
+        // write on every launch/foreground. (registerForRemoteNotifications still runs each launch
+        // per Apple's guidance; only the network write is gated on an actual change.)
+        let lastTokenKey = "lastUploadedDeviceToken_\(userId.uuidString)"
+        if UserDefaults.standard.string(forKey: lastTokenKey) == token {
+            return
+        }
+
         do {
             // Update or insert device token in user profile
             let updateData = AnyEncodable([
@@ -96,13 +104,14 @@ class PushNotificationManager: NSObject, ObservableObject {
                 "push_enabled": true,
                 "updated_at": ISO8601DateFormatter().string(from: Date())
             ])
-            
+
             try await supabase.database
                 .from("profiles")
                 .update(updateData)
                 .eq("id", value: userId.uuidString)
                 .execute()
-            
+
+            UserDefaults.standard.set(token, forKey: lastTokenKey)
             print("✅ Device token sent to Supabase successfully")
         } catch {
             print("❌ Failed to send device token to Supabase: \(error)")

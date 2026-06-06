@@ -65,7 +65,7 @@ class MessageBadgeManager: ObservableObject {
     /// Initial fetch of unread count. Called on login/launch.
     func refreshCounts() async {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             currentUserId = user.id.uuidString
             await fetchUnreadCount(userId: user.id.uuidString)
         } catch {
@@ -104,6 +104,11 @@ class MessageBadgeManager: ObservableObject {
                 self.totalUnreadCount = count
             }
             print("💬 Message badge: \(count) unread")
+        } catch is CancellationError {
+            // Superseded by a re-subscribe (foreground/re-bind) — the winning subscription
+            // re-fetches the authoritative count, so this is benign. Ignore.
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            // URLSession request cancelled (-999) during a channel re-bind — benign, ignore.
         } catch {
             print("⚠️ Could not fetch unread message count: \(error)")
         }
@@ -116,7 +121,7 @@ class MessageBadgeManager: ObservableObject {
         defer { isStarting = false }
 
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let userId = user.id.uuidString
             currentUserId = userId
 

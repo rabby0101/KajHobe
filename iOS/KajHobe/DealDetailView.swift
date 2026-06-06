@@ -458,7 +458,7 @@ struct DealDetailView: View {
     // MARK: - Helper Functions
     private func loadUserContext() async {
         do {
-            currentUser = try await supabase.auth.user()
+            currentUser = try supabase.auth.requireCurrentUser()
             if let userId = currentUser?.id {
                 isUserClient = (deal.client_id == userId.uuidString)
             }

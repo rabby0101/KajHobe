@@ -378,7 +378,7 @@ struct JobDetailView: View {
     
     private func checkOwnership() async {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let userId = user.id.uuidString
             
             await MainActor.run {
@@ -393,7 +393,7 @@ struct JobDetailView: View {
     
     private func checkUserServiceProviderStatus() async {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let userId = user.id.uuidString
             
             // Fetch user profile from database
@@ -422,7 +422,7 @@ struct JobDetailView: View {
     }
     
     private func checkInterestStatus() async {
-        guard let currentUser = try? await supabase.auth.user() else { return }
+        guard let currentUser = supabase.auth.currentUser else { return }
         
         do {
             // Use simplified server-side validation
@@ -527,7 +527,7 @@ struct JobDetailView: View {
         Task {
             do {
                 // Double-check ownership before proceeding
-                let user = try await supabase.auth.user()
+                let user = try supabase.auth.requireCurrentUser()
                 if job.client_id.lowercased() == user.id.uuidString.lowercased() {
                     await MainActor.run {
                         errorMessage = "You cannot show interest in your own job posting."
