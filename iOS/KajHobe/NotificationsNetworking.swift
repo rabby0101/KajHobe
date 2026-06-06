@@ -31,25 +31,43 @@ class NotificationsNetworking: BaseNetworking {
     // MARK: - Real-time Subscriptions
     
     /// Subscribe to real-time notification updates
+    ///
+    /// IMPORTANT: `postgresChange` MUST be invoked BEFORE `channel.subscribe()`.
+    /// The iOS SDK (`RealtimeChannelV2._onPostgresChange`) silently drops new
+    /// listeners on an already-subscribed channel (it `reportIssue`s and returns
+    /// an empty subscription). Wrapping the listener setup in `Task { }` blocks
+    /// that race with `subscribe()` is therefore a bug — and was the reason the
+    /// notification badge wasn't updating in real-time. The listeners are now
+    /// registered synchronously, then the channel is subscribed once.
     func subscribeToNotifications(
         userId: String,
         onNewNotification: @escaping (EnhancedNotification) -> Void,
         onNotificationUpdate: @escaping (EnhancedNotification) -> Void
     ) async -> RealtimeChannelV2 {
         let channel = supabase.realtimeV2.channel("notifications_\(userId)")
-        
-        // Set up insertion listener before subscribing
+
+        // Register BOTH listeners synchronously, before subscribing.
+        let insertions = await channel.postgresChange(
+            InsertAction.self,
+            table: "notifications"
+        )
+        let updates = await channel.postgresChange(
+            UpdateAction.self,
+            table: "notifications"
+        )
+
+        // Now subscribe — both listeners are attached.
+        await channel.subscribe()
+        print("🔔 Subscribed to real-time notifications for user: \(userId)")
+
+        // Spawn background collectors for the two streams. Each is a long-running
+        // task that will yield events as the server pushes them.
         Task {
-            let insertions = await channel.postgresChange(
-                InsertAction.self,
-                table: "notifications"
-            )
-            
             for await insertion in insertions {
                 // Check if this notification is for the current user
                 if let record = insertion.record as? [String: Any] {
                     let toUserId = record["to_user_id"] as? String ?? record["user_id"] as? String
-                    
+
                     if toUserId == userId,
                        let notification = try? parseNotificationFromRealtime(record) {
                         await MainActor.run {
@@ -59,19 +77,13 @@ class NotificationsNetworking: BaseNetworking {
                 }
             }
         }
-        
-        // Set up update listener before subscribing
+
         Task {
-            let updates = await channel.postgresChange(
-                UpdateAction.self,
-                table: "notifications"
-            )
-            
             for await update in updates {
                 // Check if this notification is for the current user
                 if let record = update.record as? [String: Any] {
                     let toUserId = record["to_user_id"] as? String ?? record["user_id"] as? String
-                    
+
                     if toUserId == userId,
                        let notification = try? parseNotificationFromRealtime(record) {
                         await MainActor.run {
@@ -81,10 +93,7 @@ class NotificationsNetworking: BaseNetworking {
                 }
             }
         }
-        
-        await channel.subscribe()
-        print("🔔 Subscribed to real-time notifications for user: \(userId)")
-        
+
         return channel
     }
     
