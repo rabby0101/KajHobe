@@ -8,6 +8,7 @@ struct MessagesView: View {
     @State private var currentUserProfile: Profile?
     @State private var realtimeChannel: RealtimeChannelV2?
     @State private var timeUpdateTimer: Timer?
+    @ObservedObject private var messageBadgeManager = MessageBadgeManager.shared
     
     var body: some View {
         NavigationStack {
@@ -80,6 +81,10 @@ struct MessagesView: View {
                     
                     // Start timer to update relative times every minute
                     startTimeUpdateTimer()
+                    
+                    // Refresh the messages tab badge (in case it drifted while the
+                    // app was in the background or conversations changed).
+                    await messageBadgeManager.refreshCounts()
                 }
             }
             .alert("Error", isPresented: .constant(errorMessage != nil)) {
@@ -97,6 +102,9 @@ struct MessagesView: View {
                 print("🔍 MESSAGES DEBUG: Received chatViewDidDisappear notification, refreshing conversations")
                 Task {
                     await loadConversations(forceRefresh: true)
+                    // Re-sync the messages tab badge after returning from a chat —
+                    // local optimistic updates may have drifted from the server count.
+                    await messageBadgeManager.refreshCounts()
                 }
             }
         }

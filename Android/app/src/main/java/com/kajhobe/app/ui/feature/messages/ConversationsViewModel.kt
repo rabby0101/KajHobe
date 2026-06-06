@@ -3,6 +3,7 @@ package com.kajhobe.app.ui.feature.messages
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kajhobe.app.data.model.ConversationWithDetails
+import com.kajhobe.app.data.notifications.MessageBadgeManager
 import com.kajhobe.app.data.repository.MessagesRepository
 import io.github.jan.supabase.realtime.RealtimeChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -23,6 +24,7 @@ data class ConversationsUiState(
 
 class ConversationsViewModel(
     private val repository: MessagesRepository,
+    private val messageBadgeManager: MessageBadgeManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConversationsUiState())
@@ -34,6 +36,8 @@ class ConversationsViewModel(
     init {
         load()
         subscribeRealtime()
+        // Ensure the messages tab badge is in sync whenever the conversations list loads.
+        messageBadgeManager.refreshCounts()
     }
 
     fun load() {
@@ -55,6 +59,10 @@ class ConversationsViewModel(
     private fun subscribeRealtime() {
         val ch = repository.allMessagesChannel()
         channel = ch
+        // Set up the flow BEFORE joining (supabase-kt requirement). The
+        // `incomingAllMessages` call synchronously registers the listener via
+        // `postgresChangeFlow`, so it must happen before any code calls
+        // `channel.subscribe()`.
         val flow = repository.incomingAllMessages(ch)
         collectJob = viewModelScope.launch {
             // Any inserted message may change a preview/unread/order or add a new conversation.

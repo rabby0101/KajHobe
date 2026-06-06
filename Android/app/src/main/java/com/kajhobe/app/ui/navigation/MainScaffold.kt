@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kajhobe.app.data.notifications.MessageBadgeManager
 import com.kajhobe.app.data.notifications.NotificationBadgeManager
 import com.kajhobe.app.ui.components.PrimaryButton
 import com.kajhobe.app.ui.feature.home.AllJobsScreen
@@ -47,7 +48,9 @@ import org.koin.compose.koinInject
 fun MainScaffold(onSignOut: () -> Unit) {
     val navController = rememberNavController()
     val badgeManager = koinInject<NotificationBadgeManager>()
+    val messageBadgeManager = koinInject<MessageBadgeManager>()
     val unreadCount by badgeManager.unreadCount.collectAsStateWithLifecycle()
+    val messageUnreadCount by messageBadgeManager.totalUnreadCount.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) { badgeManager.refreshCounts() }
 
@@ -58,7 +61,13 @@ fun MainScaffold(onSignOut: () -> Unit) {
                 val currentDestination = navBackStackEntry?.destination
                 TopLevelDestination.entries.forEach { dest ->
                     val selected = currentDestination?.hierarchy?.any { it.route == dest.route } == true
-                    val showBadge = dest == TopLevelDestination.NOTIFICATIONS && unreadCount > 0
+                    val showNotifBadge = dest == TopLevelDestination.NOTIFICATIONS && unreadCount > 0
+                    val showMessagesBadge = dest == TopLevelDestination.MESSAGES && messageUnreadCount > 0
+                    val tabBadgeCount: Int? = when {
+                        showNotifBadge -> unreadCount
+                        showMessagesBadge -> messageUnreadCount
+                        else -> null
+                    }
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
@@ -69,8 +78,8 @@ fun MainScaffold(onSignOut: () -> Unit) {
                             }
                         },
                         icon = {
-                            if (showBadge) {
-                                BadgedBox(badge = { Badge { Text(if (unreadCount > 99) "99+" else "$unreadCount") } }) {
+                            if (tabBadgeCount != null) {
+                                BadgedBox(badge = { Badge { Text(if (tabBadgeCount > 99) "99+" else "$tabBadgeCount") } }) {
                                     Icon(dest.icon, contentDescription = dest.label)
                                 }
                             } else {

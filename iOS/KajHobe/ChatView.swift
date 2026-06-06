@@ -446,8 +446,12 @@ struct ChatView: View {
     
     private func markAllUnreadMessagesAsRead(conversationId: String, currentUserId: String) async {
         do {
+            // Count how many we're about to mark so we can decrement the
+            // messages tab badge by the same number (optimistic local update).
+            let unreadCount = messages.filter { $0.sender_id != currentUserId && $0.read_at == nil }.count
+
             let currentTime = ISO8601DateFormatter().string(from: Date())
-            
+
             // Batch update all unread messages in this conversation that are NOT from the current user
             // This will trigger the database's automatic unread count management
             let result = try await supabase
@@ -457,10 +461,13 @@ struct ChatView: View {
                 .neq("sender_id", value: currentUserId) // Not from current user
                 .is("read_at", value: nil) // Only unread messages
                 .execute()
-            
+
             print("✅ READ RECEIPT DEBUG: Batch marked messages as read for conversation \(conversationId) at \(currentTime)")
             print("🔍 READ RECEIPT DEBUG: Database update result: \(result)")
-            
+
+            // Decrement the messages tab badge by however many we just marked read.
+            // Clamped to 0 inside the manager.
+            MessageBadgeManager.shared.decrement(by: unreadCount)
         } catch {
             print("❌ READ RECEIPT DEBUG: Error batch marking messages as read: \(error)")
         }
@@ -469,7 +476,7 @@ struct ChatView: View {
     private func markMessageAsRead(messageId: String) async {
         do {
             let currentTime = ISO8601DateFormatter().string(from: Date())
-            
+
             // Update only if read_at is currently NULL (not already read)
             let _ = try await supabase
                 .from("messages")
@@ -477,9 +484,12 @@ struct ChatView: View {
                 .eq("id", value: messageId)
                 .is("read_at", value: nil) // Only update if not already read
                 .execute()
-            
+
             print("✅ READ RECEIPT DEBUG: Marked message \(messageId) as read at \(currentTime)")
-            
+
+            // The chat is open and just read a single new incoming message —
+            // decrement the messages tab badge by 1.
+            MessageBadgeManager.shared.decrement(by: 1)
         } catch {
             print("❌ READ RECEIPT DEBUG: Error marking message as read: \(error)")
         }

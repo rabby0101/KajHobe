@@ -6,6 +6,7 @@ struct MainTabView: View {
     @State private var showProfileSheet = false
     @ObservedObject private var languageManager = LanguageManager.shared
     @ObservedObject private var notificationBadgeManager = NotificationBadgeManager.shared
+    @ObservedObject private var messageBadgeManager = MessageBadgeManager.shared
     @EnvironmentObject var pushNotificationManager: PushNotificationManager
     
     var body: some View {
@@ -19,10 +20,12 @@ struct MainTabView: View {
             
             MessagesView()
                 .tabItem {
-                    Image(systemName: "message")
+                    Image(systemName: messageBadgeManager.totalUnreadCount > 0 ? "message.fill" : "message")
                     Text("messages".localized)
                 }
+                .badge(messageBadgeManager.totalUnreadCount > 0 ? messageBadgeManager.totalUnreadCount : 0)
                 .tag(1)
+                .environmentObject(messageBadgeManager)
             
             PostJobView()
                 .tabItem {

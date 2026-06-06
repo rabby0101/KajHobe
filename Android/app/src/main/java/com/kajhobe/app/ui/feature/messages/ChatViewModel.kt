@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kajhobe.app.data.media.MediaUploadManager
 import com.kajhobe.app.data.model.ChatMessage
+import com.kajhobe.app.data.notifications.MessageBadgeManager
 import com.kajhobe.app.data.repository.MessagesRepository
 import io.github.jan.supabase.realtime.RealtimeChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -49,6 +50,7 @@ data class ChatUiState(
 class ChatViewModel(
     private val repository: MessagesRepository,
     private val mediaUploadManager: MediaUploadManager,
+    private val messageBadgeManager: MessageBadgeManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -81,6 +83,9 @@ class ChatViewModel(
                 }
                 .onFailure { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
             // Mark received messages read so the conversation-list unread badge clears.
+            // The realtime UPDATE on the messages table fires MessageBadgeManager.handleUpdate()
+            // and decrements the badge by one for each row updated. We deliberately do NOT
+            // decrement locally here to avoid double-counting.
             runCatching { repository.markConversationRead(conversationId) }
             // Offer status (gates the deal button).
             refreshOfferStatus()
@@ -101,9 +106,11 @@ class ChatViewModel(
     }
 
     private fun appendIfNew(msg: ChatMessage) {
+        var wasNew = false
         _uiState.update { state ->
             if (state.messages.any { it.id == msg.id }) state
             else {
+                wasNew = true
                 val merged = state.messages + msg
                 state.copy(messages = merged, dealStatuses = dealStatusesFrom(merged))
             }
@@ -111,6 +118,18 @@ class ChatViewModel(
         // A deal response changes whether the provider can send another offer.
         if (msg.message_type == "deal_response") {
             viewModelScope.launch { refreshOfferStatus() }
+        }
+        // Chat is open: a new incoming message from the other party is now visible.
+        // Mark it read — the realtime UPDATE on the messages table will fire
+        // MessageBadgeManager.handleUpdate() and decrement the badge. We deliberately
+        // do NOT decrement locally here to avoid double-counting.
+        if (wasNew) {
+            val uid = _uiState.value.currentUserId
+            if (msg.sender_id != uid && msg.read_at.isNullOrEmpty()) {
+                viewModelScope.launch {
+                    runCatching { repository.markConversationRead(msg.conversation_id) }
+                }
+            }
         }
     }
 

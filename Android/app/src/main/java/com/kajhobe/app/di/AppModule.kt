@@ -4,6 +4,7 @@ import com.kajhobe.app.data.cache.JobsCache
 import com.kajhobe.app.data.createKajHobeSupabaseClient
 import com.kajhobe.app.data.local.NotificationLocalState
 import com.kajhobe.app.data.media.MediaUploadManager
+import com.kajhobe.app.data.notifications.MessageBadgeManager
 import com.kajhobe.app.data.notifications.NotificationBadgeManager
 import com.kajhobe.app.data.repository.AuthRepository
 import com.kajhobe.app.data.repository.DealsRepository
@@ -43,6 +44,7 @@ val appModule = module {
     // Notification device-local state + bell badge
     single { NotificationLocalState(androidContext()) }
     single { NotificationBadgeManager(get(), get()) }
+    single { MessageBadgeManager(get()) }
 
     // Repositories
     singleOf(::ProfileRepository)
