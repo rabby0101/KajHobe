@@ -18,17 +18,46 @@ class MessageBadgeManager: ObservableObject {
 
     private var realtimeChannel: RealtimeChannelV2?
     private var insertTask: Task<Void, Never>?
-    private var updateTask: Task<Void, Never>?
     private var currentUserId: String?
 
+    // Serialize start()/stop() so a foreground burst can't race two subscribes.
+    private var isStarting = false
+
     private init() {
-        setupRealtimeSubscription()
+        // No auto-subscribe here. The app lifecycle (sign-in + foreground) drives
+        // start()/resubscribe() so the channel is (re)bound after the launch-time
+        // removeAllChannels() teardown and after every socket reconnect.
     }
 
     deinit {
         Task { [weak realtimeChannel] in
             await realtimeChannel?.unsubscribe()
         }
+    }
+
+    // MARK: - Lifecycle (driven by KajHobeApp auth + foreground events)
+
+    /// (Re)bind the realtime subscription to the current user and re-sync the count.
+    /// Safe to call repeatedly — it tears down any prior channel first. Call on sign-in
+    /// and on app foreground.
+    func start() async {
+        await setupRealtimeSubscription()
+    }
+
+    /// Alias used by the foreground hook for readability.
+    func resubscribe() async {
+        await setupRealtimeSubscription()
+    }
+
+    /// Tear down the subscription and reset the badge. Call on sign-out.
+    func stop() async {
+        insertTask?.cancel(); insertTask = nil
+        if let existing = realtimeChannel {
+            await existing.unsubscribe()
+        }
+        realtimeChannel = nil
+        currentUserId = nil
+        await MainActor.run { self.totalUnreadCount = 0 }
     }
 
     // MARK: - Public Methods
@@ -80,91 +109,54 @@ class MessageBadgeManager: ObservableObject {
         }
     }
 
-    private func setupRealtimeSubscription() {
-        Task {
-            do {
-                let user = try await supabase.auth.user()
-                let userId = user.id.uuidString
-                currentUserId = userId
+    private func setupRealtimeSubscription() async {
+        // Guard against overlapping starts (e.g. sign-in + foreground firing together).
+        if isStarting { return }
+        isStarting = true
+        defer { isStarting = false }
 
-                // Cancel any prior collectors (idempotent re-init safety).
-                insertTask?.cancel()
-                updateTask?.cancel()
-                if let existing = realtimeChannel {
-                    await existing.unsubscribe()
-                }
+        do {
+            let user = try await supabase.auth.user()
+            let userId = user.id.uuidString
+            currentUserId = userId
 
-                // Dedicated channel for the badge — separate from the conversation
-                // list's "public:messages" channel so the iOS SDK treats it as an
-                // independent subscription that is never unsubscribed by the view.
-                let channel = supabase.realtimeV2.channel("public:messages:badge")
-
-                // Order matters: register BOTH listeners BEFORE subscribe(). The
-                // iOS SDK drops new listeners on a subscribed channel (line 488
-                // of RealtimeChannelV2.swift — `reportIssue` + empty subscription).
-                let insertions = channel.postgresChange(InsertAction.self, table: "messages")
-                let updates = channel.postgresChange(UpdateAction.self, table: "messages")
-
-                realtimeChannel = channel
-                await channel.subscribe()
-
-                // Initial count.
-                await fetchUnreadCount(userId: userId)
-
-                // Spawn collectors. Each holds a reference to the channel's async
-                // stream and runs independently until the task is cancelled.
-                insertTask = Task { [weak self] in
-                    for await insertion in insertions {
-                        await self?.handleInsertion(insertion)
-                    }
-                }
-                updateTask = Task { [weak self] in
-                    for await update in updates {
-                        await self?.handleUpdate(update)
-                    }
-                }
-
-                print("💬 MessageBadgeManager subscribed for user: \(userId)")
-            } catch {
-                print("❌ Error setting up MessageBadgeManager subscription: \(error)")
+            // Cancel any prior collector + drop the old channel (idempotent re-bind).
+            insertTask?.cancel(); insertTask = nil
+            if let existing = realtimeChannel {
+                await existing.unsubscribe()
+                realtimeChannel = nil
             }
-        }
-    }
 
-    private func handleInsertion(_ action: HasRecord) async {
-        let record = action.record
-        guard let senderId = record["sender_id"]?.stringValue else {
-            return
-        }
-        // read_at is optional — `.null` (AnyJSON) means "not yet read".
-        // stringValue on a JSON null is nil, so the if-let correctly skips
-        // only when read_at is a non-empty string.
-        if let readAt = record["read_at"]?.stringValue, !readAt.isEmpty {
-            return // already read, no badge increment
-        }
-        guard let uid = currentUserId else { return }
-        // Only count messages from OTHER users.
-        guard senderId != uid else { return }
-        await MainActor.run {
-            self.totalUnreadCount += 1
-            print("💬 Message badge +1 → \(self.totalUnreadCount)")
-        }
-    }
+            // Dedicated channel for the badge — separate from the conversation
+            // list's "public:messages" channel so the iOS SDK treats it as an
+            // independent subscription that is never unsubscribed by the view.
+            //
+            // IMPORTANT: mirror the WORKING pattern used by ChatView / MessagesView
+            // *exactly* — a SINGLE `postgresChange(Insert)` binding, with `subscribe()`
+            // and the `for await` loop inside one Task. Registering two bindings
+            // (Insert + Update) on one channel was preventing realtime delivery, which
+            // is why the badge only updated after the Messages tab forced a manual
+            // refresh. We only need INSERT here: a new message → re-count. Read
+            // decrements are handled by ChatView.decrement(by:) + the tab refresh.
+            let channel = supabase.realtimeV2.channel("public:messages:badge")
+            let insertions = channel.postgresChange(InsertAction.self, table: "messages")
+            realtimeChannel = channel
 
-    private func handleUpdate(_ action: HasRecord) async {
-        let record = action.record
-        guard let readAt = record["read_at"]?.stringValue,
-              let senderId = record["sender_id"]?.stringValue else {
-            return
-        }
-        guard let uid = currentUserId else { return }
-        // Only decrement when one of OUR messages was just marked read by the
-        // recipient. (The other party marking their own messages read has no
-        // effect on our unread count.)
-        guard senderId == uid, !readAt.isEmpty else { return }
-        await MainActor.run {
-            self.totalUnreadCount = max(0, self.totalUnreadCount - 1)
-            print("💬 Message badge -1 → \(self.totalUnreadCount)")
+            insertTask = Task { [weak self] in
+                await channel.subscribe()
+                print("💬 MessageBadgeManager subscribed (public:messages:badge) for user: \(userId)")
+                // Initial count, after the channel is live.
+                await self?.fetchUnreadCount(userId: userId)
+                // Any new message anywhere → re-fetch the authoritative unread count.
+                // RLS scopes the stream to rows the user can see, and the SELECT count
+                // is the single source of truth, so the badge can never drift.
+                for await _ in insertions {
+                    print("💬 MessageBadgeManager: realtime insert → recount")
+                    await self?.fetchUnreadCount(userId: userId)
+                }
+            }
+        } catch {
+            print("❌ Error setting up MessageBadgeManager subscription: \(error)")
         }
     }
 }

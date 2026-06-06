@@ -21,13 +21,45 @@ class NotificationBadgeManager: ObservableObject {
     private struct Candidate { let id: String; let created: Date? }
     private var interestCandidates: [Candidate] = []
     private var businessCandidates: [Candidate] = []
+    private var currentUserId: String?
     
+    // Serialize start()/resubscribe() so a sign-in + foreground burst can't race
+    // two subscribes against the same channel.
+    private var isStarting = false
+
     private init() {
-        setupRealtimeSubscription()
+        // No auto-subscribe here. The app lifecycle (sign-in + foreground) drives
+        // start()/resubscribe(), so the channel is (re)bound after the launch-time
+        // removeAllChannels() teardown and after every socket reconnect.
     }
-    
+
     deinit {
         cleanup()
+    }
+
+    // MARK: - Lifecycle (driven by KajHobeApp auth + foreground events)
+
+    /// (Re)bind the realtime subscription to the current user and re-sync the count.
+    /// Safe to call repeatedly. Call on sign-in and on app foreground.
+    func start() async {
+        await setupRealtimeSubscriptionAsync()
+    }
+
+    /// Alias used by the foreground hook for readability.
+    func resubscribe() async {
+        await setupRealtimeSubscriptionAsync()
+    }
+
+    /// Tear down the subscription and reset counts. Call on sign-out.
+    func stop() async {
+        await networking.unsubscribeFromNotifications(realtimeChannel)
+        realtimeChannel = nil
+        currentUserId = nil
+        await MainActor.run {
+            self.unreadCount = 0
+            self.readCount = 0
+            self.archivedCount = 0
+        }
     }
     
     // MARK: - Public Methods
@@ -140,33 +172,45 @@ class NotificationBadgeManager: ObservableObject {
     
     // MARK: - Private Methods
     
-    private func setupRealtimeSubscription() {
-        Task {
-            do {
-                let user = try await supabase.auth.user()
-                
-                realtimeChannel = await networking.subscribeToNotifications(
-                    userId: user.id.uuidString,
-                    onNewNotification: { [weak self] notification in
-                        // A new row arrived — re-fetch candidates and recompute against
-                        // local read/cleared state (a brand-new notification is unread).
-                        Task { await self?.refreshCounts() }
-                    },
-                    onNotificationUpdate: { [weak self] notification in
-                        // Update counts based on notification state changes
-                        // This is a simplified approach - in a real app you'd track the previous state
-                        Task {
-                            await self?.refreshCounts()
-                        }
-                    }
-                )
-                
-                // Initial count refresh
-                await refreshCounts()
-                
-            } catch {
-                print("❌ Error setting up NotificationBadgeManager subscription: \(error)")
+    /// (Re)establish the realtime subscription on `notifications_{uid}`. Tears down any
+    /// prior channel first so it's safe to call again on every sign-in / foreground.
+    private func setupRealtimeSubscriptionAsync() async {
+        // Guard against overlapping starts (sign-in + foreground firing together).
+        if isStarting { return }
+        isStarting = true
+        defer { isStarting = false }
+
+        do {
+            let user = try await supabase.auth.user()
+            currentUserId = user.id.uuidString
+
+            // Drop the old channel before re-subscribing (idempotent re-bind).
+            if let existing = realtimeChannel {
+                await networking.unsubscribeFromNotifications(existing)
+                realtimeChannel = nil
             }
+
+            realtimeChannel = await networking.subscribeToNotifications(
+                userId: user.id.uuidString,
+                onChange: { [weak self] in
+                    // A notification row arrived — re-fetch candidates and recompute
+                    // against local read/cleared state (a brand-new notification is unread).
+                    Task { await self?.refreshCounts() }
+
+                    // Piggyback the Messages-tab badge on this channel. Every new message
+                    // inserts a `message_received` notification (DB trigger handle_new_message),
+                    // and the notifications realtime channel is reliable on iOS — whereas a
+                    // second postgres_changes channel on the `messages` table is NOT delivered.
+                    // So refresh the unread-message count here to keep it live in real time.
+                    Task { await MessageBadgeManager.shared.refreshCounts() }
+                }
+            )
+
+            // Initial count refresh once the channel is live.
+            await refreshCounts()
+            print("🔔 NotificationBadgeManager subscribed for user: \(user.id.uuidString)")
+        } catch {
+            print("❌ Error setting up NotificationBadgeManager subscription: \(error)")
         }
     }
     

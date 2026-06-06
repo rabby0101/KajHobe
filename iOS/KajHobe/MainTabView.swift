@@ -56,6 +56,13 @@ struct MainTabView: View {
             // ViewModel will handle initialization when MessagesView appears
             setupNotificationObservers()
         }
+        .task {
+            // Guaranteed, idempotent boot of the realtime badge subscriptions once the
+            // authenticated shell is visible — independent of authStateChanges timing.
+            // start() is guarded by isStarting, so overlapping with the sign-in call is safe.
+            await NotificationBadgeManager.shared.start()
+            await MessageBadgeManager.shared.start()
+        }
         .sheet(isPresented: $showProfileSheet) {
             if let userId = profileToShow {
                 PublicProfileView(userId: userId)

@@ -81,6 +81,14 @@ struct AppEntryView: View {
             Task {
                 await pushNotificationManager.checkNotificationPermission()
             }
+            // The realtime socket often drops while backgrounded — rebuild the badge
+            // subscriptions and re-sync both counts on every foreground.
+            if isAuthenticated {
+                Task {
+                    await NotificationBadgeManager.shared.resubscribe()
+                    await MessageBadgeManager.shared.resubscribe()
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             presenceManager.handleAppResignActive()
@@ -100,13 +108,27 @@ struct AppEntryView: View {
                     // Start/stop presence management based on auth state
                     if isAuthenticated {
                         presenceManager.startPresenceManagement()
-                        
+
                         // Request push notification permission when user logs in
                         Task {
                             await pushNotificationManager.requestNotificationPermission()
                         }
+
+                        // (Re)bind the realtime badge subscriptions for the signed-in
+                        // user. This runs AFTER the launch-time refreshSupabaseSchema()
+                        // removeAllChannels() teardown, so the channels survive.
+                        Task {
+                            await NotificationBadgeManager.shared.start()
+                            await MessageBadgeManager.shared.start()
+                        }
                     } else {
                         presenceManager.stopPresenceManagement()
+
+                        // Tear down badge subscriptions + reset counts on sign-out.
+                        Task {
+                            await NotificationBadgeManager.shared.stop()
+                            await MessageBadgeManager.shared.stop()
+                        }
                     }
                 }
             }

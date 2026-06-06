@@ -30,67 +30,40 @@ class NotificationsNetworking: BaseNetworking {
     
     // MARK: - Real-time Subscriptions
     
-    /// Subscribe to real-time notification updates
+    /// Subscribe to real-time notification updates.
     ///
-    /// IMPORTANT: `postgresChange` MUST be invoked BEFORE `channel.subscribe()`.
-    /// The iOS SDK (`RealtimeChannelV2._onPostgresChange`) silently drops new
-    /// listeners on an already-subscribed channel (it `reportIssue`s and returns
-    /// an empty subscription). Wrapping the listener setup in `Task { }` blocks
-    /// that race with `subscribe()` is therefore a bug — and was the reason the
-    /// notification badge wasn't updating in real-time. The listeners are now
-    /// registered synchronously, then the channel is subscribed once.
+    /// Mirrors the WORKING realtime pattern used by `ChatView` / `MessagesView` and the
+    /// message badge: a SINGLE `postgresChange(Insert)` binding, with `subscribe()` and
+    /// the `for await` loop inside one Task, and **no fragile record parsing**. On every
+    /// inserted notification row we just fire `onChange()`; the bell's
+    /// `NotificationBadgeManager.refreshCounts()` then re-queries the user's own
+    /// notifications authoritatively, so there's no need to decode the realtime payload
+    /// or filter by `to_user_id` here.
+    ///
+    /// (The previous version registered two bindings — Insert + Update — which prevented
+    /// realtime delivery, AND parsed the payload with `record["to_user_id"] as? String`,
+    /// which is always nil because realtime values are `AnyJSON`, not `String`. Both bugs
+    /// meant the bell never updated live.)
     func subscribeToNotifications(
         userId: String,
-        onNewNotification: @escaping (EnhancedNotification) -> Void,
-        onNotificationUpdate: @escaping (EnhancedNotification) -> Void
+        onChange: @escaping () -> Void
     ) async -> RealtimeChannelV2 {
         let channel = supabase.realtimeV2.channel("notifications_\(userId)")
 
-        // Register BOTH listeners synchronously, before subscribing.
-        let insertions = await channel.postgresChange(
+        // Single INSERT binding, registered before subscribe (no await form, exactly
+        // like the working chat/messages subscriptions).
+        let insertions = channel.postgresChange(
             InsertAction.self,
             table: "notifications"
         )
-        let updates = await channel.postgresChange(
-            UpdateAction.self,
-            table: "notifications"
-        )
 
-        // Now subscribe — both listeners are attached.
-        await channel.subscribe()
-        print("🔔 Subscribed to real-time notifications for user: \(userId)")
-
-        // Spawn background collectors for the two streams. Each is a long-running
-        // task that will yield events as the server pushes them.
+        // Subscribe + iterate in ONE Task so the stream is consumed immediately after join.
         Task {
-            for await insertion in insertions {
-                // Check if this notification is for the current user
-                if let record = insertion.record as? [String: Any] {
-                    let toUserId = record["to_user_id"] as? String ?? record["user_id"] as? String
-
-                    if toUserId == userId,
-                       let notification = try? parseNotificationFromRealtime(record) {
-                        await MainActor.run {
-                            onNewNotification(notification)
-                        }
-                    }
-                }
-            }
-        }
-
-        Task {
-            for await update in updates {
-                // Check if this notification is for the current user
-                if let record = update.record as? [String: Any] {
-                    let toUserId = record["to_user_id"] as? String ?? record["user_id"] as? String
-
-                    if toUserId == userId,
-                       let notification = try? parseNotificationFromRealtime(record) {
-                        await MainActor.run {
-                            onNotificationUpdate(notification)
-                        }
-                    }
-                }
+            await channel.subscribe()
+            print("🔔 Subscribed to real-time notifications for user: \(userId)")
+            for await _ in insertions {
+                print("🔔 Realtime notification insert → recount")
+                await MainActor.run { onChange() }
             }
         }
 
