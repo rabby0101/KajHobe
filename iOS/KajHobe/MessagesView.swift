@@ -5,9 +5,15 @@ struct MessagesView: View {
     @State private var conversations: [ConversationWithDetails] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
-    @State private var currentUserProfile: Profile?
+    // Current user's id read synchronously from the in-memory session (zero network) — used to
+    // resolve "which side am I" in the realtime handler. Replaces a networked profiles SELECT.
+    // Lowercased to match Postgres' uuid representation (Swift's uuidString is uppercase, DB ids
+    // are lowercase). String comparisons against client_id/provider_id/sender_id depend on this.
+    @State private var currentUserId: String? = supabase.auth.currentUser?.id.uuidString.lowercased()
     @State private var realtimeChannel: RealtimeChannelV2?
     @State private var timeUpdateTimer: Timer?
+    // Coalesce overlapping loads (onAppear + refreshable + chatViewDidDisappear can fire together).
+    @State private var isLoadingConversations = false
     @ObservedObject private var messageBadgeManager = MessageBadgeManager.shared
     
     var body: some View {
@@ -16,10 +22,6 @@ struct MessagesView: View {
                 if isLoading {
                     VStack {
                         ProgressView("Loading conversations...")
-                        Text("Debug: Loading state is \(String(isLoading))")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .padding(.top, 8)
                     }
                     .onAppear {
                         print("🔍 UI DEBUG: MessagesView is showing loading state")
@@ -72,6 +74,19 @@ struct MessagesView: View {
             .onAppear {
                 print("🔍 UI DEBUG: MessagesView.onAppear called")
                 Task {
+                    // Seed instantly from cache (in-memory → disk) so the list paints on the
+                    // first frame — even on a cold start — instead of showing a spinner. The
+                    // fetch below then refreshes silently in the background.
+                    if conversations.isEmpty, let uid = currentUserId {
+                        if let cached = ConversationsCache.shared.peek(userId: uid) {
+                            print("🔍 UI DEBUG: Seeded \(cached.count) conversations from memory cache")
+                            conversations = cached
+                        } else if let disk = await ConversationsCache.shared.load(userId: uid) {
+                            print("🔍 UI DEBUG: Seeded \(disk.count) conversations from disk cache")
+                            conversations = disk
+                        }
+                    }
+
                     print("🔍 UI DEBUG: Starting loadConversations task")
                     await loadConversations()
                     print("🔍 UI DEBUG: loadConversations task completed")
@@ -111,23 +126,30 @@ struct MessagesView: View {
     }
     
     private func loadConversations(forceRefresh: Bool = false) async {
+        // Coalesce overlapping triggers (onAppear / refreshable / chatViewDidDisappear) so they
+        // don't race and cancel each other's in-flight queries.
+        if isLoadingConversations {
+            print("🔍 UI DEBUG: loadConversations already in flight — skipping")
+            return
+        }
+        isLoadingConversations = true
+        defer { isLoadingConversations = false }
+
         print("🔍 UI DEBUG: Starting loadConversations, forceRefresh: \(forceRefresh)")
-        
-        // Set loading state immediately
+
+        // Silent refresh: only show the blocking spinner on a genuine first load (nothing to show
+        // yet). On revisits the existing list stays on screen and the fetch runs in the background,
+        // swapping in fresh data when it returns — no "blink to blank" flash.
         await MainActor.run {
-            isLoading = true
+            if conversations.isEmpty {
+                isLoading = true
+            }
             errorMessage = nil
         }
-        
+
         do {
-            // Get current user profile
-            if currentUserProfile == nil {
-                print("🔍 UI DEBUG: Fetching current user profile...")
-                currentUserProfile = try await ProfileNetworking.shared.getCurrentUserProfile()
-                print("🔍 UI DEBUG: Current user profile fetch completed")
-            }
-            
-            guard let userProfile = currentUserProfile else {
+            // Resolve the signed-in user id from the in-memory session (no network round-trip).
+            guard let userId = supabase.auth.currentUser?.id.uuidString.lowercased() else {
                 print("❌ UI DEBUG: Unable to load user profile")
                 await MainActor.run {
                     errorMessage = "Unable to load user profile"
@@ -135,31 +157,41 @@ struct MessagesView: View {
                 }
                 return
             }
-            
-            print("🔍 UI DEBUG: User profile loaded - id: \(userProfile.id), name: \(userProfile.full_name ?? "N/A")")
-            
-            // Fetch conversations with timeout protection
-            print("🔍 UI DEBUG: About to fetch conversations for userId: \(userProfile.id)")
-            
+            currentUserId = userId
+
+            print("🔍 UI DEBUG: About to fetch conversations for userId: \(userId)")
+
             let fetchedConversations = try await Networking.shared.fetchConversations(
-                userId: userProfile.id,
+                userId: userId,
                 forceRefresh: forceRefresh
             )
-            
+
             print("🔍 UI DEBUG: Received \(fetchedConversations.count) conversations from networking layer")
-            
+
             await MainActor.run {
                 print("🔍 UI DEBUG: About to update UI state with \(fetchedConversations.count) conversations")
                 self.conversations = fetchedConversations
                 self.isLoading = false
                 print("🔍 UI DEBUG: UI updated with \(self.conversations.count) conversations, isLoading: \(self.isLoading)")
             }
+
+            // Persist for instant paint on the next visit / cold start (in-memory + disk).
+            ConversationsCache.shared.save(fetchedConversations, userId: userId)
+        } catch is CancellationError {
+            // A newer load superseded this one (e.g. pull-to-refresh during onAppear). Benign.
+            print("🔍 UI DEBUG: loadConversations cancelled — ignoring")
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            print("🔍 UI DEBUG: loadConversations URL request cancelled (-999) — ignoring")
         } catch {
-            print("❌ UI DEBUG: Error loading conversations: \(error)")
-            await MainActor.run {
-                self.errorMessage = error.localizedDescription
-                self.isLoading = false
-                print("🔍 UI DEBUG: Error state set, isLoading: \(self.isLoading)")
+            if (error as NSError).code == NSURLErrorCancelled {
+                print("🔍 UI DEBUG: loadConversations cancelled (-999) — ignoring")
+            } else {
+                print("❌ UI DEBUG: Error loading conversations: \(error)")
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoading = false
+                    print("🔍 UI DEBUG: Error state set, isLoading: \(self.isLoading)")
+                }
             }
         }
     }
@@ -213,8 +245,8 @@ struct MessagesView: View {
     }
     
     private func updateConversationWithNewMessage(conversationId: String, newContent: String, senderId: String) {
-        guard let currentUserId = currentUserProfile?.id else { return }
-        
+        guard let currentUserId = currentUserId else { return }
+
         // Find and update the affected conversation
         if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
             var  updatedConversation = conversations[index]

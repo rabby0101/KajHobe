@@ -15,7 +15,12 @@ struct ChatView: View {
     @State private var messages: [ChatMessage] = []
     @State private var newMessageText = ""
     @State private var isLoading = true
-    @State private var currentUserProfile: Profile?
+    // Current user's id read synchronously from the in-memory session (zero network). Used for
+    // "is this my message" checks and as sender id — replaces a networked profiles SELECT that
+    // was blocking the message load on open.
+    // Lowercased to match Postgres' uuid representation (Swift's uuidString is uppercase).
+    // sender_id / participant id comparisons against DB values depend on this.
+    @State private var currentUserId: String? = supabase.auth.currentUser?.id.uuidString.lowercased()
     @State private var realtimeChannel: RealtimeChannelV2?
     @State private var isSending = false
     
@@ -39,10 +44,6 @@ struct ChatView: View {
             if isLoading {
                 VStack {
                     ProgressView("Loading messages...")
-                    Text("Debug: Loading messages for conversation \(conversation.id)")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if messages.isEmpty {
@@ -76,7 +77,7 @@ struct ChatView: View {
                                 let message = messages[index]
                                 ChatMessageBubble(
                                     message: message,
-                                    isFromCurrentUser: message.sender_id == currentUserProfile?.id
+                                    isFromCurrentUser: message.sender_id == currentUserId
                                 )
                                 .id(message.id) // Add ID for ScrollViewReader
                             }
@@ -258,7 +259,7 @@ struct ChatView: View {
             DealOfferSheet(
                 conversation: conversation,
                 isSending: $isSendingDealOffer,
-                currentUserProfile: currentUserProfile,
+                currentUserId: currentUserId,
                 offerCount: offerCount,
                 hasUnansweredOffer: hasUnansweredOffer,
                 existingDealExists: existingDealExists,
@@ -275,12 +276,8 @@ struct ChatView: View {
         print("🔍 CHAT DEBUG: Loading chat data for conversation: \(conversation.id)")
         
         do {
-            // Get current user profile
-            if currentUserProfile == nil {
-                currentUserProfile = try await ProfileNetworking.shared.getCurrentUserProfile()
-            }
-            
-            // Fetch actual messages
+            // The current user id is already resolved synchronously from the session, so we go
+            // straight to fetching messages — no profile round-trip blocking the chat load.
             let fetchedMessages = try await MessagesNetworking.shared.fetchMessages(
                 conversationId: conversation.id
             )
@@ -410,7 +407,7 @@ struct ChatView: View {
                     }
                     
                     // Mark the new message as read if it's not from the current user
-                    if newMessage.sender_id != currentUserProfile?.id {
+                    if newMessage.sender_id != currentUserId {
                         Task {
                             await markMessageAsRead(messageId: newMessage.id)
                         }
@@ -422,8 +419,8 @@ struct ChatView: View {
     }
     
     private func markMessagesAsRead() async {
-        guard let currentUserId = currentUserProfile?.id else {
-            print("❌ READ RECEIPT DEBUG: No current user profile")
+        guard let currentUserId = currentUserId else {
+            print("❌ READ RECEIPT DEBUG: No current user id")
             return
         }
         
@@ -496,8 +493,8 @@ struct ChatView: View {
     }
     
     private func sendImageMessage(image: UIImage) async {
-        guard let currentUserId = currentUserProfile?.id else {
-            print("❌ SEND IMAGE DEBUG: No current user profile")
+        guard let currentUserId = currentUserId else {
+            print("❌ SEND IMAGE DEBUG: No current user id")
             return
         }
         
@@ -529,7 +526,7 @@ struct ChatView: View {
     private func sendMessage() async {
         let trimmedText = newMessageText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty,
-              let currentUserId = currentUserProfile?.id else {
+              let currentUserId = currentUserId else {
             print("❌ SEND MESSAGE DEBUG: Cannot send - invalid text or user")
             return
         }
@@ -563,23 +560,25 @@ struct ChatView: View {
     }
     
     private func loadOfferStatus() async {
-        guard let currentUserId = currentUserProfile?.id else {
+        guard let currentUserId = currentUserId else {
             await MainActor.run {
                 isLoadingOfferStatus = false
             }
             return
         }
-        
+
         do {
-            // First check if a deal already exists for this job
-            await checkExistingDeal()
-            
-            // Then get offer status
-            let status = try await MessagesNetworking.shared.getOfferStatus(
+            // The existing-deal check and the offer-status lookup are independent — run them
+            // concurrently so the offer bar resolves in ~one round-trip instead of two.
+            async let existingDeal: Void = checkExistingDeal()
+            async let offerStatus = MessagesNetworking.shared.getOfferStatus(
                 conversationId: conversation.id,
                 providerId: currentUserId
             )
-            
+
+            _ = await existingDeal
+            let status = try await offerStatus
+
             await MainActor.run {
                 offerCount = status.totalOffers
                 hasUnansweredOffer = status.hasUnansweredOffer
@@ -620,7 +619,7 @@ struct ChatView: View {
     }
     
     private func isCurrentUserProvider() -> Bool {
-        guard (currentUserProfile?.id) != nil else { return false }
+        guard currentUserId != nil else { return false }
         
         // In the conversation structure, determine if current user is provider
         // This can be determined by checking the conversation's provider_id
@@ -764,7 +763,9 @@ struct ChatMessageBubble: View {
 struct DealOfferBubble: View {
     let message: ChatMessage
     let isFromCurrentUser: Bool
-    @State private var currentUserProfile: Profile?
+    // Current user's id from the in-memory session (zero network) — replaces a profiles SELECT
+    // that was previously fetched just to read the id when responding to a deal.
+    private let currentUserId: String? = supabase.auth.currentUser?.id.uuidString.lowercased()
     @State private var dealStatus: String = "pending" // pending, accepted, rejected
     
     var body: some View {
@@ -891,13 +892,11 @@ struct DealOfferBubble: View {
         .onAppear {
             Task {
                 await loadDealStatus()
-                await getCurrentUser()
             }
         }
         .task {
             // Also run when the view is created (for real-time messages)
             await loadDealStatus()
-            await getCurrentUser()
         }
         .onChange(of: message.id) {
             // Reload status when message changes (covers negotiation data updates)
@@ -981,12 +980,6 @@ struct DealOfferBubble: View {
     }
     
     // MARK: - Functions
-    private func getCurrentUser() async {
-        if supabase.auth.currentUser != nil {
-            currentUserProfile = try? await ProfileNetworking.shared.getCurrentUserProfile()
-        }
-    }
-    
     private func loadDealStatus() async {
         // Check if this deal offer has been responded to by looking for deal_offer_id
         // in the negotiation_data or by checking the deal_offers table
@@ -1018,10 +1011,10 @@ struct DealOfferBubble: View {
     
     private func respondToDeal(accept: Bool) async {
         print("🔍 DEAL RESPONSE DEBUG: respondToDeal called with accept: \(accept)")
-        print("🔍 DEAL RESPONSE DEBUG: Current user profile: \(currentUserProfile?.id ?? "nil")")
+        print("🔍 DEAL RESPONSE DEBUG: Current user id: \(currentUserId ?? "nil")")
         print("🔍 DEAL RESPONSE DEBUG: Negotiation data: \(message.negotiation_data ?? [:])")
-        
-        guard let currentUserId = currentUserProfile?.id else {
+
+        guard let currentUserId = currentUserId else {
             print("❌ DEAL RESPONSE DEBUG: No current user ID")
             return
         }
@@ -1071,7 +1064,7 @@ struct DealOfferBubble: View {
 struct DealOfferSheet: View {
     let conversation: ConversationWithDetails
     @Binding var isSending: Bool
-    let currentUserProfile: Profile?
+    let currentUserId: String?
     let offerCount: Int
     let hasUnansweredOffer: Bool
     let existingDealExists: Bool
@@ -1209,9 +1202,9 @@ struct DealOfferSheet: View {
     }
     
     private func sendDealOffer() async {
-        guard let currentUserId = currentUserProfile?.id,
+        guard let currentUserId = currentUserId,
               let amountDouble = Double(amount) else {
-            print("❌ DEAL OFFER DEBUG: Invalid amount or no user profile")
+            print("❌ DEAL OFFER DEBUG: Invalid amount or no user id")
             return
         }
         

@@ -133,6 +133,10 @@ struct AppEntryView: View {
                             await NotificationBadgeManager.shared.stop()
                             await MessageBadgeManager.shared.stop()
                         }
+
+                        // Drop the cached conversation list so a different account can't
+                        // surface the previous user's chats from disk.
+                        ConversationsCache.shared.clear()
                     default:
                         // .tokenRefreshed / .userUpdated / etc. — no heavy fan-out re-run.
                         break

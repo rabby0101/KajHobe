@@ -6,16 +6,19 @@ import Foundation
 private let kConsoleLoggingEnabled = false
 
 /// While the master switch is off, only `print(...)` calls originating from these files emit.
-/// Matched against the last path component of `#fileID` (e.g. "JobsListView.swift").
-/// Currently scoped to the homepage ("Jobs" tab) feature: view, cards, skeleton, networking,
-/// cache. Add/remove filenames here to retarget which area is logged. Empty the set (with the
-/// master switch off) to mute everything.
+/// Matched against the last path component of `#fileID` (e.g. "MessagesView.swift").
+/// Currently scoped to the Messages ("Messages" tab) feature: conversation list, chat screen,
+/// input field, networking, conversation view model, and the unread-message badge manager.
+/// Shared utilities (ProfileNetworking, PresenceManager) are intentionally excluded to avoid
+/// app-wide log noise. Add/remove filenames here to retarget which area is logged. Empty the set
+/// (with the master switch off) to mute everything.
 private let kLoggingAllowlist: Set<String> = [
-    "JobsListView.swift",
-    "JobCardView.swift",
-    "JobsHomeSkeleton.swift",
-    "JobsNetworking.swift",
-    "JobsCache.swift",
+    "MessagesView.swift",
+    "MessagesNetworking.swift",
+    "ChatView.swift",
+    "ChatTextFieldView.swift",
+    "ConversationViewModel.swift",
+    "MessageBadgeManager.swift",
 ]
 
 /// Module-local shadow of `Swift.print`. Swift resolves unqualified `print(...)` calls in the

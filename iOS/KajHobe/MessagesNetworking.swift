@@ -46,36 +46,18 @@ class MessagesNetworking: ObservableObject {
     
     private func performConversationFetch(userId: String) async throws -> [ConversationWithDetails] {
         print("🔍 DEBUG: Starting conversation fetch for userId: \(userId)")
-        
-        // First, let's test if we can connect to the database at all
-        do {
-            let testQuery = try await supabase
-                .from("conversations")
-                .select("*")
-                .limit(1)
-                .execute()
-            print("🔍 DEBUG: Database connection test - raw response: \(testQuery)")
-        } catch {
-            print("❌ DEBUG: Database connection test failed: \(error)")
-            throw error
-        }
-        
-        // The issue is that Supabase is returning Void instead of data
-        // This suggests a configuration or permissions issue
-        // For now, let's return empty array and log the issue for debugging
-        
+
+        // Fetch the user's conversations directly. (The old pre-flight "connection test"
+        // query was removed: it added a serial round-trip and, as the first awaited call,
+        // turned a cancelled pull-to-refresh into a thrown -999. A real failure here is
+        // handled by the caller's catch.)
         let conversationData = try await supabase
             .from("conversations")
             .select("*")
             .or("client_id.eq.\(userId),provider_id.eq.\(userId)")
             .order("updated_at", ascending: false)
             .execute()
-        
-        print("🔍 DEBUG: Raw conversation data received: \(conversationData)")
-        print("🔍 DEBUG: Response data type: \(type(of: conversationData.data))")
-        print("🔍 DEBUG: Response value type: \(type(of: conversationData.value))")
-        print("🔍 DEBUG: Response status: \(conversationData.response.statusCode)")
-        
+
         // Check if we have actual data in the response
         let jsonData = conversationData.data
         if jsonData.count > 0 {
@@ -116,15 +98,41 @@ class MessagesNetworking: ObservableObject {
             }
         }
         
-        print("🔍 DEBUG: Batch fetching \(uniqueJobIds.count) jobs and \(uniqueUserIds.count) profiles")
-        
-        // Batch fetch jobs (only need title now)
-        let jobsData = try await supabase
+        let uniqueConversationIds = Set(conversations.compactMap { $0["id"] as? String })
+        print("🔍 DEBUG: Batch fetching \(uniqueJobIds.count) jobs, \(uniqueUserIds.count) profiles, and latest/unread messages for \(uniqueConversationIds.count) conversations")
+
+        // All four lookups depend only on ids already extracted from `conversations` (in memory),
+        // not on each other — so issue them concurrently and await together. This collapses what
+        // were four serial round-trips into ~one.
+        async let jobsResp = supabase
             .from("jobs")
             .select("id, title")
             .in("id", values: Array(uniqueJobIds))
             .execute()
-        
+
+        async let latestResp = supabase
+            .from("messages")
+            .select("conversation_id, content, created_at")
+            .in("conversation_id", values: Array(uniqueConversationIds))
+            .order("created_at", ascending: false)
+            .execute()
+
+        async let unreadResp = supabase
+            .from("messages")
+            .select("conversation_id, sender_id, read_at")
+            .in("conversation_id", values: Array(uniqueConversationIds))
+            .is("read_at", value: nil) // Only unread messages
+            .execute()
+
+        async let profilesResp = supabase
+            .from("profiles")
+            .select("id, full_name")
+            .in("id", values: Array(uniqueUserIds))
+            .execute()
+
+        let (jobsData, latestMessagesData, unreadCountsData, profilesData) =
+            try await (jobsResp, latestResp, unreadResp, profilesResp)
+
         var jobsMap: [String: [String: Any]] = [:]
         if let jobsArray = try? JSONSerialization.jsonObject(with: jobsData.data) as? [[String: Any]] {
             for job in jobsArray {
@@ -133,18 +141,7 @@ class MessagesNetworking: ObservableObject {
                 }
             }
         }
-        
-        // Batch fetch latest messages for each conversation
-        let uniqueConversationIds = Set(conversations.compactMap { $0["id"] as? String })
-        print("🔍 DEBUG: Fetching latest messages for \(uniqueConversationIds.count) conversations")
-        
-        let latestMessagesData = try await supabase
-            .from("messages")
-            .select("conversation_id, content, created_at")
-            .in("conversation_id", values: Array(uniqueConversationIds))
-            .order("created_at", ascending: false)
-            .execute()
-        
+
         var latestMessagesMap: [String: [String: Any]] = [:]
         if let messagesArray = try? JSONSerialization.jsonObject(with: latestMessagesData.data) as? [[String: Any]] {
             // Group messages by conversation_id and keep only the latest one
@@ -156,16 +153,7 @@ class MessagesNetworking: ObservableObject {
                 }
             }
         }
-        
-        // Batch fetch unread message counts based on read_at column
-        print("🔍 DEBUG: Calculating unread counts for \(uniqueConversationIds.count) conversations")
-        let unreadCountsData = try await supabase
-            .from("messages")
-            .select("conversation_id, sender_id, read_at")
-            .in("conversation_id", values: Array(uniqueConversationIds))
-            .is("read_at", value: nil) // Only unread messages
-            .execute()
-        
+
         var unreadCountsMap: [String: [String: Int]] = [:]
         if let unreadArray = try? JSONSerialization.jsonObject(with: unreadCountsData.data) as? [[String: Any]] {
             for unreadMessage in unreadArray {
@@ -179,14 +167,7 @@ class MessagesNetworking: ObservableObject {
                 }
             }
         }
-        
-        // Batch fetch profiles
-        let profilesData = try await supabase
-            .from("profiles")
-            .select("id, full_name")
-            .in("id", values: Array(uniqueUserIds))
-            .execute()
-        
+
         var profilesMap: [String: [String: Any]] = [:]
         if let profilesArray = try? JSONSerialization.jsonObject(with: profilesData.data) as? [[String: Any]] {
             for profile in profilesArray {

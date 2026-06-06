@@ -460,7 +460,8 @@ struct DealDetailView: View {
         do {
             currentUser = try supabase.auth.requireCurrentUser()
             if let userId = currentUser?.id {
-                isUserClient = (deal.client_id == userId.uuidString)
+                // Lowercase both sides: Swift's uuidString is uppercase, DB uuids are lowercase.
+                isUserClient = (deal.client_id.lowercased() == userId.uuidString.lowercased())
             }
         } catch {
             print("Error loading user context: \(error)")
