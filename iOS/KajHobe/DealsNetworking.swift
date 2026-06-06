@@ -193,16 +193,8 @@ class DealsNetworking: ObservableObject {
                 try await createDealFromAcceptedOffer(dealOffer: updatedDealOffer)
             }
             
-            // Send notification based on response
-            if response == "accepted" {
-                try await NotificationsNetworking.shared.createNotification(
-                    type: "deal_accepted",
-                    jobId: dealOffer.job_id,
-                    fromUserId: user.id.uuidString,
-                    toUserId: dealOffer.provider_id,
-                    message: "Your deal offer has been accepted!"
-                )
-            } else if response == "rejected" {
+            // Send notification for rejection
+            if response == "rejected" {
                 try await NotificationsNetworking.shared.createNotification(
                     type: "deal_rejected",
                     jobId: dealOffer.job_id,
@@ -397,7 +389,7 @@ class DealsNetworking: ObservableObject {
                 .eq("id", value: dealId)
                 .single()
                 .execute()
-            
+
             guard let dealData = try? JSONSerialization.jsonObject(with: dealResponse.data) as? [String: Any],
                   let clientId = dealData["client_id"] as? String,
                   let providerId = dealData["provider_id"] as? String else {
@@ -501,20 +493,20 @@ class DealsNetworking: ObservableObject {
                         .eq("id", value: dealId)
                         .single()
                         .execute()
-                    
+
                     if let dealData = try? JSONSerialization.jsonObject(with: dealResponse.data) as? [String: Any],
                        let jobId = dealData["job_id"] as? String {
-                        
+
                         // Update job status to completed
                         try await supabase
                             .from("jobs")
                             .update(["status": "completed"])
                             .eq("id", value: jobId)
                             .execute()
-                        
+
                         print("✅ Job \(jobId) marked as completed")
                     }
-                    
+
                     print("✅ Deal \(dealId) marked as completed")
                 } else {
                     // Rejection: Reset deal status back to active and clear completion flags

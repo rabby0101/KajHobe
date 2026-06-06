@@ -227,47 +227,61 @@ class NotificationsNetworking: BaseNetworking {
             Task.detached {
                 do {
                     let user = try await supabase.auth.user()
-                    print("🔢 Getting notification counts for user: \(user.id.uuidString)")
-                    
-                    // Use raw response approach to avoid Sendable conformance issues
+                    let userId = user.id.uuidString
+                    print("🔢 Getting notification counts for user: \(userId)")
+
+                    // 1) Business notifications (notifications table) — count only GENUINELY unread.
                     let rawResponse = try await supabase
                         .from("notifications")
                         .select("notification_state, read")
-                        .or("user_id.eq.\(user.id.uuidString),to_user_id.eq.\(user.id.uuidString)")
+                        .or("user_id.eq.\(userId),to_user_id.eq.\(userId)")
                         .neq("type", value: "message_received")
                         .execute()
-                    
+
                     // Manual decoding in detached context
                     let decoder = JSONDecoder()
                     let countData = try decoder.decode([NotificationCountData].self, from: rawResponse.data)
-                    
-                    var unreadCount = 0
+
+                    var businessUnread = 0
                     var readCount = 0
                     var archivedCount = 0
-                    
+
                     for item in countData {
                         if let stateString = item.notification_state,
                            let state = NotificationState(rawValue: stateString) {
                             switch state {
-                            case .unread: unreadCount += 1
+                            case .unread: businessUnread += 1
                             case .read: readCount += 1
                             case .archived: archivedCount += 1
                             }
-                        } else if let readBool = item.read {
-                            // Fallback for legacy read boolean
-                            if readBool {
-                                readCount += 1
-                            } else {
-                                unreadCount += 1
-                            }
                         } else {
-                            // Default to unread if state is unclear
-                            unreadCount += 1
+                            // No explicit notification_state (the large historical backlog
+                            // was inserted with notification_state = NULL). Treat as READ:
+                            // the bell counts ONLY rows explicitly marked 'unread'. This is
+                            // what stops the old backlog from inflating the badge (the "206").
+                            readCount += 1
                         }
                     }
-                    
-                    print("📊 Notification counts - Unread: \(unreadCount), Read: \(readCount), Archived: \(archivedCount)")
-                    continuation.resume(returning: (unread: unreadCount, read: readCount, archived: archivedCount))
+
+                    // 2) Unread interest requests on the user's OWN jobs
+                    //    (job_interests where jobs.client_id == user, status == pending, read == false).
+                    var interestUnread = 0
+                    do {
+                        let interestResponse = try await supabase
+                            .from("job_interests")
+                            .select("id, jobs!inner(client_id)", head: true, count: .exact)
+                            .eq("jobs.client_id", value: userId)
+                            .eq("status", value: "pending")
+                            .eq("read", value: false)
+                            .execute()
+                        interestUnread = interestResponse.count ?? 0
+                    } catch {
+                        print("⚠️ Could not count unread interests: \(error)")
+                    }
+
+                    let totalUnread = businessUnread + interestUnread
+                    print("📊 Notification counts - Unread: \(totalUnread) (business \(businessUnread) + interests \(interestUnread)), Read: \(readCount), Archived: \(archivedCount)")
+                    continuation.resume(returning: (unread: totalUnread, read: readCount, archived: archivedCount))
                 } catch {
                     print("❌ Error getting notification counts: \(error)")
                     continuation.resume(throwing: error)
@@ -360,6 +374,7 @@ class NotificationsNetworking: BaseNetworking {
                 "user_id": toUserId, // Legacy field - recipient of notification
                 "status": "pending",
                 "read": false,
+                "notification_state": "unread", // drives the bell/Business unread badge
                 // Explicitly set unused UUID fields to null
                 "related_proposal_id": NSNull(),
                 "deal_offer_id": NSNull(),
@@ -1522,6 +1537,15 @@ class NotificationsNetworking: BaseNetworking {
                         .from("notifications")
                         .select("*")
                         .or("user_id.eq.\(user.id.uuidString),to_user_id.eq.\(user.id.uuidString)")
+                        // Interest requests live on the Interests tab (job_interests); chat
+                        // lives in Messages. Keep them out of the feed. deal_offer_received /
+                        // deal_offer_responded are superseded by the rich "deal_created"
+                        // notification, so they're filtered to avoid duplicates.
+                        .neq("type", value: "message_received")
+                        .neq("type", value: "show_interest")
+                        .neq("type", value: "interest_request")
+                        .neq("type", value: "deal_offer_received")
+                        .neq("type", value: "deal_offer_responded")
                         .order("created_at", ascending: false)
                         .limit(limit)
                         .execute()
@@ -1553,7 +1577,6 @@ class NotificationsNetworking: BaseNetworking {
                         .from("notifications")
                         .update(updateData)
                         .eq("id", value: notificationId)
-                        .eq("notification_state", value: "unread")
                         .execute()
 
                     print("✅ Business notification \(notificationId) marked as read")
