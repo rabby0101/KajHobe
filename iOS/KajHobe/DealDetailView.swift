@@ -38,7 +38,11 @@ struct DealDetailView: View {
                     // Deal Terms Section
                     dealTermsSection
                         .animatedContainer(delay: 0.4)
-                    
+
+                    // Escrow & Payment Section
+                    EscrowSectionView(dealId: deal.id)
+                        .animatedContainer(delay: 0.45)
+
                     // Progress Tracking Section
                     progressTrackingSection
                         .animatedContainer(delay: 0.5)

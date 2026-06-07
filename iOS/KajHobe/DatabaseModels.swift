@@ -419,6 +419,71 @@ struct Deal: Identifiable, Codable, Sendable {
     var provider_profile: SimpleProfile?  // Provider profile data
 }
 
+// MARK: - Escrow (deal payment ledger)
+
+/// Lifecycle of the money held against a deal. Mirrors the Postgres `escrow_state` enum.
+enum EscrowState: String, Codable, Sendable, CaseIterable {
+    case pending   = "pending"    // deal exists, buyer hasn't paid yet
+    case held      = "held"       // buyer paid into the merchant account; funds held
+    case released  = "released"   // deal completed; owed to provider, not yet paid
+    case paid_out  = "paid_out"   // provider has received the money
+    case refunded  = "refunded"   // returned to the buyer
+    case failed    = "failed"     // a collect/payout attempt failed
+
+    /// Short human label for badges.
+    var label: String {
+        switch self {
+        case .pending:  return "Awaiting payment"
+        case .held:     return "In escrow"
+        case .released: return "Released"
+        case .paid_out: return "Paid out"
+        case .refunded: return "Refunded"
+        case .failed:   return "Payment failed"
+        }
+    }
+
+    /// SF Symbol name for the badge (UI maps this to an Image).
+    var systemImage: String {
+        switch self {
+        case .pending:  return "clock.badge.exclamationmark"
+        case .held:     return "lock.shield.fill"
+        case .released: return "checkmark.seal.fill"
+        case .paid_out: return "checkmark.circle.fill"
+        case .refunded: return "arrow.uturn.backward.circle.fill"
+        case .failed:   return "xmark.octagon.fill"
+        }
+    }
+}
+
+/// One escrow row per deal (Postgres `public.escrow_transactions`). The app reads this;
+/// all state changes happen server-side via DB triggers and SECURITY DEFINER RPCs.
+struct EscrowTransaction: Identifiable, Codable, Sendable {
+    let id: String
+    let deal_id: String
+    let client_id: String
+    let provider_id: String
+    let amount: Int
+    let platform_fee: Int
+    let provider_amount: Int
+    let state: EscrowState
+    let currency: String
+    let collection_payment_id: String?
+    let collection_trx_id: String?
+    let payout_trx_id: String?
+    let provider_msisdn: String?
+    let held_at: String?
+    let released_at: String?
+    let paid_out_at: String?
+    let refunded_at: String?
+    let paid_out_by: String?
+    let notes: String?
+    let created_at: String?
+    let updated_at: String?
+
+    var formattedAmount: String { "৳\(amount)" }
+    var formattedProviderAmount: String { "৳\(provider_amount)" }
+}
+
 struct DealInsert: Codable, Sendable {
     let deal_offer_id: String
     let conversation_id: String  // Added to match database schema

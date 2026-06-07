@@ -767,7 +767,11 @@ struct DealOfferBubble: View {
     // that was previously fetched just to read the id when responding to a deal.
     private let currentUserId: String? = supabase.auth.currentUser?.id.uuidString.lowercased()
     @State private var dealStatus: String = "pending" // pending, accepted, rejected
-    
+    // Accept-and-pay: the client must pay into escrow to accept, which is what creates the deal.
+    @State private var isPaying: Bool = false
+    @State private var payError: String?
+    @State private var checkoutSession: BkashCheckoutSession?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header with icon, title, and status indicator
@@ -841,6 +845,20 @@ struct DealOfferBubble: View {
                 }
             }
             
+            // Accept & Pay / Reject are done via long-press (context menu). Surface a
+            // payment error inline only if a checkout attempt failed, and a subtle
+            // "opening bKash" hint while a checkout is in flight.
+            if !isFromCurrentUser && dealStatus == "pending" {
+                if isPaying {
+                    HStack(spacing: 6) {
+                        ProgressView().scaleEffect(0.8)
+                        Text("Opening bKash…").font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                } else if let payError {
+                    Text(payError).font(.system(size: 12)).foregroundColor(.red)
+                }
+            }
+
             // Status text
             if dealStatus != "pending" {
                 HStack {
@@ -865,12 +883,9 @@ struct DealOfferBubble: View {
             // Context menu only for received offers and pending status
             if !isFromCurrentUser && dealStatus == "pending" {
                 Button {
-                    print("🔍 CONTEXT MENU DEBUG: Accept button tapped")
-                    Task {
-                        await respondToDeal(accept: true)
-                    }
+                    acceptAndPay()
                 } label: {
-                    Label("Accept Offer", systemImage: "checkmark.circle.fill")
+                    Label("Accept & Pay", systemImage: "creditcard.fill")
                 }
                 
                 Button {
@@ -1055,6 +1070,44 @@ struct DealOfferBubble: View {
                 print("❌ DEAL RESPONSE DEBUG: Error domain: \(nsError.domain)")
                 print("❌ DEAL RESPONSE DEBUG: Error code: \(nsError.code)")
                 print("❌ DEAL RESPONSE DEBUG: Error description: \(nsError.localizedDescription)")
+            }
+        }
+    }
+
+    /// Accept the offer by paying its amount into escrow. The bKash capture is what
+    /// flips the offer to accepted and creates the deal (server-side). No payment → no deal.
+    private func acceptAndPay() {
+        guard let negotiationData = message.negotiation_data,
+              let dealOfferId = negotiationData["deal_offer_id"] as? String else {
+            payError = "This offer can't be paid (missing offer id)."
+            return
+        }
+        Task {
+            await MainActor.run { isPaying = true; payError = nil }
+            do {
+                let url = try await EscrowNetworking.shared.startCollection(dealOfferId: dealOfferId)
+                let session = BkashCheckoutSession()
+                await MainActor.run { self.checkoutSession = session }
+                session.start(url: url, scheme: "kajhobe") { result in
+                    Task { @MainActor in
+                        self.checkoutSession = nil
+                        if case .success(let callback) = result {
+                            let status = BkashCheckoutSession.status(from: callback)
+                            if status == "success" {
+                                self.dealStatus = "accepted"
+                            } else {
+                                self.payError = "Payment not completed (\(status ?? "cancelled"))."
+                            }
+                        }
+                        self.isPaying = false
+                        await self.loadDealStatus()
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    self.payError = error.localizedDescription
+                    self.isPaying = false
+                }
             }
         }
     }
