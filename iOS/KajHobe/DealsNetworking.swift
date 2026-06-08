@@ -468,7 +468,32 @@ class DealsNetworking: ObservableObject {
             let user = try supabase.auth.requireCurrentUser()
             let status = approve ? "approved" : "rejected"
             let now = ISO8601DateFormatter().string(from: Date())
-            
+
+            // A3/A4 integrity guard: a deal must never be marked complete unless its
+            // payment was actually collected into escrow. We check this BEFORE writing
+            // anything (no partial state) and fail closed — if the escrow can't be read
+            // or isn't funded, completion is refused. The DB has a BEFORE UPDATE backstop
+            // trigger too; this client-side check exists for a clear, immediate message.
+            if approve {
+                let crResp = try await supabase
+                    .from("completion_requests")
+                    .select("deal_id")
+                    .eq("id", value: requestId)
+                    .single()
+                    .execute()
+                guard let crData = try? JSONSerialization.jsonObject(with: crResp.data) as? [String: Any],
+                      let guardDealId = crData["deal_id"] as? String else {
+                    throw NetworkingError.validationError("Couldn't load this completion request. Please try again.")
+                }
+
+                let fundedStates: Set<EscrowState> = [.held, .released, .paid_out]
+                let escrow = try? await EscrowNetworking.shared.fetchEscrow(forDealId: guardDealId)
+                guard let escrow, fundedStates.contains(escrow.state) else {
+                    throw NetworkingError.validationError(
+                        "This deal can't be marked complete yet because the payment hasn't been collected into escrow. Make sure the client has paid for the deal, then try again — or contact support if the payment already went through.")
+                }
+            }
+
             let updateData = [
                 "status": status,
                 "responded_at": now,
