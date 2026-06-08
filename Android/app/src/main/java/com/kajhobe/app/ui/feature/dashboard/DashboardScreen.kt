@@ -72,10 +72,10 @@ fun DashboardScreen(
                 StatCard("Earned", "৳${data.total_earnings.toInt()}", Modifier.weight(1f))
                 StatCard("Spent", "৳${data.total_spent.toInt()}", Modifier.weight(1f))
             }
-            if (data.pending_completion_requests > 0) {
-                Spacer(Modifier.height(KajHobeTheme.spacing.md))
-                StatCard("Pending completion requests", data.pending_completion_requests.toString())
-            }
+            // Note: completion-approval moved to Notifications → Deal Details; the
+            // pending_completion_requests count is no longer surfaced on the dashboard
+            // (iOS parity — see iOS commit f649a808). The field is kept on DashboardData
+            // for JSON compatibility.
         }
 
         Spacer(Modifier.height(KajHobeTheme.spacing.lg))

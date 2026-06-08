@@ -2,7 +2,6 @@ package com.kajhobe.app.ui.feature.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kajhobe.app.data.model.CompletionRequest
 import com.kajhobe.app.data.model.DashboardData
 import com.kajhobe.app.data.model.Deal
 import com.kajhobe.app.data.repository.DealsRepository
@@ -17,7 +16,6 @@ data class DashboardUiState(
     val isLoading: Boolean = true,
     val data: DashboardData? = null,
     val activeDeals: List<Deal> = emptyList(),
-    val completionRequests: List<CompletionRequest> = emptyList(),
     val errorMessage: String? = null,
 )
 
@@ -33,6 +31,9 @@ class DashboardViewModel(
     /**
      * Load dashboard data. [silent] = true keeps current data on screen with no loading view
      * (used on tab-resume so navigation refreshes seamlessly); false shows the full loader.
+     *
+     * Mirrors iOS post-commit `loadDashboardData`: the pending-completion-requests fetch was
+     * removed — completion approval is now driven from Notifications → Deal Details.
      */
     fun load(silent: Boolean = false) {
         _uiState.update { it.copy(isLoading = if (silent) it.isLoading else true, errorMessage = null) }
@@ -40,11 +41,10 @@ class DashboardViewModel(
             runCatching {
                 val data = async { dealsRepository.fetchDashboardData() }
                 val deals = async { runCatching { dealsRepository.fetchActiveDeals() }.getOrDefault(emptyList()) }
-                val requests = async { dealsRepository.fetchPendingCompletionRequests() }
-                Triple(data.await(), deals.await(), requests.await())
-            }.onSuccess { (data, deals, requests) ->
+                data.await() to deals.await()
+            }.onSuccess { (data, deals) ->
                 _uiState.update {
-                    it.copy(isLoading = false, data = data, activeDeals = deals, completionRequests = requests)
+                    it.copy(isLoading = false, data = data, activeDeals = deals)
                 }
             }.onFailure { e ->
                 _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Failed to load dashboard") }

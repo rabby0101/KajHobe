@@ -130,19 +130,35 @@ class NotificationsViewModel(
     fun clearAll() = localState.clear(_uiState.value.feedItems.map { it.rawId })
 
     /**
-     * Tap a business notification: mark read, and if it's a "deal_created" notification, resolve
-     * the deal for its job and emit a navigate event to Deal Details (mirrors iOS openDeal).
+     * Tap a business notification: mark read, and if it carries a jobId and is one of the
+     * types that should open a deal, resolve the deal for its job and emit a navigate event
+     * to Deal Details (mirrors iOS `handleBusinessNotificationTap` + `openDeal(forJobId:)`).
+     *
+     * Types routed to Deal Details: `deal_created`, `completion_request`, `completion_requested`.
+     * The approval surface for completion requests moved from the Dashboard to Deal Details
+     * (see iOS commit that moved deal-completion approval to Notifications → Deal Details).
      */
     fun onBusinessTap(notification: EnhancedNotification) {
         localState.markRead(notification.id)
-        val jobId = notification.job_id
-        if (notification.type == "deal_created" && jobId != null) {
-            viewModelScope.launch {
-                val deal = runCatching { dealsRepository.fetchActiveDeals() }
-                    .getOrDefault(emptyList())
-                    .firstOrNull { it.job_id == jobId }
-                deal?.let { _navigateToDeal.emit(it.id) }
-            }
+        val jobId = notification.job_id ?: return
+        when (notification.type) {
+            "deal_created",
+            "completion_request",
+            "completion_requested" -> openDealForJob(jobId)
+        }
+    }
+
+    /**
+     * Resolve the active deal for [jobId] and emit its id so MainScaffold can navigate to
+     * Deal Details. Mirrors iOS `openDeal(forJobId:)` (reuses fetchActiveDeals, which joins
+     * job + profiles — same shape the Dashboard's active-deal tap uses).
+     */
+    private fun openDealForJob(jobId: String) {
+        viewModelScope.launch {
+            val deal = runCatching { dealsRepository.fetchActiveDeals() }
+                .getOrDefault(emptyList())
+                .firstOrNull { it.job_id == jobId }
+            deal?.let { _navigateToDeal.emit(it.id) }
         }
     }
 
