@@ -80,6 +80,8 @@ class MessagesRepository(client: SupabaseClient) : BaseRepository(client) {
                 provider_profile = profiles[c.provider_id],
                 last_message = msgs.firstOrNull(),
                 unread = msgs.count { it.sender_id != uid && it.read_at == null },
+                client_archived = c.client_archived,
+                provider_archived = c.provider_archived,
             )
         }
     }
