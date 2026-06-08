@@ -1,6 +1,14 @@
 import Foundation
 import Supabase
 
+// Encodable payload for the payout-account upsert. Declared `nonisolated` +
+// `Sendable` so it satisfies the supabase SDK's Sendable requirement under the
+// project's default-MainActor isolation (mirrors ProfileUpdate in ProfileView).
+nonisolated struct PayoutAccountUpsert: Codable, Sendable {
+    let user_id: String
+    let bkash_number: String
+}
+
 // ---------------------------------------------------------------------------
 // EscrowNetworking — read escrow rows + drive payment actions through the seam.
 //
@@ -58,6 +66,35 @@ final class EscrowNetworking: BaseNetworking {
 
     func markRefunded(escrowId: String, note: String? = nil) async throws {
         try await payoutProvider.refund(escrowId: escrowId, note: note)
+    }
+
+    // MARK: - Provider payout account (private bKash number)
+
+    /// The current user's payout (bKash) number, or nil if none set yet.
+    /// RLS restricts this row to the owner (or an admin), so the number never
+    /// leaks to other users — it is NOT part of `profiles` / `public_profiles`.
+    func fetchMyPayoutNumber() async throws -> String? {
+        let user = try supabase.auth.requireCurrentUser()
+        let resp = try await supabase
+            .from("provider_payout_accounts")
+            .select("bkash_number")
+            .eq("user_id", value: user.id.uuidString.lowercased())
+            .limit(1)
+            .execute()
+        struct Row: Decodable { let bkash_number: String }
+        let rows = try JSONDecoder().decode([Row].self, from: resp.data)
+        return rows.first?.bkash_number
+    }
+
+    /// Create or update the current user's payout (bKash) number. The DB CHECK
+    /// constraint also enforces the 01XXXXXXXXX format as a backstop.
+    func upsertMyPayoutNumber(_ number: String) async throws {
+        let user = try supabase.auth.requireCurrentUser()
+        try await supabase
+            .from("provider_payout_accounts")
+            .upsert(PayoutAccountUpsert(user_id: user.id.uuidString.lowercased(), bkash_number: number),
+                    onConflict: "user_id")
+            .execute()
     }
 
     /// Whether the signed-in user is in the `app_admins` allowlist (drives the

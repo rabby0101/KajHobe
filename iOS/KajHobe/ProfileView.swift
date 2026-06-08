@@ -40,7 +40,13 @@ struct ProfileView: View {
     @State private var hourlyRate = ""
     @State private var teamRate = ""
     @State private var teamHoursLabel = ""
-    
+
+    // Private payout (bKash) number — stored in provider_payout_accounts, NOT
+    // in profiles. `payoutNumberLoaded` holds the saved value (readonly display
+    // + edit reset); `payoutBkashNumber` is the edit buffer.
+    @State private var payoutNumberLoaded = ""
+    @State private var payoutBkashNumber = ""
+
     var body: some View {
         NavigationView {
             if isLoading {
@@ -366,6 +372,11 @@ struct ProfileView: View {
                 providerField(title: "Hourly fee (৳)", text: $hourlyRate, placeholder: "e.g. 159", keyboard: .decimalPad)
                 providerField(title: "Team work fee (৳)", text: $teamRate, placeholder: "e.g. 1059", keyboard: .decimalPad)
                 providerField(title: "Team hours label", text: $teamHoursLabel, placeholder: "e.g. 4-7 hrs")
+
+                providerField(title: "Payout bKash number (private)", text: $payoutBkashNumber, placeholder: "01XXXXXXXXX", keyboard: .numberPad)
+                Text("Only used to pay you when a deal completes. Never shown to clients.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             } else {
                 providerReadonlyRow("Profession", profile.profession)
                 providerReadonlyRow("Tagline", profile.tagline)
@@ -373,6 +384,7 @@ struct ProfileView: View {
                 providerReadonlyRow("Hourly fee", profile.hourly_rate.map { "৳\(formattedNumber($0))" })
                 providerReadonlyRow("Team work fee", profile.team_rate.map { "৳\(formattedNumber($0))" })
                 providerReadonlyRow("Team hours", profile.team_hours_label)
+                providerReadonlyRow("Payout bKash", payoutNumberLoaded.isEmpty ? nil : payoutNumberLoaded)
             }
         }
     }
@@ -415,8 +427,17 @@ struct ProfileView: View {
             do {
                 let user = try supabase.auth.requireCurrentUser()
                 let fetchedProfile = try await Networking.shared.fetchProfile(userId: user.id.uuidString)
+                // Providers also have a private payout (bKash) number in a
+                // separate, RLS-locked table. Load it for display/editing.
+                var fetchedPayout = ""
+                if fetchedProfile.is_service_provider == true,
+                   let n = try? await EscrowNetworking.shared.fetchMyPayoutNumber() {
+                    fetchedPayout = n ?? ""
+                }
                 await MainActor.run {
                     self.profile = fetchedProfile
+                    self.payoutNumberLoaded = fetchedPayout
+                    self.payoutBkashNumber = fetchedPayout
                     self.isLoading = false
                 }
             } catch {
@@ -441,16 +462,28 @@ struct ProfileView: View {
         hourlyRate = profile.hourly_rate.map { formattedNumber($0) } ?? ""
         teamRate = profile.team_rate.map { formattedNumber($0) } ?? ""
         teamHoursLabel = profile.team_hours_label ?? ""
+        payoutBkashNumber = payoutNumberLoaded
         isEditing = true
     }
-    
+
     private func cancelEditing() {
+        payoutBkashNumber = payoutNumberLoaded
         isEditing = false
     }
     
     private func saveProfile() {
         guard profile != nil else { return }
         
+        // Validate the private payout number up front so an invalid entry aborts
+        // before any write (the DB CHECK constraint is the backstop).
+        let trimmedPayout = payoutBkashNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalPayout = (isServiceProvider && !trimmedPayout.isEmpty) ? trimmedPayout : nil
+        if let payout = finalPayout, payout.range(of: "^01[0-9]{9}$", options: .regularExpression) == nil {
+            self.errorMessage = "Payout bKash number must be 11 digits starting with 01 (e.g. 01712345678)."
+            self.showingError = true
+            return
+        }
+
         Task {
             do {
                 let user = try supabase.auth.requireCurrentUser()
@@ -487,6 +520,12 @@ struct ProfileView: View {
                     .eq("id", value: user.id.uuidString)
                     .execute()
 
+                // Persist the private payout number to its own RLS-locked table
+                // (only when a provider supplied a valid one).
+                if let payout = finalPayout {
+                    try await EscrowNetworking.shared.upsertMyPayoutNumber(payout)
+                }
+
                 // Update local profile
                 await MainActor.run {
                     self.profile?.full_name = fullName
@@ -499,6 +538,7 @@ struct ProfileView: View {
                     self.profile?.hourly_rate = parsedHourly
                     self.profile?.team_rate = parsedTeam
                     self.profile?.team_hours_label = finalTeamHours
+                    self.payoutNumberLoaded = finalPayout ?? self.payoutNumberLoaded
                     self.isEditing = false
                 }
             } catch {
