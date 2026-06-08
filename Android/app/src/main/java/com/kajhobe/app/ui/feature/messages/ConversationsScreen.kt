@@ -117,6 +117,7 @@ fun ConversationsScreen(
                         items(visible, key = { it.id }) { convo ->
                             ArchiveSwipeRow(
                                 convo = convo,
+                                currentUserId = state.currentUserId,
                                 otherName = viewModel.otherNameFor(convo, state.currentUserId),
                                 unread = viewModel.unreadFor(convo),
                                 onClick = { onOpenChat(convo.id) },
@@ -246,6 +247,7 @@ private fun Pill(
 @Composable
 private fun ArchiveSwipeRow(
     convo: ConversationWithDetails,
+    currentUserId: String?,
     otherName: String,
     unread: Int,
     onClick: () -> Unit,
@@ -287,6 +289,7 @@ private fun ArchiveSwipeRow(
     ) {
         ConversationRow(
             convo = convo,
+            currentUserId = currentUserId,
             otherName = otherName,
             unread = unread,
             onClick = onClick,
@@ -299,12 +302,13 @@ private fun ArchiveSwipeRow(
 @Composable
 private fun ConversationRow(
     convo: ConversationWithDetails,
+    currentUserId: String?,
     otherName: String,
     unread: Int,
     onClick: () -> Unit,
 ) {
     val accent = KajHobeTheme.colors.accentOrange
-    val avatarUrl = if (convo.isClient(convo.client_id)) convo.provider_profile?.avatar_url else convo.client_profile?.avatar_url
+    val avatarUrl = if (convo.isClient(currentUserId)) convo.provider_profile?.avatar_url else convo.client_profile?.avatar_url
     val jobTitle = convo.job?.title
     val preview = convo.last_message?.let { if (it.isImage) "📷 Photo" else it.content }
 
