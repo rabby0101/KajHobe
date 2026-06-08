@@ -117,7 +117,7 @@ fun NotificationsScreen(
                                     categoryLabel = item.category.label,
                                     isUnread = unread,
                                     isProcessing = item.interest.id in state.processingIds,
-                                    onTap = { viewModel.markRead(item) },
+                                    onTap = { viewModel.onInterestTap(item.interest) },
                                     onAccept = { viewModel.respond(item.interest, accept = true) },
                                     onReject = { viewModel.respond(item.interest, accept = false) },
                                 )

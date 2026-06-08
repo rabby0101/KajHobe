@@ -8,6 +8,8 @@ import com.kajhobe.app.data.model.EnrichedJobInterest
 import com.kajhobe.app.data.notifications.NotificationBadgeManager
 import com.kajhobe.app.data.repository.DealsRepository
 import com.kajhobe.app.data.repository.NotificationsRepository
+import com.kajhobe.app.ui.navigation.NavEvent
+import com.kajhobe.app.ui.navigation.NavigationEventBus
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -37,6 +39,7 @@ class NotificationsViewModel(
     private val localState: NotificationLocalState,
     private val badgeManager: NotificationBadgeManager,
     private val dealsRepository: DealsRepository,
+    private val navBus: NavigationEventBus,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NotificationsUiState())
@@ -141,5 +144,15 @@ class NotificationsViewModel(
                 deal?.let { _navigateToDeal.emit(it.id) }
             }
         }
+    }
+
+    /**
+     * Tap an interest row: mark read locally and navigate to the sender's
+     * public profile. Mirrors iOS `handleDefaultAction` for `interest_request`
+     * (PushNotificationManager.swift:464-479 → MainTabView.swift:99-120).
+     */
+    fun onInterestTap(interest: EnrichedJobInterest) {
+        localState.markRead(interest.id)
+        navBus.emit(NavEvent.ToProfile(interest.provider_id))
     }
 }

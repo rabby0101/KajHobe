@@ -37,6 +37,7 @@ import com.kajhobe.app.ui.feature.messages.ChatScreen
 import com.kajhobe.app.ui.feature.messages.ConversationsScreen
 import com.kajhobe.app.ui.feature.notifications.NotificationsScreen
 import com.kajhobe.app.ui.feature.postjob.PostJobScreen
+import com.kajhobe.app.ui.feature.profile.PublicProfileScreen
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import org.koin.compose.koinInject
 
@@ -49,10 +50,30 @@ fun MainScaffold(onSignOut: () -> Unit) {
     val navController = rememberNavController()
     val badgeManager = koinInject<NotificationBadgeManager>()
     val messageBadgeManager = koinInject<MessageBadgeManager>()
+    val navBus = koinInject<NavigationEventBus>()
     val unreadCount by badgeManager.unreadCount.collectAsStateWithLifecycle()
     val messageUnreadCount by messageBadgeManager.totalUnreadCount.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) { badgeManager.refreshCounts() }
+
+    // App-wide navigation events (interest notification tap → sender's profile, etc.).
+    // The bus is buffered (extraBufferCapacity = 16) so events emitted before this
+    // LaunchedEffect starts are replayed instead of being lost.
+    LaunchedEffect(Unit) {
+        navBus.events.collect { event ->
+            when (event) {
+                is NavEvent.ToProfile ->
+                    navController.navigate(Routes.publicProfile(event.userId))
+                is NavEvent.ToChat ->
+                    navController.navigate(Routes.chat(event.conversationId))
+                is NavEvent.ToJob ->
+                    navController.navigate(Routes.jobDetail(event.jobId))
+                NavEvent.ToMessages -> navController.navigate(TopLevelDestination.MESSAGES.route)
+                NavEvent.ToNotifications -> navController.navigate(TopLevelDestination.NOTIFICATIONS.route)
+                NavEvent.ToDashboard -> navController.navigate(TopLevelDestination.DASHBOARD.route)
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -172,6 +193,12 @@ fun MainScaffold(onSignOut: () -> Unit) {
                     dealId = entry.arguments?.getString("dealId").orEmpty(),
                     onBack = { navController.popBackStack() },
                     onOpenChat = { conversationId -> navController.navigate(Routes.chat(conversationId)) },
+                )
+            }
+            composable(Routes.PUBLIC_PROFILE) { entry ->
+                PublicProfileScreen(
+                    userId = entry.arguments?.getString("userId").orEmpty(),
+                    onBack = { navController.popBackStack() },
                 )
             }
         }
