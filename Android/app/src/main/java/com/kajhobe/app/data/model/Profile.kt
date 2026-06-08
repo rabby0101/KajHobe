@@ -85,6 +85,12 @@ data class PublicProfile(
     val service_categories: List<String> = emptyList(),
     val trust_level: String = "unverified",
     val last_updated: String? = null,
+    val profession: String? = null,
+    val tagline: String? = null,
+    val experience_years: Int? = null,
+    val hourly_rate: Double? = null,
+    val team_rate: Double? = null,
+    val team_hours_label: String? = null,
 ) {
     val trustLevelEnum: TrustLevel get() = TrustLevel.fromRaw(trust_level)
     val isOnline: Boolean get() = is_online ?: false
@@ -105,6 +111,39 @@ data class PublicProfile(
     val hasExperience: Boolean get() = completed_jobs > 0 || avg_rating > 0
     val formattedLastSeen: String get() = relativeLastSeen(last_seen_at)
     val responseTimeTextValue: String get() = responseTimeText(average_response_time_minutes)
+    val formattedHourlyRate: String?
+        get() {
+            val rate = hourly_rate ?: return null
+            if (rate <= 0) return null
+            return "৳${formatAmount(rate)}/hr"
+        }
+
+    val formattedTeamRate: String?
+        get() {
+            val rate = team_rate ?: return null
+            if (rate <= 0) return null
+            return "৳${formatAmount(rate)}"
+        }
+
+    val experienceText: String
+        get() {
+            val years = experience_years ?: return "New provider"
+            if (years <= 0) return "New provider"
+            return "$years year${if (years == 1) "" else "s"} of experience"
+        }
+
+    val formattedCustomers: String
+        get() = when {
+            completed_jobs == 0 -> "New"
+            completed_jobs < 10 -> "$completed_jobs"
+            completed_jobs < 100 -> "${(completed_jobs / 10) * 10}+"
+            else -> "${(completed_jobs / 50) * 50}+"
+        }
+
+    private fun formatAmount(v: Double): String {
+        val isWhole = v % 1.0 == 0.0
+        return if (isWhole) "%.0f".format(v) else "%.2f".format(v)
+    }
 }
 
 /** Minimal profile for list batch loads — iOS PublicProfileSummary. */
@@ -135,4 +174,53 @@ data class ServiceHighlight(
     val formattedJobCount: String get() = if (job_count == 1) "1 job" else "$job_count jobs"
     val formattedRating: String
         get() = avg_rating?.takeIf { it > 0 }?.let { String.format("%.1f ⭐", it) } ?: "No ratings"
+
+    val formattedRecentCompletion: String
+        get() {
+            val raw = recent_completion?.takeIf { it.isNotBlank() } ?: return "No recent work"
+            val parser = java.time.format.DateTimeFormatterBuilder()
+                .append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                .optionalStart()
+                .appendFraction(java.time.temporal.ChronoField.NANO_OF_SECOND, 0, 9, true)
+                .optionalEnd()
+                .appendOffset("+HH:MM", "Z")
+                .toFormatter()
+            val odt = runCatching { java.time.OffsetDateTime.parse(raw, parser) }.getOrNull()
+                ?: return "Unknown"
+            val days = java.time.temporal.ChronoUnit.DAYS.between(odt.toLocalDate(), java.time.LocalDate.now())
+            return when {
+                days <= 0 -> "Today"
+                days == 1L -> "Yesterday"
+                days < 30L -> "$days days ago"
+                else -> "Over a month ago"
+            }
+        }
+}
+
+
+@Serializable
+data class ProviderReview(
+    val id: String,
+    val rating: Int,
+    val comment: String? = null,
+    val created_at: String? = null,
+    val reviewer_name: String? = null,
+    val reviewer_avatar: String? = null,
+) {
+    val displayName: String get() = reviewer_name ?: "Anonymous"
+
+    val formattedDate: String
+        get() {
+            val raw = created_at ?: return ""
+            val parser = java.time.format.DateTimeFormatterBuilder()
+                .append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                .optionalStart()
+                .appendFraction(java.time.temporal.ChronoField.NANO_OF_SECOND, 0, 9, true)
+                .optionalEnd()
+                .appendOffset("+HH:MM", "Z")
+                .toFormatter()
+            val odt = runCatching { java.time.OffsetDateTime.parse(raw, parser) }.getOrNull()
+                ?: return ""
+            return odt.toLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy"))
+        }
 }
