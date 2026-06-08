@@ -12,7 +12,6 @@ import com.kajhobe.app.data.repository.JobsRepository
 import com.kajhobe.app.data.repository.MessagesRepository
 import com.kajhobe.app.data.repository.NotificationsRepository
 import com.kajhobe.app.data.repository.PaymentRepository
-import com.kajhobe.app.data.repository.ProfilePublicRepository
 import com.kajhobe.app.data.repository.ProfileRepository
 import com.kajhobe.app.ui.feature.auth.AuthViewModel
 import com.kajhobe.app.ui.feature.dashboard.DashboardViewModel
@@ -25,7 +24,6 @@ import com.kajhobe.app.ui.feature.messages.ChatViewModel
 import com.kajhobe.app.ui.feature.messages.ConversationsViewModel
 import com.kajhobe.app.ui.feature.notifications.NotificationsViewModel
 import com.kajhobe.app.ui.feature.postjob.PostJobViewModel
-import com.kajhobe.app.ui.feature.profile.PublicProfileViewModel
 import com.kajhobe.app.ui.navigation.NavigationEventBus
 import com.kajhobe.app.ui.navigation.RootViewModel
 import io.github.jan.supabase.SupabaseClient
@@ -51,7 +49,6 @@ val appModule = module {
 
     // Repositories
     singleOf(::ProfileRepository)
-    singleOf(::ProfilePublicRepository)
     singleOf(::AuthRepository)
     singleOf(::JobsRepository)
     singleOf(::DealsRepository)
@@ -72,5 +69,4 @@ val appModule = module {
     viewModelOf(::NotificationsViewModel)
     viewModelOf(::ConversationsViewModel)
     viewModelOf(::ChatViewModel)
-    viewModelOf(::PublicProfileViewModel)
 }
