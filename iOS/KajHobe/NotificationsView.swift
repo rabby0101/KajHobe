@@ -1006,6 +1006,13 @@ struct NotificationsView: View {
         if notification.type == "deal_created", let jobId = notification.job_id {
             await openDeal(forJobId: jobId)
         }
+        // A completion-request notification opens the same Deal Details view, where the
+        // responder approves / requests changes (the approval surface moved here from the
+        // Dashboard). Reuses openDeal — all completion notifications carry a job_id.
+        else if notification.type == "completion_request" || notification.type == "completion_requested",
+                let jobId = notification.job_id {
+            await openDeal(forJobId: jobId)
+        }
     }
 
     /// Resolve the deal for a job and present Deal Details — mirrors the Dashboard's

@@ -5,14 +5,10 @@ import Auth
 struct DashboardView: View {
     @State private var dashboardData: DashboardData?
     @State private var activeDeals: [DealWithCompletion] = []
-    @State private var pendingCompletionRequests: [CompletionRequest] = []
     @State private var isLoading = true
     @State private var showingError = false
     @State private var errorMessage = ""
     @State private var selectedDeal: DealWithCompletion?
-    @State private var showingCompletionRequest = false
-    @State private var showingCompletionResponse = false
-    @State private var selectedCompletionRequest: CompletionRequest?
     @State private var showingProfile = false
     @State private var realtimeChannel: RealtimeChannelV2?
     @State private var isRefreshing = false
@@ -39,13 +35,8 @@ struct DashboardView: View {
                             .animatedContainer(delay: 0.3)
                     }
                     
-                    // Pending Completion Requests
-                    if !pendingCompletionRequests.isEmpty {
-                        pendingRequestsSection()
-                            .animatedContainer(delay: 0.4)
-                    }
-                    
-                    // Active Deals
+                    // Active Deals (read-only overview; tap a card to open Deal Details,
+                    // where completion is requested/approved/rejected)
                     if !activeDeals.isEmpty {
                         activeDealsSection()
                             .animatedContainer(delay: 0.6)
@@ -134,13 +125,6 @@ struct DashboardView: View {
         }
         .sheet(item: $selectedDeal) { deal in
             DealDetailView(deal: deal)
-        }
-        .sheet(item: $selectedCompletionRequest) { request in
-            CompletionResponseView(request: request) {
-                Task {
-                    await loadDashboardData()
-                }
-            }
         }
         .sheet(isPresented: $showingProfile) {
             ProfileView()
@@ -285,35 +269,6 @@ struct DashboardView: View {
     }
     
     @ViewBuilder
-    private func pendingRequestsSection() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "bell.badge.fill")
-                    .foregroundColor(.red)
-                Text("Pending Approval")
-                    .font(.headline)
-                Spacer()
-                Text("\(pendingCompletionRequests.count)")
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
-            }
-            
-            ForEach(pendingCompletionRequests) { request in
-                CompletionRequestCard(request: request) {
-                    selectedCompletionRequest = request
-                }
-            }
-        }
-        .padding()
-        .background(CardBackground())
-        .cornerRadius(12)
-    }
-    
-    @ViewBuilder
     private func activeDealsSection() -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -374,12 +329,11 @@ struct DashboardView: View {
             print("📊 Starting dashboard data fetch...")
             async let dashboardDataFetch = Networking.shared.fetchDashboardData(forceRefresh: true) // Always force refresh for now
             async let activeDealsDataFetch = Networking.shared.fetchActiveDeals(forceRefresh: true)
-            async let pendingRequestsFetch = Networking.shared.fetchPendingCompletionRequests(forceRefresh: true)
-            
-            let (dashboard, deals, requests) = try await (dashboardDataFetch, activeDealsDataFetch, pendingRequestsFetch)
-            
+
+            let (dashboard, deals) = try await (dashboardDataFetch, activeDealsDataFetch)
+
             print("📊 Dashboard data received - Active deals: \(dashboard.active_deals_count), Completed: \(dashboard.completed_deals_count)")
-            print("📊 Fetched \(deals.count) active deals, \(requests.count) pending requests")
+            print("📊 Fetched \(deals.count) active deals")
             
             await MainActor.run {
                 // Add smooth animation for real-time updates
@@ -410,7 +364,6 @@ struct DashboardView: View {
                         )
                     }
                     self.activeDeals = convertedDeals.uniqued(by: \.id)
-                    self.pendingCompletionRequests = requests
                 }
                 self.isLoading = false
                 self.isRefreshing = false
@@ -610,9 +563,7 @@ struct StatCard: View {
 struct ActiveDealCard: View {
     let deal: DealWithCompletion
     let onTap: () -> Void
-    @State private var currentUser: User?
-    @State private var isProcessing = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -640,107 +591,23 @@ struct ActiveDealCard: View {
                     Text(deal.completion_status.replacingOccurrences(of: "_", with: " ").capitalized)
                         .font(.caption)
                         .foregroundColor(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
             }
-            
-            // Dynamic button based on completion status and user role
-            completionButton
         }
         .padding()
         .background(CardBackground(opacity: 0.15))
         .cornerRadius(8)
-        .scaleEffect(1.0)
+        .contentShape(Rectangle())
         .onTapGesture {
             withAnimation(AnimationSystem.Presets.scaleIn) {
                 onTap()
             }
         }
-        .onAppear {
-            Task {
-                do {
-                    currentUser = try supabase.auth.requireCurrentUser()
-                } catch {
-                    // print("Error getting current user: \(error)")
-                }
-            }
-        }
-        .onChange(of: deal.completion_status) { _, newStatus in
-            // Reset processing state when deal status changes
-            if newStatus != "in_progress" {
-                isProcessing = false
-            }
-        }
     }
-    
-    @ViewBuilder
-    private var completionButton: some View {
-        let isClient = currentUser?.id.uuidString.lowercased() == deal.client_id.lowercased()
-        let isProvider = currentUser?.id.uuidString.lowercased() == deal.provider_id.lowercased()
-        
-        switch deal.completion_status {
-        case "completed":
-            Button("✅ Completed") {
-                // No action needed for completed deals
-            }
-            .font(.caption)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color.green)
-            .foregroundColor(.white)
-            .cornerRadius(6)
-            .disabled(true)
-            
-        case "pending_approval":
-            if (isClient && deal.provider_completion_requested) || (isProvider && deal.client_completion_requested) {
-                Button("📋 Respond to Request") {
-                    onTap()
-                }
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.orange)
-                .foregroundColor(.white)
-                .cornerRadius(6)
-            } else {
-                Button("⏳ Pending Response") {
-                    // Show info about pending request
-                }
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(6)
-                .disabled(true)
-            }
-            
-        default: // "in_progress"
-            if isProcessing {
-                Button("⏳ Processing...") {
-                    // Disabled while processing
-                }
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(6)
-                .disabled(true)
-            } else {
-                Button("✓ Mark as Complete") {
-                    isProcessing = true
-                    onTap()
-                }
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(6)
-            }
-        }
-    }
-    
+
     private func statusColor(_ status: String) -> Color {
         switch status {
         case "completed":
@@ -752,47 +619,6 @@ struct ActiveDealCard: View {
         default:
             return .gray
         }
-    }
-}
-
-struct CompletionRequestCard: View {
-    let request: CompletionRequest
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("\(request.requester_type.capitalized) Completion Request")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Text("Respond")
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(4)
-                }
-                
-                if let message = request.request_message, !message.isEmpty {
-                    Text(message)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                }
-                
-                Text("Requested by \(request.requester_profile?.full_name ?? "Unknown")")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding()
-            .background(Color(.tertiarySystemGroupedBackground))
-            .cornerRadius(8)
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 
