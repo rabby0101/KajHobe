@@ -133,6 +133,7 @@ fun ConversationsScreen(
     if (state.showArchivedSheet) {
         ArchivedConversationsSheet(
             conversations = archived,
+            currentUserId = state.currentUserId,
             otherNameFor = { viewModel.otherNameFor(it, state.currentUserId) },
             unreadFor = viewModel::unreadFor,
             onOpenChat = { id -> viewModel.onShowArchivedSheetChange(false); onOpenChat(id) },
