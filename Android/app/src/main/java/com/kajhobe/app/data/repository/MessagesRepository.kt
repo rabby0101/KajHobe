@@ -275,6 +275,28 @@ class MessagesRepository(client: SupabaseClient) : BaseRepository(client) {
             ),
         ) { select() }.decodeSingle<ChatMessage>()
 
+    /**
+     * Archive (or un-archive) a conversation for one participant only.
+     *
+     * The conversation has two sides — client and provider — each with its
+     * own archive flag. `isClient` selects which column to write so that one
+     * user's archive never affects the other's view. The existing
+     * "Users can update conversations they are part of" RLS policy
+     * authorises this UPDATE.
+     */
+    suspend fun setConversationArchived(
+        conversationId: String,
+        userId: String,
+        isClient: Boolean,
+        archived: Boolean,
+    ) {
+        val column = if (isClient) "client_archived" else "provider_archived"
+        runCatching {
+            postgrest.from("conversations")
+                .update({ set(column, archived) }) { filter { eq("id", conversationId) } }
+        }
+    }
+
     // MARK: - Realtime
 
     /**
