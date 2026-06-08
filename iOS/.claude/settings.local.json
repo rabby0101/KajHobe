@@ -47,7 +47,22 @@
       "Bash(sed -n '488,508p' KajHobe/JobsListView.swift)",
       "Bash(/Users/skfazlarabby/Library/Android/sdk/emulator/emulator -list-avds)",
       "Bash($HOME/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_36.1 -netdelay none -netspeed full > /tmp/emulator.log 2>&1)",
-      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__execute_sql"
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__execute_sql",
+      "Bash(find /Users/skfazlarabby/Documents/GitHub/KajHobe -path \"*supabase/migrations*\" -type f | head -20)",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(grep \"\\\\.swift$\")",
+      "Bash(npm install *)",
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__list_projects",
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__apply_migration",
+      "Bash(xcrun simctl *)",
+      "Bash(node --check server.js)",
+      "Bash(node server.js)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(break)",
+      "Bash(npm start *)",
+      "Bash(curl -s -o /dev/null -w \"GET /            -> HTTP %{http_code}\\\\n\" http://localhost:4000/)",
+      "Bash(curl -s -w \"\\\\nGET /api/payouts -> HTTP %{http_code}\\\\n\" http://localhost:4000/api/payouts)",
+      "Bash(curl -s -o /dev/null -w \"GET / -> HTTP %{http_code}\\\\n\" http://localhost:4000/)"
     ]
   },
   "outputStyle": "Explanatory"
