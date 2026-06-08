@@ -35,8 +35,10 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -71,6 +73,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.kajhobe.app.data.model.ChatMessage
+import com.kajhobe.app.ui.feature.payment.BkashCheckoutLauncher
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import java.io.File
 import kotlinx.serialization.json.contentOrNull
@@ -92,6 +95,18 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) listState.animateScrollToItem(state.messages.lastIndex)
+    }
+
+    // Launch the bKash checkout in Chrome Custom Tabs as soon as the ViewModel
+    // exposes a URL. The user returns to the app via the kajhobe://escrow-callback
+    // deep link, which MainActivity routes back to the ViewModel.
+    val context = LocalContext.current
+    LaunchedEffect(state.pendingBkashUrl) {
+        val url = state.pendingBkashUrl ?: return@LaunchedEffect
+        if (context is android.app.Activity) {
+            BkashCheckoutLauncher.launch(context, url)
+        }
+        viewModel.clearPendingBkashUrl()
     }
 
     var showDealSheet by remember { mutableStateOf(false) }
@@ -130,6 +145,7 @@ fun ChatScreen(
                             isMine = isMine,
                             status = dealOfferId(msg)?.let { state.dealStatuses[it] } ?: "pending",
                             canRespond = !isMine,
+                            isPaying = state.isPaying,
                             onAccept = { viewModel.respondToDeal(msg, accept = true) },
                             onReject = { viewModel.respondToDeal(msg, accept = false) },
                         )
@@ -160,6 +176,17 @@ fun ChatScreen(
                 viewModel.sendDealOffer(amount, terms, timeline, additional)
                 showDealSheet = false
             },
+        )
+    }
+
+    // bKash payment error (transient — the success path is handled via the
+    // kajhobe://escrow-callback deep link in MainActivity).
+    state.payError?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { viewModel.clearPayError() },
+            title = { Text("Payment") },
+            text = { Text(msg) },
+            confirmButton = { TextButton(onClick = { viewModel.clearPayError() }) { Text("OK") } },
         )
     }
 }
@@ -343,6 +370,7 @@ private fun DealOfferBubble(
     isMine: Boolean,
     status: String,
     canRespond: Boolean,
+    isPaying: Boolean,
     onAccept: () -> Unit,
     onReject: () -> Unit,
 ) {
@@ -358,7 +386,7 @@ private fun DealOfferBubble(
         else -> KajHobeTheme.colors.success to KajHobeTheme.colors.subtleBackground
     }
     var showMenu by remember { mutableStateOf(false) }
-    val menuEnabled = canRespond && status == "pending"
+    val menuEnabled = canRespond && status == "pending" && !isPaying
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -393,7 +421,13 @@ private fun DealOfferBubble(
                 DealField("Terms & Conditions", terms)
                 DealField("Duration", timeline)
                 DealField("Message", additional)
-                if (menuEnabled) {
+                if (isPaying) {
+                    Text(
+                        "Opening bKash…",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                } else if (menuEnabled) {
                     Text(
                         "Long-press to accept or reject",
                         style = MaterialTheme.typography.labelSmall,
@@ -403,8 +437,8 @@ private fun DealOfferBubble(
             }
             DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                 DropdownMenuItem(
-                    text = { Text("Accept Offer") },
-                    leadingIcon = { Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = KajHobeTheme.colors.success) },
+                    text = { Text("Accept & Pay") },
+                    leadingIcon = { Icon(Icons.Filled.CreditCard, contentDescription = null, tint = KajHobeTheme.colors.success) },
                     onClick = { showMenu = false; onAccept() },
                 )
                 DropdownMenuItem(
@@ -429,8 +463,8 @@ private fun DealField(label: String, value: String?) {
 @Composable
 private fun StatusPill(status: String, accent: Color) {
     val label = when (status) {
-        "accepted" -> "Accepted"
-        "rejected" -> "Rejected"
+        "accepted" -> "Deal Accepted"
+        "rejected" -> "Deal Rejected"
         else -> "Pending"
     }
     Text(

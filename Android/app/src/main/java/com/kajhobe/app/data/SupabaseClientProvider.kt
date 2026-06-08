@@ -4,6 +4,7 @@ import com.kajhobe.app.data.model.AppJson
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.serializer.KotlinXSerializer
@@ -15,14 +16,16 @@ object SupabaseConfig {
     const val ANON_KEY =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhdGxxbmJydmd1a3VxZXdzeHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MzgxMjgsImV4cCI6MjA2NTMxNDEyOH0.rBsGaNV-AcfqypS32p1BlL2B3cwGmWqC3bGabWuw1bo"
 
-    // Deep-link callback (matches iOS kajhobe://auth-callback and the manifest intent-filter).
+    // Deep-link callbacks. Must match the <intent-filter>s in AndroidManifest.xml and the
+    // APP_DEEPLINK env var used by the bkash-webhook Edge Function.
     const val DEEPLINK_SCHEME = "kajhobe"
     const val DEEPLINK_HOST = "auth-callback"
+    const val ESCROW_CALLBACK_HOST = "escrow-callback"
 }
 
 /**
  * Builds the singleton [SupabaseClient] with the same modules the iOS app uses
- * (Auth, Postgrest, Realtime, Storage). Uses the tolerant [AppJson] serializer to
+ * (Auth, Postgrest, Realtime, Storage, Functions). Uses the tolerant [AppJson] serializer to
  * mirror iOS's lenient decoding.
  */
 fun createKajHobeSupabaseClient(): SupabaseClient =
@@ -41,4 +44,5 @@ fun createKajHobeSupabaseClient(): SupabaseClient =
         install(Postgrest)
         install(Realtime)
         install(Storage)
+        install(Functions)
     }

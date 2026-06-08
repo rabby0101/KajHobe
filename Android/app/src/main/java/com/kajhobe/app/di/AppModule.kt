@@ -11,6 +11,7 @@ import com.kajhobe.app.data.repository.DealsRepository
 import com.kajhobe.app.data.repository.JobsRepository
 import com.kajhobe.app.data.repository.MessagesRepository
 import com.kajhobe.app.data.repository.NotificationsRepository
+import com.kajhobe.app.data.repository.PaymentRepository
 import com.kajhobe.app.data.repository.ProfileRepository
 import com.kajhobe.app.ui.feature.auth.AuthViewModel
 import com.kajhobe.app.ui.feature.dashboard.DashboardViewModel
@@ -53,6 +54,7 @@ val appModule = module {
     singleOf(::DealsRepository)
     singleOf(::NotificationsRepository)
     singleOf(::MessagesRepository)
+    singleOf(::PaymentRepository)
 
     // ViewModels
     viewModelOf(::RootViewModel)

@@ -4,7 +4,6 @@ import com.kajhobe.app.data.model.ChatMessage
 import com.kajhobe.app.data.model.ChatMessageInsert
 import com.kajhobe.app.data.model.Conversation
 import com.kajhobe.app.data.model.ConversationWithDetails
-import com.kajhobe.app.data.model.DealInsert
 import com.kajhobe.app.data.model.DealOffer
 import com.kajhobe.app.data.model.DealOfferInsert
 import com.kajhobe.app.data.model.Job
@@ -181,6 +180,20 @@ class MessagesRepository(client: SupabaseClient) : BaseRepository(client) {
     }.getOrNull()
 
     /**
+     * Bulk-fetch deal_offers by id and return their `status`. Used by the chat
+     * screen to source the bubble status directly from the DB (iOS
+     * `loadDealStatus()` in `ChatView.swift:998-1025`).
+     */
+    suspend fun fetchDealOfferStatuses(offerIds: List<String>): List<DealOffer> {
+        if (offerIds.isEmpty()) return emptyList()
+        return runCatching {
+            postgrest.from("deal_offers")
+                .select { filter { isIn("id", offerIds) } }
+                .decodeList<DealOffer>()
+        }.getOrDefault(emptyList())
+    }
+
+    /**
      * Create a deal offer (provider only) — inserts a `deal_offers` row, then a `deal_offer`
      * chat message carrying the offer in negotiation_data. Mirrors iOS sendDealOffer.
      */
@@ -227,80 +240,29 @@ class MessagesRepository(client: SupabaseClient) : BaseRepository(client) {
             ),
         )
     }
-
     /**
-     * Respond to a deal offer (client). Updates the offer status; on accept, creates the
-     * deal (guarded against duplicates) and marks the job assigned; then posts a
-     * `deal_response` message. Mirrors iOS respondToDealOffer + createDealFromAcceptedOffer.
+     * Respond to a deal offer (client). Mirrors iOS `respondToDealOffer` +
+     * `respondToDeal` (the non-bKash path) — i.e. the REJECT path. The ACCEPT
+     * path is handled by [PaymentRepository.startCollection] + the bKash
+     * webhook, which atomically accepts the offer, creates the deal, and
+     * holds the escrow. No deal row is created client-side.
+     *
+     * Also no longer posts a `deal_response` chat message — the bubble
+     * re-reads `deal_offers.status` directly (mirroring iOS).
      */
     suspend fun respondToDealOffer(dealOfferId: String, conversationId: String, accept: Boolean) {
-        val statusValue = if (accept) "accepted" else "rejected"
-        val now = Instant.now().toString()
-
-        postgrest.from("deal_offers").update({
-            set("status", statusValue)
-            set("responded_at", now)
-        }) { filter { eq("id", dealOfferId) } }
-
-        if (accept) {
-            fetchDealOffer(dealOfferId)?.let { createDealFromAcceptedOffer(it) }
+        if (!accept) {
+            // Reject is direct: flip the offer to 'rejected'. No chat message.
+            postgrest.from("deal_offers").update({
+                set("status", "rejected")
+                set("responded_at", Instant.now().toString())
+            }) { filter { eq("id", dealOfferId) } }
         }
-
-        val negotiation = buildJsonObject {
-            put("response", statusValue)
-            put("original_deal_offer_id", dealOfferId)
-            put("responded_at", now)
-        }
-        postgrest.from("messages").insert(
-            ChatMessageInsert(
-                conversation_id = conversationId,
-                sender_id = currentUserId ?: "",
-                content = if (accept) "✅ Deal accepted" else "❌ Deal rejected",
-                message_type = "deal_response",
-                negotiation_data = negotiation,
-            ),
-        )
+        // On accept we DO NOT update deal_offers here. The bKash webhook
+        // (escrow_finalize_offer) flips the offer to 'accepted' atomically
+        // with creating the deal and holding the escrow. The chat re-renders
+        // from the live deal_offers row.
     }
-
-    /** iOS createDealFromAcceptedOffer: idempotent deal creation + job → assigned. */
-    private suspend fun createDealFromAcceptedOffer(offer: DealOffer) {
-        // Skip if a deal already exists for this offer, or an active deal for job+participants.
-        val byOffer = runCatching {
-            postgrest.from("deals").select { filter { eq("deal_offer_id", offer.id) } }
-                .decodeList<JsonElement>()
-        }.getOrDefault(emptyList())
-        if (byOffer.isNotEmpty()) return
-
-        val byJob = runCatching {
-            postgrest.from("deals").select {
-                filter {
-                    eq("job_id", offer.job_id)
-                    eq("client_id", offer.client_id)
-                    eq("provider_id", offer.provider_id)
-                    isIn("status", listOf("active", "in_progress"))
-                }
-            }.decodeList<JsonElement>()
-        }.getOrDefault(emptyList())
-        if (byJob.isNotEmpty()) return
-
-        postgrest.from("deals").insert(
-            DealInsert(
-                deal_offer_id = offer.id,
-                conversation_id = offer.conversation_id,
-                provider_id = offer.provider_id,
-                client_id = offer.client_id,
-                job_id = offer.job_id,
-                agreed_amount = offer.amount,
-                agreed_terms = offer.terms,
-                timeline = offer.timeline,
-                status = "active",
-            ),
-        )
-        runCatching {
-            postgrest.from("jobs").update({ set("status", "assigned") }) { filter { eq("id", offer.job_id) } }
-        }
-    }
-
     /** Send a photo message (the image is already uploaded; we just store its URL). */
     suspend fun sendImageMessage(conversationId: String, attachmentUrl: String): ChatMessage =
         postgrest.from("messages").insert(

@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,27 +20,42 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +65,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kajhobe.app.data.model.CompletionRequest
 import com.kajhobe.app.data.model.Deal
 import com.kajhobe.app.data.model.SimpleProfile
 import com.kajhobe.app.data.model.parseIsoMillis
@@ -58,6 +76,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 private val StatusGreen = Color(0xFF34C759)
@@ -75,10 +94,28 @@ fun DealDetailScreen(
     viewModel: DealDetailViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(dealId) { viewModel.load(dealId) }
+    LaunchedEffect(dealId) { viewModel.load(dealId) }
 
-    var showCompletionDialog by remember { mutableStateOf(false) }
-    var completionMessage by remember { mutableStateOf("") }
+    var showCompletionRequestSheet by remember { mutableStateOf(false) }
+    var completionRequestMessage by remember { mutableStateOf("") }
+    var showCompletionResponseSheet by remember { mutableStateOf(false) }
+    var pendingRequest by remember { mutableStateOf<CompletionRequest?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // Collect one-shot events from the ViewModel (e.g. "the other party already
+    // filed a request, open the response sheet instead").
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is DealDetailEvent.OpenResponseSheet -> {
+                    pendingRequest = event.request
+                    completionRequestMessage = ""
+                    showCompletionRequestSheet = false
+                    showCompletionResponseSheet = true
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -119,42 +156,67 @@ fun DealDetailScreen(
             ) {
                 DealHeader(deal)
                 JobInfoSection(deal)
+                EscrowSectionView(
+                    escrow = state.escrow,
+                    isLoading = state.escrowLoading,
+                    isAdmin = state.isAdmin,
+                    isProcessing = state.isProcessing,
+                    onMarkPaidOut = { viewModel.markEscrowPaidOut() },
+                    onMarkRefunded = { viewModel.markEscrowRefunded() },
+                )
                 ParticipantsSection(deal, state.isUserClient)
                 TermsSection(deal)
+                DealProgressTimeline(deal)
                 ActionsSection(
                     deal = deal,
                     isUserClient = state.isUserClient,
                     isProcessing = state.isProcessing,
-                    onRequestCompletion = { showCompletionDialog = true },
-                    onApprove = { viewModel.respondToCompletion(approve = true) },
-                    onRequestChanges = { viewModel.respondToCompletion(approve = false) },
+                    onRequestCompletion = { showCompletionRequestSheet = true },
+                    onReviewCompletion = {
+                        scope.launch {
+                            pendingRequest = viewModel.fetchPendingRequestForCurrentDeal()
+                            showCompletionResponseSheet = true
+                        }
+                    },
                     onSendMessage = { deal.conversation_id?.let(onOpenChat) },
                 )
             }
         }
     }
 
-    if (showCompletionDialog) {
-        AlertDialog(
-            onDismissRequest = { showCompletionDialog = false },
-            title = { Text("Request Completion") },
-            text = {
-                OutlinedTextField(
-                    value = completionMessage,
-                    onValueChange = { completionMessage = it },
-                    label = { Text("Message (optional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+    if (showCompletionRequestSheet) {
+        CompletionRequestSheet(
+            deal = state.deal,
+            isProcessing = state.isProcessing,
+            errorMessage = state.errorMessage,
+            onSend = { msg ->
+                viewModel.requestCompletion(msg)
+                completionRequestMessage = ""
+                showCompletionRequestSheet = false
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.requestCompletion(completionMessage)
-                    completionMessage = ""
-                    showCompletionDialog = false
-                }) { Text("Send Request") }
+            onDismiss = {
+                completionRequestMessage = ""
+                showCompletionRequestSheet = false
             },
-            dismissButton = {
-                TextButton(onClick = { showCompletionDialog = false }) { Text("Cancel") }
+            message = completionRequestMessage,
+            onMessageChange = { completionRequestMessage = it },
+        )
+    }
+
+    if (showCompletionResponseSheet) {
+        CompletionResponseSheet(
+            deal = state.deal,
+            pendingRequest = pendingRequest,
+            isProcessing = state.isProcessing,
+            errorMessage = state.errorMessage,
+            onSubmit = { approve, msg ->
+                viewModel.respondToCompletion(approve, msg)
+                showCompletionResponseSheet = false
+                pendingRequest = null
+            },
+            onDismiss = {
+                showCompletionResponseSheet = false
+                pendingRequest = null
             },
         )
     }
@@ -336,8 +398,7 @@ private fun ActionsSection(
     isUserClient: Boolean,
     isProcessing: Boolean,
     onRequestCompletion: () -> Unit,
-    onApprove: () -> Unit,
-    onRequestChanges: () -> Unit,
+    onReviewCompletion: () -> Unit,
     onSendMessage: () -> Unit,
 ) {
     val cs = deal.completion_status ?: "in_progress"
@@ -358,20 +419,12 @@ private fun ActionsSection(
                 if (hasUserRequested) {
                     DisabledActionButton("Request Pending", StatusOrange)
                 } else {
-                    Row(horizontalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm)) {
-                        Button(
-                            onClick = onApprove,
-                            enabled = !isProcessing,
-                            colors = ButtonDefaults.buttonColors(containerColor = StatusGreen, contentColor = Color.White),
-                            modifier = Modifier.weight(1f),
-                        ) { Text("Approve") }
-                        Button(
-                            onClick = onRequestChanges,
-                            enabled = !isProcessing,
-                            colors = ButtonDefaults.buttonColors(containerColor = StatusOrange, contentColor = Color.White),
-                            modifier = Modifier.weight(1f),
-                        ) { Text("Request Changes") }
-                    }
+                    FilledActionButton(
+                        "Review Completion Request",
+                        StatusBlue,
+                        enabled = !isProcessing,
+                        onClick = onReviewCompletion,
+                    )
                 }
             }
 
@@ -425,4 +478,554 @@ private fun formatDealDate(iso: String): String {
     val millis = parseIsoMillis(iso) ?: return ""
     return DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault())
         .format(Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()))
+}
+
+private fun formatDealDateTime(iso: String?): String {
+    if (iso.isNullOrBlank()) return ""
+    val millis = parseIsoMillis(iso) ?: return ""
+    return DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.getDefault())
+        .format(Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()))
+}
+
+// MARK: - Progress timeline (iOS DealProgressTimeline port)
+
+@Composable
+private fun DealProgressTimeline(deal: Deal) {
+    val cs = deal.completion_status ?: "in_progress"
+    PremiumCard(modifier = Modifier.fillMaxWidth()) {
+        SectionHeader("Progress Tracking", Icons.Filled.Timeline, StatusBlue)
+        Spacer(Modifier.size(12.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            val clientRequested = deal.client_completion_requested == true
+            val providerRequested = deal.provider_completion_requested == true
+            val isCompleted = cs == "completed"
+            val requestItems = buildList {
+                if (clientRequested) add(
+                    Triple("Client Requested Completion", deal.client_completion_requested_at, Icons.Filled.Person)
+                )
+                if (providerRequested) add(
+                    Triple("Provider Requested Completion", deal.provider_completion_requested_at, Icons.Filled.CheckCircle)
+                )
+            }
+            val totalItems = 3 + requestItems.size
+            var index = 0
+            TimelineItem(
+                title = "Deal Created",
+                subtitle = formatDealDateTime(deal.created_at),
+                icon = Icons.Filled.Handshake,
+                color = StatusGreen,
+                isCompleted = true,
+                isLast = false,
+            )
+            index++
+            TimelineItem(
+                title = "Work in Progress",
+                subtitle = "Service being provided",
+                icon = Icons.Filled.Build,
+                color = StatusBlue,
+                isCompleted = cs != "pending_approval",
+                isLast = false,
+            )
+            index++
+            requestItems.forEach { (title, date, icon) ->
+                index++
+                TimelineItem(
+                    title = title,
+                    subtitle = formatDealDateTime(date),
+                    icon = icon,
+                    color = StatusOrange,
+                    isCompleted = true,
+                    isLast = index == totalItems,
+                )
+            }
+            TimelineItem(
+                title = "Deal Completed",
+                subtitle = if (isCompleted) formatDealDateTime(deal.completed_at) else "Pending completion",
+                icon = Icons.Filled.Verified,
+                color = StatusGreen,
+                isCompleted = isCompleted,
+                isLast = true,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TimelineItem(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    color: Color,
+    isCompleted: Boolean,
+    isLast: Boolean,
+) {
+    val activeColor = if (isCompleted) color else Color(0xFF8E8E93)
+    Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(activeColor.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = null, tint = activeColor, modifier = Modifier.size(16.dp))
+            }
+            if (!isLast) {
+                Spacer(Modifier.size(2.dp))
+                Box(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .height(24.dp)
+                        .background(activeColor.copy(alpha = 0.3f)),
+                )
+            }
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 4.dp, bottom = if (isLast) 0.dp else 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = if (isCompleted) MaterialTheme.colorScheme.onSurface else KajHobeTheme.colors.textSecondary,
+            )
+            if (subtitle.isNotBlank()) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = KajHobeTheme.colors.textSecondary,
+                )
+            }
+        }
+    }
+}
+
+// MARK: - Completion request sheet (iOS CompletionRequestView port)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CompletionRequestSheet(
+    deal: Deal?,
+    isProcessing: Boolean,
+    errorMessage: String?,
+    message: String,
+    onMessageChange: (String) -> Unit,
+    onSend: (String?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    if (deal == null) {
+        onDismiss()
+        return
+    }
+    // Defensive guard: if the deal has moved out of in_progress (e.g. the other
+    // party already filed a request and the ViewModel re-routes us to the
+    // response sheet), do not let the user submit a request.
+    if (deal.completion_status != null && deal.completion_status != "in_progress") {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(KajHobeTheme.spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+        ) {
+            Text("This deal is no longer awaiting a new request.", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Close this sheet and review the existing completion request.",
+                style = MaterialTheme.typography.bodySmall,
+                color = KajHobeTheme.colors.textSecondary,
+            )
+            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text("Close") }
+        }
+        return
+    }
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = KajHobeTheme.spacing.md)
+                .padding(bottom = KajHobeTheme.spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    deal.job?.title ?: "Deal",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    "৳${deal.agreed_amount}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = StatusGreen,
+                )
+            }
+
+            // Deal details
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = KajHobeTheme.colors.cardBackground,
+                tonalElevation = 1.dp,
+            ) {
+                Column(
+                    modifier = Modifier.padding(KajHobeTheme.spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val terms = deal.agreed_terms
+                    val timeline = deal.timeline
+                    if (!terms.isNullOrBlank()) {
+                        KeyValueRow("Terms", terms)
+                    }
+                    if (!timeline.isNullOrBlank()) {
+                        KeyValueRow("Timeline", timeline)
+                    }
+                    if (terms.isNullOrBlank() && timeline.isNullOrBlank()) {
+                        Text(
+                            "No specific terms or timeline specified",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = KajHobeTheme.colors.textSecondary,
+                            fontStyle = FontStyle.Italic,
+                        )
+                    }
+                }
+            }
+
+            // Prompt
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    "Are you ready to mark this task as completed?",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Text(
+                    "The other party will be notified and asked to confirm completion.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = KajHobeTheme.colors.textSecondary,
+                )
+            }
+
+            // Optional message
+            OutlinedTextField(
+                value = message,
+                onValueChange = onMessageChange,
+                label = { Text("Optional message") },
+                minLines = 3,
+                maxLines = 6,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            // Inline error (only show if error came in while sheet is open)
+            if (errorMessage != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = StatusRed.copy(alpha = 0.1f),
+                ) {
+                    Text(
+                        errorMessage,
+                        modifier = Modifier.padding(KajHobeTheme.spacing.sm),
+                        color = StatusRed,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+
+            // Actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f),
+                ) { Text("Cancel") }
+                Button(
+                    onClick = { onSend(message.ifBlank { null }) },
+                    enabled = !isProcessing,
+                    colors = ButtonDefaults.buttonColors(containerColor = StatusGreen, contentColor = Color.White),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    if (isProcessing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                        )
+                        Spacer(Modifier.size(8.dp))
+                    }
+                    Text("Send Request", fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun KeyValueRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = KajHobeTheme.colors.textSecondary,
+        )
+        Spacer(Modifier.size(12.dp))
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// MARK: - Completion response sheet (iOS CompletionResponseView port)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CompletionResponseSheet(
+    deal: Deal?,
+    pendingRequest: CompletionRequest?,
+    isProcessing: Boolean,
+    errorMessage: String?,
+    onSubmit: (approve: Boolean, message: String?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    if (deal == null) {
+        onDismiss()
+        return
+    }
+    // Defensive guard: if the deal has already been resolved (completed or moved
+    // back to in_progress by a reject) the request the user is looking at is
+    // stale. Refuse to submit and tell them to refresh.
+    if (deal.completion_status != "pending_approval") {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(KajHobeTheme.spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+        ) {
+            Text("This completion request has already been resolved.", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Close this sheet and pull-to-refresh to see the latest state.",
+                style = MaterialTheme.typography.bodySmall,
+                color = KajHobeTheme.colors.textSecondary,
+            )
+            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text("Close") }
+        }
+        return
+    }
+    var response by remember { mutableStateOf("approved") }
+    var responseMessage by remember { mutableStateOf("") }
+
+    val requesterType = pendingRequest?.requester_type ?: ""
+    val isRequesterClient = requesterType == "client"
+    val roleColor = if (isRequesterClient) InfoBlue else StatusGreen
+    val roleLabel = if (isRequesterClient) "Client" else "Service Provider"
+    val submitLabel = if (response == "approved") "Approve" else "Request Changes"
+    val submitColor = if (response == "approved") StatusGreen else StatusOrange
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = KajHobeTheme.spacing.md)
+                .padding(bottom = KajHobeTheme.spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
+        ) {
+            // Requester card
+            RequesterCard(
+                profile = pendingRequest?.requester_profile,
+                role = roleLabel,
+                roleColor = roleColor,
+            )
+
+            // Original request message
+            if (!pendingRequest?.request_message.isNullOrBlank()) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = KajHobeTheme.colors.cardBackground,
+                    tonalElevation = 1.dp,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(KajHobeTheme.spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            "${roleLabel} says:",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = KajHobeTheme.colors.textSecondary,
+                        )
+                        Text(
+                            pendingRequest.request_message.orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontStyle = FontStyle.Italic,
+                        )
+                    }
+                }
+            }
+
+            Text(
+                "Your Response",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                SegmentedButton(
+                    selected = response == "approved",
+                    onClick = { response = "approved" },
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                ) { Text("Approve") }
+                SegmentedButton(
+                    selected = response == "rejected",
+                    onClick = { response = "rejected" },
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                ) { Text("Request Changes") }
+            }
+
+            OutlinedTextField(
+                value = responseMessage,
+                onValueChange = { responseMessage = it },
+                label = { Text("Add a message (optional)") },
+                minLines = 3,
+                maxLines = 6,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            // Contextual help
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    if (response == "approved") Icons.Filled.CheckCircle else Icons.Filled.Cancel,
+                    contentDescription = null,
+                    tint = if (response == "approved") StatusGreen else StatusRed,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    if (response == "approved") {
+                        "This will mark the task as completed and close the deal."
+                    } else {
+                        "This will reject the completion request. The deal will remain active."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = KajHobeTheme.colors.textSecondary,
+                )
+            }
+
+            // Inline error
+            if (errorMessage != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = StatusRed.copy(alpha = 0.1f),
+                ) {
+                    Text(
+                        errorMessage,
+                        modifier = Modifier.padding(KajHobeTheme.spacing.sm),
+                        color = StatusRed,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+
+            // Actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f),
+                ) { Text("Cancel") }
+                Button(
+                    onClick = { onSubmit(response == "approved", responseMessage.ifBlank { null }) },
+                    enabled = !isProcessing,
+                    colors = ButtonDefaults.buttonColors(containerColor = submitColor, contentColor = Color.White),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    if (isProcessing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                        )
+                        Spacer(Modifier.size(8.dp))
+                    }
+                    Text(submitLabel, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RequesterCard(
+    profile: SimpleProfile?,
+    role: String,
+    roleColor: Color,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = KajHobeTheme.colors.cardBackground,
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier.padding(KajHobeTheme.spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(roleColor.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    (profile?.full_name ?: "?").take(1).uppercase(),
+                    color = roleColor,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    profile?.full_name ?: "Unknown requester",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    role,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = roleColor,
+                )
+            }
+        }
+    }
 }

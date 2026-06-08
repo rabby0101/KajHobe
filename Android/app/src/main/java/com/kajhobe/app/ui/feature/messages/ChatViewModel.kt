@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.kajhobe.app.data.media.MediaUploadManager
 import com.kajhobe.app.data.model.ChatMessage
 import com.kajhobe.app.data.notifications.MessageBadgeManager
+import com.kajhobe.app.data.payment.PaymentDeepLinkBus
 import com.kajhobe.app.data.repository.MessagesRepository
+import com.kajhobe.app.data.repository.PaymentRepository
 import io.github.jan.supabase.realtime.RealtimeChannel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -37,7 +39,13 @@ data class ChatUiState(
     val existingDealExists: Boolean = false,
     val isSendingDealOffer: Boolean = false,
     val isUploadingImage: Boolean = false,
-    // offerId → "pending" | "accepted" | "rejected", derived from deal_response messages.
+    // bKash payment state (mirrors iOS `isPaying` / `payError`)
+    val isPaying: Boolean = false,
+    val payError: String? = null,
+    // URL the UI should launch in Chrome Custom Tabs (one-shot — cleared on consume).
+    val pendingBkashUrl: String? = null,
+    // offerId → "pending" | "accepted" | "rejected" (DB-truth wins; derived
+    // from `deal_offers.status` first, falls back to chat `deal_response` msgs).
     val dealStatuses: Map<String, String> = emptyMap(),
 ) {
     /** Only the service provider may send deal offers (iOS rule). */
@@ -49,6 +57,7 @@ data class ChatUiState(
 
 class ChatViewModel(
     private val repository: MessagesRepository,
+    private val paymentRepository: PaymentRepository,
     private val mediaUploadManager: MediaUploadManager,
     private val messageBadgeManager: MessageBadgeManager,
 ) : ViewModel() {
@@ -60,6 +69,7 @@ class ChatViewModel(
     private var channel: RealtimeChannel? = null
     private var collectJob: Job? = null
     private var loaded = false
+    private var deepLinkJob: Job? = null
 
     fun start(conversationId: String) {
         if (loaded) return
@@ -80,18 +90,19 @@ class ChatViewModel(
             runCatching { repository.fetchMessages(conversationId) }
                 .onSuccess { msgs ->
                     _uiState.update { it.copy(isLoading = false, messages = msgs, dealStatuses = dealStatusesFrom(msgs)) }
+                    // DB truth wins: re-read deal_offers.status for every offer
+                    // referenced in this conversation.
+                    refreshDealOfferStatuses()
                 }
                 .onFailure { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message) } }
             // Mark received messages read so the conversation-list unread badge clears.
-            // The realtime UPDATE on the messages table fires MessageBadgeManager.handleUpdate()
-            // and decrements the badge by one for each row updated. We deliberately do NOT
-            // decrement locally here to avoid double-counting.
             runCatching { repository.markConversationRead(conversationId) }
             // Offer status (gates the deal button).
             refreshOfferStatus()
         }
 
         subscribe(conversationId)
+        subscribeToDeepLinks()
     }
 
     private fun subscribe(conversationId: String) {
@@ -103,6 +114,34 @@ class ChatViewModel(
             flow.collect { msg -> appendIfNew(msg) }
         }
         viewModelScope.launch { runCatching { repository.joinChannel(ch) } }
+    }
+
+    /**
+     * Listen for bKash deep-link callbacks. When the user returns from the
+     * bKash-hosted page, refetch the offer status — the webhook has had
+     * time to fire and flip `deal_offers.status`.
+     */
+    private fun subscribeToDeepLinks() {
+        deepLinkJob?.cancel()
+        deepLinkJob = viewModelScope.launch {
+            PaymentDeepLinkBus.events.collect { event ->
+                val offerId = event.dealOfferId ?: return@collect
+                val status = event.status
+                _uiState.update { current ->
+                    val updated = current.dealStatuses.toMutableMap()
+                    if (status == "success") updated[offerId] = "accepted"
+                    current.copy(
+                        dealStatuses = updated,
+                        isPaying = false,
+                        payError = if (status == "success") null
+                            else "Payment not completed (${status ?: "cancelled"}).",
+                    )
+                }
+                // Refetch from the server to pick up the new deal + escrow rows.
+                refreshDealOfferStatuses()
+                refreshOfferStatus()
+            }
+        }
     }
 
     private fun appendIfNew(msg: ChatMessage) {
@@ -120,9 +159,6 @@ class ChatViewModel(
             viewModelScope.launch { refreshOfferStatus() }
         }
         // Chat is open: a new incoming message from the other party is now visible.
-        // Mark it read — the realtime UPDATE on the messages table will fire
-        // MessageBadgeManager.handleUpdate() and decrement the badge. We deliberately
-        // do NOT decrement locally here to avoid double-counting.
         if (wasNew) {
             val uid = _uiState.value.currentUserId
             if (msg.sender_id != uid && msg.read_at.isNullOrEmpty()) {
@@ -133,7 +169,10 @@ class ChatViewModel(
         }
     }
 
-    /** Build offerId → status map from the conversation's deal_response messages. */
+    /**
+     * Build offerId → status map from the conversation's deal_response messages.
+     * The DB-truth map (built by [refreshDealOfferStatuses]) overrides this.
+     */
     private fun dealStatusesFrom(messages: List<ChatMessage>): Map<String, String> {
         val map = mutableMapOf<String, String>()
         for (m in messages) {
@@ -144,6 +183,29 @@ class ChatViewModel(
             map[offerId] = response
         }
         return map
+    }
+
+    /**
+     * Read every `deal_offers` row referenced in the loaded messages directly
+     * and merge its `status` into `state.dealStatuses`. DB wins over the
+     * message-derived map. Mirrors iOS `loadDealStatus()` in
+     * `ChatView.swift:998-1025`.
+     */
+    private suspend fun refreshDealOfferStatuses() {
+        val state = _uiState.value
+        val offerIds = state.messages
+            .filter { it.message_type == "deal_offer" }
+            .mapNotNull { it.negotiation_data?.jsonObject?.get("deal_offer_id")?.jsonPrimitive?.contentOrNull }
+            .distinct()
+        if (offerIds.isEmpty()) return
+        runCatching {
+            val rows = repository.fetchDealOfferStatuses(offerIds)
+            val dbMap = rows.associate { it.id to it.status }
+            _uiState.update { current ->
+                val merged = current.dealStatuses.toMutableMap().apply { putAll(dbMap) }
+                current.copy(dealStatuses = merged)
+            }
+        }
     }
 
     private suspend fun refreshOfferStatus() {
@@ -206,11 +268,48 @@ class ChatViewModel(
     fun respondToDeal(message: ChatMessage, accept: Boolean) {
         val convId = conversationId ?: return
         val offerId = message.negotiation_data?.jsonObject?.get("deal_offer_id")?.jsonPrimitive?.contentOrNull ?: return
-        viewModelScope.launch {
-            runCatching { repository.respondToDealOffer(offerId, convId, accept) }
-                .onSuccess { refreshOfferStatus() }
-                .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message ?: "Failed to respond to deal") } }
+        if (!accept) {
+            // Reject path is direct (mirrors iOS).
+            viewModelScope.launch {
+                runCatching { repository.respondToDealOffer(offerId, convId, accept = false) }
+                    .onSuccess { refreshOfferStatus() }
+                    .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message ?: "Failed to reject offer") } }
+            }
+        } else {
+            // Accept path goes through bKash.
+            acceptAndPay(offerId)
         }
+    }
+
+    /**
+     * Open the bKash sandbox checkout for a deal OFFER (the iOS "Accept & Pay"
+     * path). The bKash webhook handles acceptance + deal creation server-side.
+     * The actual Chrome Custom Tabs launch is done by the UI layer (which has
+     * an Activity context). When the user returns to the app via the
+     * `kajhobe://escrow-callback` deep link, [subscribeToDeepLinks] clears
+     * `isPaying`.
+     */
+    fun acceptAndPay(dealOfferId: String) {
+        _uiState.update { it.copy(isPaying = true, payError = null) }
+        viewModelScope.launch {
+            runCatching { paymentRepository.startCollection(dealOfferId) }
+                .onSuccess { url ->
+                    _uiState.update { it.copy(pendingBkashUrl = url) }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isPaying = false,
+                            payError = e.message ?: "Could not start bKash checkout.",
+                        )
+                    }
+                }
+        }
+    }
+
+    /** Called by the UI after it has launched Chrome Custom Tabs for the URL. */
+    fun onBkashCheckoutLaunched() {
+        // Leave isPaying=true; the deep-link callback clears it.
     }
 
     fun sendImage(uri: String) {
@@ -233,10 +332,15 @@ class ChatViewModel(
         }
     }
 
+    fun clearPayError() = _uiState.update { it.copy(payError = null) }
+
+    fun clearPendingBkashUrl() = _uiState.update { it.copy(pendingBkashUrl = null) }
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCleared() {
         super.onCleared()
         collectJob?.cancel()
+        deepLinkJob?.cancel()
         val ch = channel ?: return
         channel = null
         // viewModelScope is cancelled here, so tear the channel down on a detached scope.

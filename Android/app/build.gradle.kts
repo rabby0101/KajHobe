@@ -78,7 +78,11 @@ dependencies {
     implementation(libs.supabase.auth)
     implementation(libs.supabase.realtime)
     implementation(libs.supabase.storage)
+    implementation(libs.supabase.functions)
     implementation(libs.ktor.client.okhttp)
+
+    // Chrome Custom Tabs (bKash checkout)
+    implementation(libs.androidx.browser)
 
     // DI
     implementation(libs.koin.android)

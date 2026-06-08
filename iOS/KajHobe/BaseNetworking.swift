@@ -27,7 +27,13 @@ enum NetworkingError: Error, LocalizedError {
     case insufficientPermissions
     case invalidMessageContent
     case conversationClosed
-    
+
+    /// The other party already filed a pending completion request for this deal.
+    /// Mapped from the `completion_requests_one_pending_per_deal` unique-index
+    /// violation (SQLSTATE 23505). The caller should re-route the user to the
+    /// response sheet so they can approve or reject the existing request.
+    case completionRequestAlreadyPending(dealId: String)
+
     var errorDescription: String? {
         switch self {
         case .unauthorized(let message):
@@ -64,9 +70,11 @@ enum NetworkingError: Error, LocalizedError {
             return "Message content is invalid or too long"
         case .conversationClosed:
             return "This conversation has been closed"
+        case .completionRequestAlreadyPending:
+            return "There's already a pending completion request for this deal"
         }
     }
-    
+
     var recoverySuggestion: String? {
         switch self {
         case .networkUnavailable:

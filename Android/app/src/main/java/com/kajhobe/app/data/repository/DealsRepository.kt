@@ -5,6 +5,7 @@ import com.kajhobe.app.data.model.CompletionRequestInsert
 import com.kajhobe.app.data.model.DashboardData
 import com.kajhobe.app.data.model.Deal
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.rpc
@@ -118,26 +119,101 @@ class DealsRepository(client: SupabaseClient) : BaseRepository(client) {
     }
 
     /** Request completion of a deal (iOS requestTaskCompletion). */
-    suspend fun requestTaskCompletion(dealId: String, requesterType: String, message: String?): CompletionRequest =
-        postgrest.from("completion_requests")
-            .insert(
-                CompletionRequestInsert(
-                    deal_id = dealId,
-                    requester_id = currentUserId ?: "",
-                    requester_type = requesterType,
-                    request_message = message,
-                ),
-            ) { select() }
-            .decodeSingle<CompletionRequest>()
+    suspend fun requestTaskCompletion(dealId: String, requesterType: String, message: String?): CompletionRequest {
+        return try {
+            postgrest.from("completion_requests")
+                .insert(
+                    CompletionRequestInsert(
+                        deal_id = dealId,
+                        requester_id = currentUserId ?: "",
+                        requester_type = requesterType,
+                        request_message = message,
+                    ),
+                ) { select() }
+                .decodeSingle<CompletionRequest>()
+        } catch (e: PostgrestRestException) {
+            // Postgres unique_violation (23505) on completion_requests_one_pending_per_deal
+            // means the other party already filed a pending request for this deal.
+            if (e.message?.contains("completion_requests_one_pending_per_deal") == true ||
+                e.message?.contains("duplicate key value") == true
+            ) {
+                throw CompletionRequestAlreadyPendingException(dealId, e)
+            }
+            throw e
+        }
+    }
 
-    /** Approve/reject a completion request (iOS respondToCompletionRequest). */
+    /** Approve/reject a completion request (iOS respondToCompletionRequest).
+     *
+     * Mirrors `iOS/KajHobe/DealsNetworking.swift:497-501` and `:527-540`:
+     *  * On approve, also UPDATE `deals` directly to `status='completed'`,
+     *    `completed_at=now()` (iOS writes the deal row directly; Android used
+     *    to rely on the DB trigger, but doing both ensures parity and protects
+     *    against drift if the trigger is missing in some env).
+     *  * On reject, also UPDATE `deals` back to `status='active'`,
+     *    `completion_status='in_progress'`, clearing the per-party completion
+     *    flags and their timestamps.
+     */
     suspend fun respondToCompletionRequest(requestId: String, approve: Boolean, message: String?) {
         val uid = currentUserId ?: return
+        val status = if (approve) "approved" else "rejected"
+        val now = Instant.now().toString()
         postgrest.from("completion_requests").update({
-            set("status", if (approve) "approved" else "rejected")
+            set("status", status)
             set("responded_by", uid)
-            set("responded_at", Instant.now().toString())
+            set("responded_at", now)
             message?.let { set("response_message", it) }
         }) { filter { eq("id", requestId) } }
+
+        // Find the deal_id from the just-responded request, then write the
+        // deal row directly so both clients converge on the same state without
+        // waiting for the trigger.
+        val dealId = runCatching {
+            postgrest.from("completion_requests")
+                .select { filter { eq("id", requestId) } }
+                .decodeSingle<CompletionRequest>()
+                .deal_id
+        }.getOrNull() ?: return
+
+        if (approve) {
+            runCatching {
+                postgrest.from("deals").update({
+                    set("status", "completed")
+                    set("completed_at", now)
+                }) { filter { eq("id", dealId) } }
+            }
+        } else {
+            runCatching {
+                // The DB trigger `update_deal_completion_status` already resets
+                // deal status on a `rejected` completion_request. We additionally
+                // write the flags here so the UI re-renders immediately on both
+                // clients without waiting for the realtime echo. Mirrors
+                // iOS `DealsNetworking.swift:527-540`.
+                postgrest.from("deals").update({
+                    set("status", "active")
+                    set("completion_status", "in_progress")
+                    set("client_completion_requested", false)
+                    set("provider_completion_requested", false)
+                }) { filter { eq("id", dealId) } }
+                // Cleared timestamps go through a raw update via raw value
+                // (the Kotlin DSL's set() doesn't accept nullable directly).
+                postgrest.from("deals").update(
+                    mapOf(
+                        "client_completion_requested_at" to null as Any?,
+                        "provider_completion_requested_at" to null as Any?,
+                    ),
+                ) { filter { eq("id", dealId) } }
+            }
+        }
     }
 }
+
+/**
+ * Thrown when the user tries to file a completion request for a deal that
+ * already has a pending request (from the other party). Mapped from the
+ * `completion_requests_one_pending_per_deal` unique-index violation (SQLSTATE 23505).
+ */
+class CompletionRequestAlreadyPendingException(
+    val dealId: String,
+    cause: Throwable,
+) : Exception("A completion request is already pending for this deal", cause)

@@ -34,6 +34,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="kajhobe" android:host="auth-callback" />
             </intent-filter>
+
+            <!-- bKash escrow callback: kajhobe://escrow-callback -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="kajhobe" android:host="escrow-callback" />
+            </intent-filter>
         </activity>
 
         <!-- FileProvider for camera capture URIs (Post Job media picker). -->
