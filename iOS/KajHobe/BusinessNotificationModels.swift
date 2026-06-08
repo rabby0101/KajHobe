@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 // Simple notification structure for business notifications
 struct BusinessNotification: Identifiable, Codable {
@@ -15,13 +16,13 @@ struct BusinessNotification: Identifiable, Codable {
     let from_user_id: String?
     let to_user_id: String?
     let status: String?
-    let offer_data: String? // JSONB as string
+    let offer_data: AnyJSON?
     let actioned_at: String?
     let deal_offer_id: String?
     let completion_request_id: String?
     let notification_state: String?
     let interaction_type: String?
-    let action_data: String? // JSONB as string
+    let action_data: AnyJSON?
     let grouped_date: String?
     let priority: String?
     let avatar_url: String?
@@ -30,7 +31,10 @@ struct BusinessNotification: Identifiable, Codable {
 
     // Computed properties
     var isUnread: Bool {
-        return notification_state == "unread" || (notification_state == nil && read == false)
+        // Standardized on notification_state. Historical rows have notification_state == nil
+        // (and read == false) but must NOT count as unread, otherwise the entire legacy
+        // backlog floods the badge. Only rows explicitly marked 'unread' count.
+        return notification_state == "unread"
     }
 
     var displayTitle: String {

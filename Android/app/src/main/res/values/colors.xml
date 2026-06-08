@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- KajHobe brand palette (mirrors iOS DesignSystem.swift) -->
+    <color name="primary_blue">#FF007AFF</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="ic_launcher_background">#FF007AFF</color>
+</resources>

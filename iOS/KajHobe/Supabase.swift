@@ -1,5 +1,23 @@
 import Foundation
 import Supabase
+import Auth
+
+/// Thrown by `requireCurrentUser()` when there is no active session.
+struct NoActiveSessionError: LocalizedError {
+    var errorDescription: String? { "No active session." }
+}
+
+extension AuthClient {
+    /// Returns the current user from the locally-stored session **without a network round-trip**
+    /// (unlike `user()`, which performs a `GET /user`). Throws when there is no session, matching
+    /// the throwing shape of `user()` so call sites only drop `await` and rename. Use this for the
+    /// common "I just need the signed-in user's id" case; keep `user()` only when genuinely fresh
+    /// server-side user fields are required.
+    nonisolated func requireCurrentUser() throws -> User {
+        guard let user = currentSession?.user else { throw NoActiveSessionError() }
+        return user
+    }
+}
 
 nonisolated let supabase = SupabaseClient(
     supabaseURL: URL(string: "https://xatlqnbrvgukuqewsxux.supabase.co")!,

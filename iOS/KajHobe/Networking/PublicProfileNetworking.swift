@@ -144,6 +144,44 @@ class PublicProfileNetworking: BaseNetworking {
         }
     }
 
+    // MARK: - Reviews
+
+    /// Fetch individual reviews for a provider, enriched with reviewer name/avatar.
+    /// Reuses fetchPublicProfileSummaries to resolve reviewer identities in one batch.
+    func fetchReviews(_ providerId: String, limit: Int = 20) async throws -> [ProviderReview] {
+        print("🌐 PublicProfileNetworking - Fetching reviews for \(providerId)")
+
+        let response = try await supabase
+            .from("reviews")
+            .select("id, rating, comment, created_at, reviewer_id")
+            .eq("reviewed_id", value: providerId)
+            .order("created_at", ascending: false)
+            .limit(limit)
+            .execute()
+
+        let rows = try JSONDecoder().decode([ReviewRow].self, from: response.data)
+        guard !rows.isEmpty else { return [] }
+
+        // Resolve reviewer identities in a single batch (name + avatar).
+        let reviewerIds = Array(Set(rows.compactMap { $0.reviewer_id }))
+        let summaries = (try? await fetchPublicProfileSummaries(reviewerIds)) ?? [:]
+
+        let reviews = rows.map { row -> ProviderReview in
+            let summary = row.reviewer_id.flatMap { summaries[$0] }
+            return ProviderReview(
+                id: row.id,
+                rating: row.rating,
+                comment: row.comment,
+                created_at: row.created_at,
+                reviewer_name: summary?.full_name,
+                reviewer_avatar: summary?.avatar_url
+            )
+        }
+
+        print("✅ PublicProfileNetworking - \(reviews.count) reviews fetched")
+        return reviews
+    }
+
     // MARK: - Discovery & Search
 
     /// Find top-rated service providers in a specific category

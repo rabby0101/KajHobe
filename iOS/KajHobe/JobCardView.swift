@@ -6,9 +6,16 @@ import Supabase
 
 struct JobCardView: View {
     let job: Job
+    // Bulk data injected by the parent list so the card resolves ownership/status without any
+    // per-card network calls. When nil (search/category screens, preview) the card falls back to
+    // its own lookups — using the cached `currentUser` (no networked auth.user()).
+    private let injectedCurrentUserId: String?
+    private let injectedInterestedJobIds: Set<String>?
+    private let injectedViewedJobIds: Set<String>?
+
     @State private var currentUserId: String?
     @State private var jobStatus: JobStatus = .new
-    @State private var userProfile: Profile?
+    @State private var didMarkViewed = false
     @State private var showingDeleteAlert = false
     @State private var isDeleting = false
     @State private var isBookmarked = false
@@ -51,11 +58,32 @@ struct JobCardView: View {
         }
     }
     
-    init(job: Job, onJobDeleted: (() -> Void)? = nil, onOpenConversation: (() -> Void)? = nil) {
+    init(job: Job,
+         currentUserId: String? = nil,
+         interestedJobIds: Set<String>? = nil,
+         viewedJobIds: Set<String>? = nil,
+         onJobDeleted: (() -> Void)? = nil,
+         onOpenConversation: (() -> Void)? = nil) {
         self.job = job
+        self.injectedCurrentUserId = currentUserId
+        self.injectedInterestedJobIds = interestedJobIds
+        self.injectedViewedJobIds = viewedJobIds
         self.onJobDeleted = onJobDeleted
-        // Try to determine ownership immediately if user is available
-        self._isOwnJob = State(initialValue: false)
+        // Resolve ownership synchronously from the injected or cached user id (no network),
+        // so the card is correct from the first frame with no flash.
+        let uid = currentUserId ?? supabase.auth.currentUser?.id.uuidString
+        self._isOwnJob = State(initialValue: uid != nil && job.client_id.lowercased() == uid!.lowercased())
+    }
+
+    /// Status shown in the card badge. Derived reactively from injected bulk data when present
+    /// (so it updates as the list's lookups load), otherwise from the per-card `jobStatus` state.
+    private var effectiveStatus: JobStatus {
+        if let interested = injectedInterestedJobIds, let viewed = injectedViewedJobIds {
+            if interested.contains(job.id) { return .interested }
+            if viewed.contains(job.id) { return .viewed }
+            return .new
+        }
+        return jobStatus
     }
     
     // Define color schemes for different categories
@@ -200,16 +228,16 @@ struct JobCardView: View {
                 // Show job status
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(jobStatus.color)
+                        .fill(effectiveStatus.color)
                         .frame(width: 6, height: 6)
-                    Text(jobStatus.displayText)
+                    Text(effectiveStatus.displayText)
                         .font(.caption)
                         .fontWeight(.semibold)
-                        .foregroundColor(jobStatus.color)
+                        .foregroundColor(effectiveStatus.color)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(jobStatus.color.opacity(0.1))
+                .background(effectiveStatus.color.opacity(0.1))
                 .cornerRadius(8)
             } else {
                 Text("Your Job")
@@ -310,9 +338,17 @@ struct JobCardView: View {
             }
         }
         .task {
-            await checkJobOwnership()
-            await loadUserProfile()
-            await checkJobStatus()
+            // Ownership: resolve from the injected/cached user id — synchronous, no network.
+            let uid = injectedCurrentUserId ?? supabase.auth.currentUser?.id.uuidString
+            currentUserId = uid
+            if let uid = uid {
+                isOwnJob = job.client_id.lowercased() == uid.lowercased()
+            }
+            // Status: if the list injected bulk lookups, `effectiveStatus` already derives it with
+            // zero queries. Only fall back to per-card lookups when no bulk data was provided.
+            if injectedInterestedJobIds == nil || injectedViewedJobIds == nil {
+                await checkJobStatus()
+            }
             await checkBookmarkStatus()
         }
         .onTapGesture {
@@ -340,65 +376,23 @@ struct JobCardView: View {
         }
     }
     
-    private func loadUserProfile() async {
-        do {
-            let profile = try await Networking.shared.getCurrentUserProfile()
-            await MainActor.run {
-                self.userProfile = profile
-            }
-        } catch {
-            print("Error loading user profile: \(error)")
-        }
-    }
-    
-    private func checkJobOwnership() async {
-        do {
-            let user = try await supabase.auth.user()
-            await MainActor.run {
-                self.currentUserId = user.id.uuidString
-                // Use case-insensitive comparison for UUID matching
-                self.isOwnJob = job.client_id.lowercased() == user.id.uuidString.lowercased()
-            }
-            
-            print("Job ownership check - Job client: \(job.client_id), Current user: \(user.id.uuidString), Is own job: \(isOwnJob)")
-        } catch {
-            print("Error checking job ownership: \(error)")
-        }
-    }
-    
+    /// Fallback per-card status lookup, used only when the parent list did NOT inject bulk
+    /// interest/viewed sets (e.g. search/category screens). Uses the cached `currentUser` id —
+    /// no networked `auth.user()`.
     private func checkJobStatus() async {
-        guard !isOwnJob else { 
-            print("📝 Skipping status check - this is user's own job")
-            return 
-        }
-        
-        do {
-            let user = try await supabase.auth.user()
-            let userId = user.id.uuidString
-            
-            print("🔍 Checking job status - Job ID: \(job.id), User ID: \(userId)")
-            
-            // Check if user has shown interest in this job
-            let hasInterest = await checkIfJobInterested(jobId: job.id, userId: userId)
-            print("💚 Has interest: \(hasInterest)")
-            
-            // Check if user has viewed this job
-            let hasViewed = await checkIfJobViewed(jobId: job.id, userId: userId)
-            print("👀 Has viewed: \(hasViewed)")
-            
-            await MainActor.run {
-                let oldStatus = self.jobStatus
-                if hasInterest {
-                    self.jobStatus = .interested
-                } else if hasViewed {
-                    self.jobStatus = .viewed
-                } else {
-                    self.jobStatus = .new
-                }
-                print("📊 Status changed from \(oldStatus.displayText) to \(self.jobStatus.displayText)")
+        guard !isOwnJob, let userId = supabase.auth.currentUser?.id.uuidString else { return }
+
+        let hasInterest = await checkIfJobInterested(jobId: job.id, userId: userId)
+        let hasViewed = await checkIfJobViewed(jobId: job.id, userId: userId)
+
+        await MainActor.run {
+            if hasInterest {
+                self.jobStatus = .interested
+            } else if hasViewed {
+                self.jobStatus = .viewed
+            } else {
+                self.jobStatus = .new
             }
-        } catch {
-            print("❌ Error checking job status: \(error)")
         }
     }
     
@@ -439,11 +433,15 @@ struct JobCardView: View {
     }
     
     private func markJobAsViewed() async {
-        guard !isOwnJob, let userId = currentUserId else { return }
-        
+        // Dedupe: only write once per card per session (this fires on tap and from the context
+        // menu) to avoid repeated upserts on re-renders/re-taps. Also skip if the list already
+        // told us the job is viewed.
+        guard !isOwnJob, !didMarkViewed,
+              !(injectedViewedJobIds?.contains(job.id) ?? false),
+              let userId = currentUserId ?? supabase.auth.currentUser?.id.uuidString else { return }
+        didMarkViewed = true
+
         do {
-            print("🔍 Marking job as viewed - Job ID: \(job.id), User ID: \(userId)")
-            
             // Insert directly into job_views table with upsert
             let _ = try await supabase
                 .from("job_views")

@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Xcode per-user state
+*.xcuserstate
+xcuserdata/
+
+# Build artifacts (generated — never commit)
+iOS/build/
+**/DerivedData/
+Android/app/release/
+Android/app/build/
+node_modules/

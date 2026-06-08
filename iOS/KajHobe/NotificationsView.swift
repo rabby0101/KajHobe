@@ -13,11 +13,99 @@ struct JobInterestNotification: Identifiable, Codable {
     let job_title: String
     let client_id: String
     let provider_name: String?
+    var read: Bool = false
+}
+
+// MARK: - Notification Category
+/// Canonical color system for the unified feed: 4 tinted categories plus a
+/// plain `.other` fallback. Unread cards are tinted in the category color
+/// across the whole card; read cards fade to plain gray (color doubles as
+/// the unread signal).
+enum NotificationCategory {
+    case interest          // Indigo
+    case dealCreated       // Teal
+    case completionRequest // Amber
+    case dealCompleted     // Green
+    case other             // Gray
+
+    var color: Color {
+        switch self {
+        case .interest:           return .indigo
+        case .dealCreated:        return .teal
+        case .completionRequest:  return Color(red: 1.0, green: 0.70, blue: 0.0)
+        case .dealCompleted:      return .green
+        case .other:              return .gray
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .interest:          return "Interest"
+        case .dealCreated:       return "Deal"
+        case .completionRequest: return "Completion"
+        case .dealCompleted:     return "Completed"
+        case .other:             return "Update"
+        }
+    }
+
+    /// Resolves a `BusinessNotification.type` string to a category.
+    /// Order:
+    ///   1. contains "completion" → "approved" ⇒ .dealCompleted, else ⇒ .completionRequest
+    ///   2. "deal_completed" / contains "completed" ⇒ .dealCompleted
+    ///   3. contains "deal" or "offer" ⇒ .dealCreated
+    ///   4. contains "interest" ⇒ .interest
+    ///   5. else ⇒ .other
+    static func from(businessType rawType: String?) -> NotificationCategory {
+        guard let t = rawType?.lowercased() else { return .other }
+        if t.contains("completion") {
+            return t.contains("approved") ? .dealCompleted : .completionRequest
+        }
+        if t == "deal_completed" || t.contains("completed") {
+            return .dealCompleted
+        }
+        if t.contains("deal") || t.contains("offer") {
+            return .dealCreated
+        }
+        if t.contains("interest") {
+            return .interest
+        }
+        return .other
+    }
+}
+
+// MARK: - Unified feed item
+/// One entry in the single notifications feed — either an interest request
+/// (from `job_interests`) or a business notification (from `notifications`).
+/// Carries the resolved NotificationCategory used to color the row.
+enum NotificationFeedItem: Identifiable {
+    case interest(JobInterestNotification)
+    case business(BusinessNotification)
+
+    var id: String {
+        switch self {
+        case .interest(let i): return "interest_\(i.id)"
+        case .business(let b): return "business_\(b.id)"
+        }
+    }
+
+    var createdAt: String {
+        switch self {
+        case .interest(let i): return i.created_at
+        case .business(let b): return b.created_at
+        }
+    }
+
+    var category: NotificationCategory {
+        switch self {
+        case .interest:        return .interest
+        case .business(let b): return NotificationCategory.from(businessType: b.type)
+        }
+    }
 }
 
 struct NotificationsView: View {
-    // Tab system
-    @State private var selectedTab: NotificationTab = .interests
+    // Device-local read/cleared state (drives unread highlight + clearing).
+    @ObservedObject private var localState = NotificationLocalState.shared
 
     // Job Interests (existing)
     @State private var notifications: [JobInterestNotification] = []
@@ -39,19 +127,9 @@ struct NotificationsView: View {
     @State private var selectedProfile: SimplePublicProfile?
     @State private var isLoadingProfile = false
 
-    // Tab enumeration
-    enum NotificationTab: String, CaseIterable {
-        case interests = "Interests"
-        case business = "Business"
+    // Deal Details sheet (opened by tapping a "deal created" notification)
+    @State private var selectedDeal: DealWithCompletion?
 
-        var icon: String {
-            switch self {
-            case .interests: return "heart"
-            case .business: return "briefcase"
-            }
-        }
-    }
-    
     // MARK: - Job Interest Notifications (Convert existing to unified)
     private func convertJobInterestsToUnified() -> [UnifiedNotification] {
         return notifications.map { jobInterest in
@@ -182,7 +260,7 @@ struct NotificationsView: View {
     // MARK: - Deal Offer Notifications
     private func loadDealOfferNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get deal offers where the current user is the client (receiving offers)
             let response = try await supabase
@@ -291,7 +369,7 @@ struct NotificationsView: View {
     // MARK: - Completion Request Notifications
     private func loadCompletionRequestNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get completion requests where the current user needs to respond (client or provider)
             let response = try await supabase
@@ -414,7 +492,7 @@ struct NotificationsView: View {
     // MARK: - Deal Notifications
     private func loadDealNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get deals where the current user is involved (client or provider)
             let response = try await supabase
@@ -525,7 +603,7 @@ struct NotificationsView: View {
     // MARK: - Message Notifications
     private func loadMessageNotifications() async -> [UnifiedNotification] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get recent messages where the current user is not the sender
             // We'll limit this to prevent too many message notifications
@@ -713,127 +791,169 @@ struct NotificationsView: View {
         }
     }
 
-    // MARK: - Tab System Views
+    // MARK: - Unified Feed
 
-    private var tabSelectorView: some View {
-        HStack(spacing: 0) {
-            ForEach(NotificationTab.allCases, id: \.self) { tab in
-                Button(action: {
-                    selectedTab = tab
-                }) {
-                    VStack(spacing: 4) {
-                        HStack(spacing: 6) {
-                            Image(systemName: tab.icon)
-                                .font(.system(size: 16, weight: .medium))
+    /// All notifications (interests + business) merged into one list, newest first.
+    private var feedItems: [NotificationFeedItem] {
+        let items = visibleInterests.map { NotificationFeedItem.interest($0) }
+            + filteredBusinessNotifications.map { NotificationFeedItem.business($0) }
+        return items.sorted { lhs, rhs in
+            (NotificationLocalState.date(from: lhs.createdAt) ?? .distantPast) >
+            (NotificationLocalState.date(from: rhs.createdAt) ?? .distantPast)
+        }
+    }
 
-                            Text(tab.rawValue)
-                                .font(.system(size: 16, weight: .medium))
-
-                            // Badge counts
-                            if tab == .interests {
-                                let unreadCount = unifiedNotifications.count // All job interests shown for now
-                                if unreadCount > 0 {
-                                    Text("\(unreadCount)")
-                                        .font(.caption2)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.red)
-                                        .clipShape(Capsule())
-                                }
-                            } else if tab == .business {
-                                let unreadCount = businessNotifications.filter { $0.isUnread }.count
-                                if unreadCount > 0 {
-                                    Text("\(unreadCount)")
-                                        .font(.caption2)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(Color.red)
-                                        .clipShape(Capsule())
+    private var feedContentView: some View {
+        Group {
+            if (isLoading || isLoadingBusiness) && feedItems.isEmpty {
+                ProgressView("Loading notifications...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if feedItems.isEmpty {
+                emptyStateView
+            } else {
+                List {
+                    ForEach(feedItems) { item in
+                        feedRow(item)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    clearFeedItem(item)
+                                } label: {
+                                    Label("Clear", systemImage: "trash")
                                 }
                             }
-                        }
                     }
                 }
-                .foregroundColor(selectedTab == tab ? .blue : .primary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(
-                    selectedTab == tab ?
-                    Color.blue.opacity(0.1) : Color.clear
-                )
-            }
-        }
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-    }
-
-    private var interestsContentView: some View {
-        mainContentView // This is the existing job interests content
-    }
-
-    private var businessContentView: some View {
-        Group {
-            if isLoadingBusiness {
-                VStack(spacing: 16) {
-                    ProgressView()
-                        .scaleEffect(1.2)
-
-                    Text("Loading business notifications...")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.secondary)
+                .listStyle(.plain)
+                .refreshable {
+                    await safeLoadUnifiedNotifications()
+                    await loadBusinessNotifications()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if businessNotifications.isEmpty {
-                VStack(spacing: 20) {
-                    Image(systemName: "briefcase.badge.clock")
-                        .font(.system(size: 48))
-                        .foregroundColor(.gray)
-
-                    Text("No Business Notifications")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-
-                    Text("All your deal notifications, messages, and completion requests will appear here.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                businessNotificationsList
             }
-        }
-        .refreshable {
-            await loadBusinessNotifications()
+
+            if let errorMessage = errorMessage {
+                Text("Error: \(errorMessage)")
+                    .foregroundColor(.red)
+                    .padding()
+            }
         }
     }
 
-    private var businessNotificationsList: some View {
-        List {
-            ForEach(filteredBusinessNotifications) { notification in
-                BusinessNotificationRow(
-                    notification: notification,
-                    onTap: {
-                        await handleBusinessNotificationTap(notification)
-                    }
-                )
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+    @ViewBuilder
+    private func feedRow(_ item: NotificationFeedItem) -> some View {
+        switch item {
+        case .interest(let interest):
+            InterestNotificationRow(
+                interest: interest,
+                isUnread: isInterestUnread(interest),
+                isProcessing: processingNotificationIds.contains(interest.id),
+                accent: item.category.color,
+                category: item.category.label,
+                onTap: {
+                    markInterestRead(interest)
+                    loadProviderProfile(providerId: interest.provider_id)
+                },
+                onAction: { accept in
+                    Task { await actOnInterest(interest, accept: accept) }
+                }
+            )
+        case .business(let notification):
+            BusinessNotificationRow(
+                notification: notification,
+                isUnread: localState.isUnread(id: notification.id, createdAtISO: notification.created_at),
+                accent: item.category.color,
+                category: item.category.label,
+                onTap: {
+                    await handleBusinessNotificationTap(notification)
+                }
+            )
+        }
+    }
+
+    private func clearFeedItem(_ item: NotificationFeedItem) {
+        switch item {
+        case .interest(let i):
+            clearInterest(i)
+        case .business(let b):
+            localState.clear(b.id)
+            NotificationBadgeManager.shared.recomputeFromLocal()
+        }
+    }
+
+    // MARK: - Interests Tab (flat read/unread list)
+
+    /// Interests visible in the list: not cleared, search-filtered, newest first.
+    private var visibleInterests: [JobInterestNotification] {
+        let base = notifications.filter { !localState.isCleared($0.id) }
+        let filtered: [JobInterestNotification]
+        if searchText.isEmpty {
+            filtered = base
+        } else {
+            let s = searchText.lowercased()
+            filtered = base.filter { n in
+                n.job_title.lowercased().contains(s) ||
+                (n.provider_name?.lowercased().contains(s) ?? false) ||
+                (n.message?.lowercased().contains(s) ?? false)
             }
         }
-        .listStyle(PlainListStyle())
+        return filtered.sorted { $0.created_at > $1.created_at }
+    }
+
+    /// An interest is "unread" (bright) only while it is pending and not yet opened/cleared.
+    private func isInterestUnread(_ interest: JobInterestNotification) -> Bool {
+        interest.status.lowercased() == "pending" &&
+        localState.isUnread(id: interest.id, createdAtISO: interest.created_at)
+    }
+
+    private func markInterestRead(_ interest: JobInterestNotification) {
+        localState.markRead(interest.id)
+        NotificationBadgeManager.shared.recomputeFromLocal()
+    }
+
+    private func clearInterest(_ interest: JobInterestNotification) {
+        localState.clear(interest.id)
+        NotificationBadgeManager.shared.recomputeFromLocal()
+    }
+
+    /// Accept or reject a single interest, then refresh the list + bell badge.
+    private func actOnInterest(_ interest: JobInterestNotification, accept: Bool) async {
+        guard !processingNotificationIds.contains(interest.id) else { return }
+        await MainActor.run {
+            _ = processingNotificationIds.insert(interest.id)
+            localState.markRead(interest.id)   // acting on it counts as reading it
+        }
+        do {
+            try await handleJobInterestAction(notification: interest, accept: accept)
+        } catch {
+            print("❌ Error handling interest action: \(error)")
+            await MainActor.run {
+                self.errorMessage = "Failed to process action: \(error.localizedDescription)"
+            }
+        }
+        await MainActor.run { processingNotificationIds.remove(interest.id) }
+        await safeLoadUnifiedNotifications()
+        await NotificationBadgeManager.shared.refreshCounts()
+    }
+
+    // MARK: - Clear / Mark-all (whole feed)
+
+    private func clearAllInFeed() {
+        localState.clear(visibleInterests.map { $0.id } + filteredBusinessNotifications.map { $0.id })
+        NotificationBadgeManager.shared.recomputeFromLocal()
+    }
+
+    private func markAllReadInFeed() {
+        localState.markRead(visibleInterests.map { $0.id } + filteredBusinessNotifications.map { $0.id })
+        NotificationBadgeManager.shared.recomputeFromLocal()
     }
 
     // MARK: - Business Notifications Helpers
 
     private var filteredBusinessNotifications: [BusinessNotification] {
-        var filtered = businessNotifications
+        // Hide cleared notifications (device-local).
+        var filtered = businessNotifications.filter { !localState.isCleared($0.id) }
 
         // Apply search filter
         if !searchText.isEmpty {
@@ -877,27 +997,68 @@ struct NotificationsView: View {
 
     private func handleBusinessNotificationTap(_ notification: BusinessNotification) async {
         print("📱 Business notification tapped: \(notification.displayTitle)")
-        print("📱 Type: \(notification.type ?? "Unknown"), State: \(notification.notification_state ?? "Unknown")")
 
-        // Mark as read if currently unread
-        if notification.isUnread {
-            await markBusinessNotificationAsRead(notification)
+        // Opening a notification mutes it (device-local read state).
+        localState.markRead(notification.id)
+        NotificationBadgeManager.shared.recomputeFromLocal()
+
+        // A "deal created" notification opens the Deal Details view (same as the Dashboard).
+        if notification.type == "deal_created", let jobId = notification.job_id {
+            await openDeal(forJobId: jobId)
         }
+        // A completion-request notification opens the same Deal Details view, where the
+        // responder approves / requests changes (the approval surface moved here from the
+        // Dashboard). Reuses openDeal — all completion notifications carry a job_id.
+        else if notification.type == "completion_request" || notification.type == "completion_requested",
+                let jobId = notification.job_id {
+            await openDeal(forJobId: jobId)
+        }
+    }
 
-        // TODO: Add navigation logic based on notification type
+    /// Resolve the deal for a job and present Deal Details — mirrors the Dashboard's
+    /// active-deal tap (reuses DealsNetworking.fetchActiveDeals, which joins job + profiles).
+    private func openDeal(forJobId jobId: String) async {
+        do {
+            let deals = try await DealsNetworking.shared.fetchActiveDeals()
+            guard let deal = deals.first(where: { $0.job_id == jobId }) else {
+                print("ℹ️ No active deal found for job \(jobId); nothing to open.")
+                return
+            }
+            let dealWithCompletion = DealWithCompletion(
+                id: deal.id,
+                job_id: deal.job_id,
+                client_id: deal.client_id,
+                provider_id: deal.provider_id,
+                agreed_amount: deal.agreed_amount,
+                agreed_terms: deal.agreed_terms,
+                timeline: deal.timeline,
+                status: deal.status,
+                completion_status: deal.completion_status ?? "in_progress",
+                client_completion_requested: deal.client_completion_requested ?? false,
+                provider_completion_requested: deal.provider_completion_requested ?? false,
+                client_completion_requested_at: deal.client_completion_requested_at,
+                provider_completion_requested_at: deal.provider_completion_requested_at,
+                created_at: deal.created_at,
+                completed_at: deal.completed_at,
+                job: deal.job,
+                client_profile: deal.client_profile,
+                provider_profile: deal.provider_profile,
+                pending_completion_requests: nil
+            )
+            await MainActor.run { self.selectedDeal = dealWithCompletion }
+        } catch {
+            print("❌ Error opening deal for job \(jobId): \(error)")
+        }
     }
 
     private func markBusinessNotificationAsRead(_ notification: BusinessNotification) async {
-        guard notification.isUnread else { return }
+        // Retained for compatibility; local read state is the source of truth now.
+        localState.markRead(notification.id)
+        NotificationBadgeManager.shared.recomputeFromLocal()
 
         do {
+            // (Legacy no-op-friendly server sync kept for cross-surface consistency.)
             try await NotificationsNetworking.shared.markBusinessNotificationAsRead(notification.id)
-
-            // Update local state by reloading
-            await loadBusinessNotifications()
-
-            // Update badge manager
-            NotificationBadgeManager.shared.updateCounts(oldState: .unread, newState: .read)
 
             print("✅ Business notification marked as read successfully")
         } catch {
@@ -907,24 +1068,32 @@ struct NotificationsView: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Tab selector
-                tabSelectorView
-
-                // Content based on selected tab
-                Group {
-                    switch selectedTab {
-                    case .interests:
-                        interestsContentView
-                    case .business:
-                        businessContentView
+            feedContentView
+            .navigationTitle("Notifications")
+            .searchable(text: $searchText, prompt: "Search notifications...")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Button {
+                            markAllReadInFeed()
+                        } label: {
+                            Label("Mark all as read", systemImage: "checkmark.circle")
+                        }
+                        Button(role: .destructive) {
+                            clearAllInFeed()
+                        } label: {
+                            Label("Clear all", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                     }
                 }
             }
-            .navigationTitle("Notifications")
-            .searchable(text: $searchText, prompt: "Search notifications...")
             .onAppear {
                 loadingTask = Task {
+                    if let uid = supabase.auth.currentUser?.id.uuidString {
+                        await MainActor.run { NotificationLocalState.shared.configure(userId: uid) }
+                    }
                     await safeLoadUnifiedNotifications()
                     await loadBusinessNotifications()
                 }
@@ -933,12 +1102,15 @@ struct NotificationsView: View {
                 loadingTask?.cancel()
                 loadingTask = nil
             }
+            .sheet(item: $selectedDeal) { deal in
+                DealDetailView(deal: deal)
+            }
         }
         .sheet(isPresented: $showingProviderProfile) {
             if let profile = selectedProfile {
-                SimpleProfileSheet(profile: profile)
+                PublicProfileDetailView(profile: profile.toPublicProfile())
                     .onAppear {
-                        print("✅ SimpleProfileSheet appeared for: \(profile.full_name ?? "Unknown")")
+                        print("✅ PublicProfileDetailView appeared for: \(profile.full_name ?? "Unknown")")
                         print("✅ Profile ID: \(profile.id), Online: \(profile.is_online)")
                     }
             } else {
@@ -971,42 +1143,25 @@ struct NotificationsView: View {
     private func loadUnifiedNotifications() async {
         // Check for cancellation early
         guard !Task.isCancelled else {
-            print("🔄 Load unified notifications task was cancelled")
+            print("🔄 Load interests task was cancelled")
             return
         }
-        
+
         await MainActor.run {
             isLoading = true
             errorMessage = nil
         }
-        
-        do {
-            // First load job interests (existing functionality)
-            await loadNotifications()
-            
-            // Then load all unified notifications
-            let allUnifiedNotifications = await loadAllUnifiedNotifications()
-            
-            await MainActor.run {
-                self.unifiedNotifications = allUnifiedNotifications
-                print("✅ Successfully loaded \(allUnifiedNotifications.count) unified notifications")
-            }
-            
-        } catch {
-            print("❌ Error loading unified notifications: \(error)")
-            
-            if !Task.isCancelled && (error as NSError).code != -999 {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                }
-            } else {
-                print("🔄 Task was cancelled, not showing error")
-            }
-        }
-        
+
+        // The Interests tab shows ONLY job_interests (grouped by job). Deal offers,
+        // completion requests, deals and messages live on the Business tab.
+        await loadNotifications()
+
         await MainActor.run {
             self.isLoading = false
         }
+
+        // Keep the bell badge in sync with the freshly-loaded interests.
+        await NotificationBadgeManager.shared.refreshCounts()
     }
     
     // MARK: - Unified Notification Action Handler
@@ -1151,7 +1306,7 @@ struct NotificationsView: View {
             // Get current user with error handling for cancelled requests
             let user: User
             do {
-                user = try await supabase.auth.user()
+                user = try supabase.auth.requireCurrentUser()
                 print("🔍 Loading notifications for user: \(user.id.uuidString)")
             } catch {
                 // Handle cancelled request specifically
@@ -1180,6 +1335,7 @@ struct NotificationsView: View {
                     provider_id,
                     status,
                     message,
+                    read,
                     created_at,
                     jobs!inner(title, client_id)
                 """)
@@ -1228,7 +1384,8 @@ struct NotificationsView: View {
                     }
                     
                     let message = item["message"] as? String
-                    
+                    let read = item["read"] as? Bool ?? false
+
                     // Extract job title from nested jobs object
                     var job_title = "Unknown Job"
                     var client_id = ""
@@ -1249,7 +1406,8 @@ struct NotificationsView: View {
                         created_at: created_at,
                         job_title: job_title,
                         client_id: client_id,
-                        provider_name: provider_name
+                        provider_name: provider_name,
+                        read: read
                     )
                     
                     parsedNotifications.append(notification)
@@ -1475,7 +1633,13 @@ struct NotificationsView: View {
                             average_response_time_minutes: profileData["average_response_time_minutes"] as? Int,
                             service_categories: profileData["service_categories"] as? [String] ?? [],
                             trust_level: profileData["trust_level"] as? String ?? "unverified",
-                            last_updated: profileData["last_updated"] as? String ?? ""
+                            last_updated: profileData["last_updated"] as? String ?? "",
+                            profession: profileData["profession"] as? String,
+                            tagline: profileData["tagline"] as? String,
+                            experience_years: profileData["experience_years"] as? Int,
+                            hourly_rate: profileData["hourly_rate"] as? Double,
+                            team_rate: profileData["team_rate"] as? Double,
+                            team_hours_label: profileData["team_hours_label"] as? String
                         )
 
                         print("✅ Successfully created profile: \(profile.full_name ?? "Unknown")")
@@ -1963,25 +2127,38 @@ extension UnifiedNotification.NotificationColor {
 // MARK: - Business Notification Row Component
 struct BusinessNotificationRow: View {
     let notification: BusinessNotification
+    let isUnread: Bool
+    let accent: Color
+    let category: String
     let onTap: () async -> Void
+
+    private var effectiveAccent: Color { isUnread ? accent : .gray }
 
     var body: some View {
         HStack(spacing: 12) {
-            // Type icon
+            // Type icon (tinted with the category accent; gray when read)
             Image(systemName: notification.typeIcon)
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(notification.isUnread ? Color(notification.typeColor) : .gray)
-                .frame(width: 32, height: 32)
-                .background(Circle().fill(Color.gray.opacity(0.1)))
+                .foregroundColor(effectiveAccent)
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(effectiveAccent.opacity(0.15)))
 
             // Content
             VStack(alignment: .leading, spacing: 4) {
                 // Title and timestamp
-                HStack {
+                HStack(spacing: 6) {
                     Text(notification.displayTitle)
-                        .font(.system(size: 16, weight: notification.isUnread ? .semibold : .medium))
+                        .font(.system(size: 16, weight: isUnread ? .semibold : .medium))
                         .foregroundColor(.primary)
                         .lineLimit(1)
+
+                    // Category chip (still rendered when read, in gray)
+                    Text(category)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(effectiveAccent)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(effectiveAccent.opacity(0.15))
+                        .clipShape(Capsule())
 
                     Spacer()
 
@@ -1997,49 +2174,32 @@ struct BusinessNotificationRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                 }
-
-                // Type badge
-                if let type = notification.type {
-                    Text(type.replacingOccurrences(of: "_", with: " ").capitalized)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color(notification.typeColor).opacity(0.2))
-                        .foregroundColor(Color(notification.typeColor))
-                        .clipShape(Capsule())
-                }
             }
 
             // Unread indicator
-            if notification.isUnread {
+            if isUnread {
                 Circle()
-                    .fill(Color.blue)
+                    .fill(effectiveAccent)
                     .frame(width: 8, height: 8)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .padding(.horizontal, 12)
+        // Read notifications appear dull; unread are bright.
+        .opacity(isUnread ? 1.0 : 0.7)
+        // Unread: full card tinted in the category color. Read: plain gray.
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(notification.isUnread ? Color.blue.opacity(0.05) : Color.clear)
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isUnread ? accent.opacity(0.15) : Color(.systemGray6).opacity(0.4))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isUnread ? accent.opacity(0.5) : Color(.systemGray5), lineWidth: 1)
         )
+        .contentShape(Rectangle())
         .onTapGesture {
             Task {
                 await onTap()
-            }
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            if notification.isUnread {
-                Button("Mark Read") {
-                    Task {
-                        await onTap()
-                    }
-                }
-                .tint(.blue)
             }
         }
     }
@@ -2067,6 +2227,159 @@ struct BusinessNotificationRow: View {
             formatter.dateFormat = "MMM d, yyyy"
             return formatter.string(from: date)
         }
+    }
+}
+
+// MARK: - Interest Notification Row (flat)
+
+/// A single interest request as a flat notification row: avatar, provider, job
+/// title, the provider's message, and Accept/Reject (pending only). Unread rows
+/// are bright; read rows are dulled.
+struct InterestNotificationRow: View {
+    let interest: JobInterestNotification
+    let isUnread: Bool
+    let isProcessing: Bool
+    let accent: Color
+    let category: String
+    let onTap: () -> Void
+    let onAction: (Bool) -> Void   // accept
+
+    private var isPending: Bool { interest.status.lowercased() == "pending" }
+    private var effectiveAccent: Color { isUnread ? accent : .gray }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle().fill(effectiveAccent.opacity(0.15)).frame(width: 40, height: 40)
+                    Text(String((interest.provider_name ?? "?").prefix(1)).uppercased())
+                        .font(.subheadline).fontWeight(.semibold)
+                        .foregroundColor(effectiveAccent)
+                }
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text(interest.provider_name ?? "Someone")
+                            .font(.system(size: 16, weight: isUnread ? .semibold : .medium))
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
+                        categoryChip
+                    }
+                    Text(interest.job_title)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 6) {
+                    Text(relativeTime(interest.created_at))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    if isUnread {
+                        Circle().fill(effectiveAccent).frame(width: 8, height: 8)
+                    } else {
+                        statusPill
+                    }
+                }
+            }
+
+            // Provider's interest message (the note they wrote when showing interest)
+            if let message = interest.message,
+               !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(message)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+
+            // Accept / Reject (pending only)
+            if isPending {
+                HStack(spacing: 10) {
+                    Button(role: .destructive) {
+                        onAction(false)
+                    } label: {
+                        Text("Reject").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.red)
+                    .disabled(isProcessing)
+
+                    Button {
+                        onAction(true)
+                    } label: {
+                        if isProcessing {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Accept")
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .disabled(isProcessing)
+                }
+            }
+        }
+        .padding(16)
+        // Read rows appear dull; unread are bright.
+        .opacity(isUnread ? 1.0 : 0.7)
+        // Unread: full card tinted in the category color. Read: plain gray.
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isUnread ? accent.opacity(0.15) : Color(.systemGray6).opacity(0.4))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isUnread ? accent.opacity(0.5) : Color(.systemGray5), lineWidth: 1)
+        )
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
+    }
+
+    private var categoryChip: some View {
+        Text(category)
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundColor(effectiveAccent)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(effectiveAccent.opacity(0.15))
+            .clipShape(Capsule())
+    }
+
+    @ViewBuilder private var statusPill: some View {
+        switch interest.status.lowercased() {
+        case "accepted":
+            pill("Accepted", .green)
+        case "rejected":
+            pill("Rejected", .red)
+        default:
+            EmptyView()
+        }
+    }
+
+    private func pill(_ text: String, _ color: Color) -> some View {
+        Text(text)
+            .font(.caption2).fontWeight(.semibold)
+            .foregroundColor(color)
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(color.opacity(0.15))
+            .clipShape(Capsule())
+    }
+
+    private func relativeTime(_ iso: String) -> String {
+        let withFraction = ISO8601DateFormatter()
+        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plain = ISO8601DateFormatter()
+        guard let date = withFraction.date(from: iso) ?? plain.date(from: iso) else { return "" }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
 

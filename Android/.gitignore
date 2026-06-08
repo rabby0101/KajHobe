@@ -1,0 +1,13 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+# Ignore build output in the root module and every submodule (e.g. app/build)
+build/
+/captures
+.externalNativeBuild
+.cxx
+.kotlin
+local.properties
+app/google-services.json

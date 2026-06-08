@@ -11,30 +11,41 @@ struct AuthView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
     var body: some View {
-        Form {
-            Section {
-                TextField("Email", text: $email)
-                    .textContentType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                SecureField("Password", text: $password)
-                    .textContentType(.password)
-            }
-            Section {
-                Button("Sign in") {
-                    signInButtonTapped()
-                }
-                if isLoading {
-                    ProgressView()
-                }
-            }
-            if let result {
+        VStack(spacing: 0) {
+            // Logo header section
+            Image("AppLogoOnDark")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 80)
+                .padding(.top, 60)
+                .padding(.bottom, 24)
+
+            // Existing form
+            Form {
                 Section {
-                    switch result {
-                    case .success:
-                        Text("Signed in successfully.")
-                    case .failure(let error):
-                        Text(error.localizedDescription).foregroundStyle(.red)
+                    TextField("Email", text: $email)
+                        .textContentType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    SecureField("Password", text: $password)
+                        .textContentType(.password)
+                }
+                Section {
+                    Button("Sign in") {
+                        signInButtonTapped()
+                    }
+                    if isLoading {
+                        ProgressView()
+                    }
+                }
+                if let result {
+                    Section {
+                        switch result {
+                        case .success:
+                            Text("Signed in successfully.")
+                        case .failure(let error):
+                            Text(error.localizedDescription).foregroundStyle(.red)
+                        }
                     }
                 }
             }

@@ -1,0 +1,15 @@
+{
+  "name": "kajhobe-admin-payout-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Localhost-only admin panel to approve provider payouts (escrow released -> paid_out). Prototype: no login.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

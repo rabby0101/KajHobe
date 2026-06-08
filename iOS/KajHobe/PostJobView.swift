@@ -304,7 +304,7 @@ struct PostJobView: View {
 
         Task {
             do {
-                let user = try await supabase.auth.user()
+                let user = try supabase.auth.requireCurrentUser()
 
                 // Step 1: Upload media files if any are selected
                 var mediaItems: [Job.MediaItem] = []

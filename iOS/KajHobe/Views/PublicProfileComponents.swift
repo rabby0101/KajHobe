@@ -227,60 +227,295 @@ struct PublicProfileSummaryCard: View {
 }
 
 /// Detailed public profile view for full-screen presentation
+/// Tabs on the provider profile, matching the reference mockup.
+enum ProviderProfileTab: String, CaseIterable, Identifiable {
+    case about = "About"
+    case availability = "Availability"
+    case experience = "Experience"
+    case reviews = "Reviews"
+    var id: String { rawValue }
+}
+
 struct PublicProfileDetailView: View {
     let profile: PublicProfile
+
     @State private var serviceHighlights: [ServiceHighlight] = []
+    @State private var reviews: [ProviderReview] = []
     @State private var isLoadingHighlights = false
+    @State private var isLoadingReviews = false
+    @State private var selectedTab: ProviderProfileTab = .about
+    @State private var isBioExpanded = false
     @Environment(\.dismiss) private var dismiss
 
     private let networking = PublicProfileNetworking()
+
+    private let accent = Color(red: 1.0, green: 0.58, blue: 0.0) // warm orange
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Hero section
-                    ProfileHeroSection(profile: profile)
-
-                    // Statistics section
-                    ProfileStatisticsSection(profile: profile)
-
-                    // Bio section
-                    if let bio = profile.bio, !bio.isEmpty {
-                        ProfileBioSection(bio: bio)
-                    }
-
-                    // Service categories
-                    if !profile.service_categories.isEmpty {
-                        ProfileServiceCategoriesSection(categories: profile.service_categories)
-                    }
-
-                    // Service highlights
-                    if !serviceHighlights.isEmpty {
-                        ProfileServiceHighlightsSection(highlights: serviceHighlights)
-                    }
-
-                    // Activity section
-                    ProfileActivitySection(profile: profile)
-
-                    Spacer(minLength: 50)
+                    heroHeader
+                    statCardsRow
+                    tabStrip
+                    tabContent
+                    pricingRow
+                    Spacer(minLength: 40)
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 8)
             }
-            .navigationTitle("Provider Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
             }
         }
         .task {
             await loadServiceHighlights()
+            await loadReviews()
         }
     }
+
+    // MARK: - Hero
+
+    private var heroHeader: some View {
+        ZStack(alignment: .bottomLeading) {
+            AsyncImage(url: URL(string: profile.avatar_url ?? "")) { image in
+                image.resizable().aspectRatio(contentMode: .fill)
+            } placeholder: {
+                LinearGradient(
+                    colors: [accent.opacity(0.35), accent.opacity(0.12)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.white.opacity(0.8))
+                )
+            }
+            .frame(height: 300)
+            .frame(maxWidth: .infinity)
+            .clipped()
+
+            // Legibility scrim
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.65)],
+                startPoint: .center, endPoint: .bottom
+            )
+            .frame(height: 300)
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
+                    Image(systemName: "wrench.and.screwdriver.fill")
+                        .font(.caption)
+                    Text(profile.profession ?? profile.topServiceCategories.first ?? "Service Provider")
+                        .font(.subheadline).fontWeight(.medium)
+                }
+                .foregroundColor(.white.opacity(0.9))
+
+                Text(profile.full_name ?? "Unknown Provider")
+                    .font(.title).fontWeight(.bold)
+                    .foregroundColor(.white)
+
+                if let tagline = profile.tagline, !tagline.isEmpty {
+                    Text(tagline)
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.85))
+                }
+
+                HStack(spacing: 10) {
+                    Text(profile.experienceText)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
+
+                    if let rate = profile.formattedHourlyRate {
+                        Text(rate)
+                            .font(.caption).fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .background(Capsule().fill(accent))
+                    }
+                }
+                .padding(.top, 2)
+            }
+            .padding(16)
+        }
+        .frame(maxWidth: .infinity)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+
+    // MARK: - Stat cards
+
+    private var statCardsRow: some View {
+        HStack(spacing: 12) {
+            ProviderStatCard(
+                emoji: "💼", value: experienceValue, label: "Experience",
+                tint: Color.orange.opacity(0.15))
+            ProviderStatCard(
+                emoji: "⭐️", value: profile.avg_rating > 0 ? profile.formattedRating : "New",
+                label: "Rating", tint: Color.purple.opacity(0.15))
+            ProviderStatCard(
+                emoji: "👥", value: profile.formattedCustomers, label: "Customers",
+                tint: Color.pink.opacity(0.15))
+        }
+    }
+
+    private var experienceValue: String {
+        if let years = profile.experience_years, years > 0 {
+            return "\(years) yr\(years == 1 ? "" : "s")"
+        }
+        return "New"
+    }
+
+    // MARK: - Tabs
+
+    private var tabStrip: some View {
+        HStack(spacing: 0) {
+            ForEach(ProviderProfileTab.allCases) { tab in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
+                } label: {
+                    Text(tab.rawValue)
+                        .font(.subheadline)
+                        .fontWeight(selectedTab == tab ? .semibold : .regular)
+                        .foregroundColor(selectedTab == tab ? .primary : .secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            selectedTab == tab
+                            ? AnyView(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)).shadow(color: .black.opacity(0.08), radius: 3, y: 1))
+                            : AnyView(Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color(.systemGray6)))
+    }
+
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case .about:        aboutTab
+        case .availability: availabilityTab
+        case .experience:   experienceTab
+        case .reviews:      reviewsTab
+        }
+    }
+
+    private var aboutTab: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("About \(profile.full_name ?? "Provider")")
+                .font(.headline)
+
+            let bio = profile.bio?.isEmpty == false ? profile.bio! : "This provider hasn't added a bio yet."
+            Text(bio)
+                .font(.body)
+                .foregroundColor(profile.bio?.isEmpty == false ? .primary : .secondary)
+                .lineLimit(isBioExpanded ? nil : 4)
+                .lineSpacing(4)
+
+            if let bioText = profile.bio, bioText.count > 160 {
+                Button(isBioExpanded ? "Read Less" : "Read More") {
+                    withAnimation { isBioExpanded.toggle() }
+                }
+                .font(.subheadline).fontWeight(.semibold)
+                .foregroundColor(accent)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var availabilityTab: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(profile.isOnline ? Color.green : Color.gray)
+                    .frame(width: 10, height: 10)
+                Text(profile.isOnline ? "Online now" : "Last seen \(profile.formattedLastSeen)")
+                    .font(.subheadline)
+                    .foregroundColor(profile.isOnline ? .green : .secondary)
+            }
+            HStack {
+                Image(systemName: "clock.fill").foregroundColor(.secondary)
+                Text("Typically responds in \(profile.responseTimeText)")
+                    .font(.subheadline).foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemGray6)))
+    }
+
+    private var experienceTab: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if !profile.service_categories.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Service Categories").font(.headline)
+                    ServiceCategoryTags(categories: profile.service_categories)
+                }
+            }
+            if isLoadingHighlights {
+                ProgressView().frame(maxWidth: .infinity)
+            } else if !serviceHighlights.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Specializations").font(.headline)
+                    ForEach(serviceHighlights) { highlight in
+                        ServiceHighlightCard(highlight: highlight)
+                    }
+                }
+            } else {
+                Text("No experience details yet.")
+                    .font(.subheadline).foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var reviewsTab: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if isLoadingReviews {
+                ProgressView().frame(maxWidth: .infinity)
+            } else if reviews.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "star.bubble")
+                        .font(.largeTitle).foregroundColor(.secondary)
+                    Text("No reviews yet")
+                        .font(.subheadline).foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+            } else {
+                ForEach(reviews) { review in
+                    ProviderReviewCard(review: review)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Pricing
+
+    @ViewBuilder
+    private var pricingRow: some View {
+        if profile.formattedHourlyRate != nil || profile.formattedTeamRate != nil {
+            HStack(spacing: 12) {
+                if let hourly = profile.formattedHourlyRate {
+                    PricingCard(icon: "dollarsign.circle", title: "Hourly Fee",
+                                value: hourly, caption: nil)
+                }
+                if let team = profile.formattedTeamRate {
+                    PricingCard(icon: "person.3.fill", title: "Team Work",
+                                value: team, caption: profile.team_hours_label)
+                }
+            }
+        }
+    }
+
+    // MARK: - Loading
 
     private func loadServiceHighlights() async {
         isLoadingHighlights = true
@@ -290,6 +525,104 @@ struct PublicProfileDetailView: View {
             print("Failed to load service highlights: \(error)")
         }
         isLoadingHighlights = false
+    }
+
+    private func loadReviews() async {
+        isLoadingReviews = true
+        do {
+            reviews = try await networking.fetchReviews(profile.id)
+        } catch {
+            print("Failed to load reviews: \(error)")
+        }
+        isLoadingReviews = false
+    }
+}
+
+// MARK: - Provider profile building blocks
+
+/// Colored stat tile used in the three-up row under the hero.
+struct ProviderStatCard: View {
+    let emoji: String
+    let value: String
+    let label: String
+    let tint: Color
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text(emoji).font(.title3)
+            Text(value)
+                .font(.headline).fontWeight(.bold)
+                .lineLimit(1).minimumScaleFactor(0.7)
+            Text(label)
+                .font(.caption).foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(RoundedRectangle(cornerRadius: 16).fill(tint))
+    }
+}
+
+/// Hourly / team-work fee card in the pricing row.
+struct PricingCard: View {
+    let icon: String
+    let title: String
+    let value: String
+    let caption: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: icon).foregroundColor(.secondary)
+                Text(title).font(.subheadline).foregroundColor(.secondary)
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(value).font(.title3).fontWeight(.bold)
+                if let caption, !caption.isEmpty {
+                    Text("(\(caption))").font(.caption).foregroundColor(.secondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color(.systemGray6)))
+    }
+}
+
+/// One review row in the Reviews tab.
+struct ProviderReviewCard: View {
+    let review: ProviderReview
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                AsyncImage(url: URL(string: review.reviewer_avatar ?? "")) { image in
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Circle().fill(Color.gray.opacity(0.3))
+                        .overlay(Image(systemName: "person.fill").foregroundColor(.gray))
+                }
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(review.displayName).font(.subheadline).fontWeight(.medium)
+                    Text(review.formattedDate).font(.caption2).foregroundColor(.secondary)
+                }
+                Spacer()
+                HStack(spacing: 2) {
+                    ForEach(0..<5, id: \.self) { i in
+                        Image(systemName: i < review.rating ? "star.fill" : "star")
+                            .font(.caption2)
+                            .foregroundColor(.yellow)
+                    }
+                }
+            }
+            if let comment = review.comment, !comment.isEmpty {
+                Text(comment).font(.subheadline).foregroundColor(.primary)
+            }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemGray6)))
     }
 }
 
@@ -651,7 +984,13 @@ struct PublicProfileComponents_Previews: PreviewProvider {
         average_response_time_minutes: 30,
         service_categories: ["Home Repair", "Plumbing", "Electrical"],
         trust_level: "experienced",
-        last_updated: "2024-01-01T12:00:00Z"
+        last_updated: "2024-01-01T12:00:00Z",
+        profession: "Professional Repair Man",
+        tagline: "Best Electrician",
+        experience_years: 8,
+        hourly_rate: 159,
+        team_rate: 1059,
+        team_hours_label: "4-7 hrs"
     )
 
     static var previews: some View {

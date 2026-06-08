@@ -18,7 +18,7 @@ class DealsNetworking: ObservableObject {
     // MARK: - Deal Offers
     func createDealOffer(conversationId: String, amount: Int, terms: String?, timeline: String?) async throws -> DealOffer {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔄 [DEAL CREATION START] User: \(user.id), Conversation: \(conversationId), Amount: \(amount)")
             
             // Get conversation details to verify user is provider
@@ -115,7 +115,7 @@ class DealsNetworking: ObservableObject {
     
     func respondToDealOffer(dealOfferId: String, response: String, message: String?) async throws -> DealOffer {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get deal offer details
             let dealOfferResponse = try await supabase
@@ -193,16 +193,8 @@ class DealsNetworking: ObservableObject {
                 try await createDealFromAcceptedOffer(dealOffer: updatedDealOffer)
             }
             
-            // Send notification based on response
-            if response == "accepted" {
-                try await NotificationsNetworking.shared.createNotification(
-                    type: "deal_accepted",
-                    jobId: dealOffer.job_id,
-                    fromUserId: user.id.uuidString,
-                    toUserId: dealOffer.provider_id,
-                    message: "Your deal offer has been accepted!"
-                )
-            } else if response == "rejected" {
+            // Send notification for rejection
+            if response == "rejected" {
                 try await NotificationsNetworking.shared.createNotification(
                     type: "deal_rejected",
                     jobId: dealOffer.job_id,
@@ -364,7 +356,7 @@ class DealsNetworking: ObservableObject {
     
     func fetchMyDeals() async throws -> [Deal] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let userIdUpper = user.id.uuidString.uppercased()
             let userIdLower = user.id.uuidString.lowercased()
             
@@ -387,7 +379,7 @@ class DealsNetworking: ObservableObject {
     // MARK: - Task Completion
     func requestTaskCompletion(dealId: String, message: String?) async throws -> CompletionRequest {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔍 [COMPLETION REQUEST] User requesting completion: \(user.id)")
             
             // First get the deal to determine if user is client or provider
@@ -397,7 +389,7 @@ class DealsNetworking: ObservableObject {
                 .eq("id", value: dealId)
                 .single()
                 .execute()
-            
+
             guard let dealData = try? JSONSerialization.jsonObject(with: dealResponse.data) as? [String: Any],
                   let clientId = dealData["client_id"] as? String,
                   let providerId = dealData["provider_id"] as? String else {
@@ -432,26 +424,40 @@ class DealsNetworking: ObservableObject {
                 .select()
                 .single()
                 .execute()
-            
+
             let completionRequest = try JSONDecoder().decode(CompletionRequest.self, from: response.data)
-            
-            // Update the deal to reflect completion request status
+
+            // Update the deal to reflect completion request status.
+            // NOTE: a DB trigger (`trigger_set_deal_completion_flags`) now sets
+            // these flags automatically on INSERT, so this manual update is
+            // redundant but kept for backwards compatibility with existing
+            // trigger behavior on other code paths. Safe to keep.
             let completionUpdateData: [String: Any] = [
                 "completion_status": "pending_approval",
                 requesterType == "client" ? "client_completion_requested" : "provider_completion_requested": true,
                 requesterType == "client" ? "client_completion_requested_at" : "provider_completion_requested_at": ISO8601DateFormatter().string(from: Date())
             ]
-            
+
             try await supabase
                 .from("deals")
                 .update(AnyEncodable(completionUpdateData))
                 .eq("id", value: dealId)
                 .execute()
-            
+
             print("✅ Task completion requested for deal: \(dealId) - deal status updated to pending_approval")
             return completionRequest
-            
+
         } catch {
+            // Translate the unique-index violation (SQLSTATE 23505) on
+            // `completion_requests_one_pending_per_deal` into a typed error so
+            // the caller can re-route the user to the response sheet.
+            if let postgrestError = error as? PostgrestError,
+               postgrestError.code == "23505",
+               postgrestError.message.contains("completion_requests_one_pending_per_deal")
+                   || postgrestError.message.contains("duplicate key value") {
+                print("⚠️ [COMPLETION REQUEST] Another pending request already exists for deal: \(dealId)")
+                throw NetworkingError.completionRequestAlreadyPending(dealId: dealId)
+            }
             print("❌ Error requesting task completion: \(error)")
             throw error
         }
@@ -459,7 +465,7 @@ class DealsNetworking: ObservableObject {
     
     func respondToCompletionRequest(requestId: String, approve: Bool, message: String?) async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let status = approve ? "approved" : "rejected"
             let now = ISO8601DateFormatter().string(from: Date())
             
@@ -501,20 +507,20 @@ class DealsNetworking: ObservableObject {
                         .eq("id", value: dealId)
                         .single()
                         .execute()
-                    
+
                     if let dealData = try? JSONSerialization.jsonObject(with: dealResponse.data) as? [String: Any],
                        let jobId = dealData["job_id"] as? String {
-                        
+
                         // Update job status to completed
                         try await supabase
                             .from("jobs")
                             .update(["status": "completed"])
                             .eq("id", value: jobId)
                             .execute()
-                        
+
                         print("✅ Job \(jobId) marked as completed")
                     }
-                    
+
                     print("✅ Deal \(dealId) marked as completed")
                 } else {
                     // Rejection: Reset deal status back to active and clear completion flags
@@ -550,7 +556,7 @@ class DealsNetworking: ObservableObject {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("📊 Fetching dashboard data for user: \(user.id)")
             
             // First try using the database function to get dashboard data efficiently
@@ -716,7 +722,7 @@ class DealsNetworking: ObservableObject {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔍 [ACTIVE DEALS] Fetching for user: \(user.id)")
             
             let userIdUpper = user.id.uuidString.uppercased()
@@ -781,7 +787,7 @@ class DealsNetworking: ObservableObject {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("completion_requests")

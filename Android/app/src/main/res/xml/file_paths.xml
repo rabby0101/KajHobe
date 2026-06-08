@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FileProvider roots. Camera captures are written to cacheDir/captures/ and shared
+     with the camera app via a content:// URI (matches iOS UIImagePickerController capture). -->
+<paths>
+    <cache-path name="captures" path="captures/" />
+</paths>

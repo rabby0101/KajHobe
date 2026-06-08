@@ -419,6 +419,71 @@ struct Deal: Identifiable, Codable, Sendable {
     var provider_profile: SimpleProfile?  // Provider profile data
 }
 
+// MARK: - Escrow (deal payment ledger)
+
+/// Lifecycle of the money held against a deal. Mirrors the Postgres `escrow_state` enum.
+enum EscrowState: String, Codable, Sendable, CaseIterable {
+    case pending   = "pending"    // deal exists, buyer hasn't paid yet
+    case held      = "held"       // buyer paid into the merchant account; funds held
+    case released  = "released"   // deal completed; owed to provider, not yet paid
+    case paid_out  = "paid_out"   // provider has received the money
+    case refunded  = "refunded"   // returned to the buyer
+    case failed    = "failed"     // a collect/payout attempt failed
+
+    /// Short human label for badges.
+    var label: String {
+        switch self {
+        case .pending:  return "Awaiting payment"
+        case .held:     return "In escrow"
+        case .released: return "Released"
+        case .paid_out: return "Paid out"
+        case .refunded: return "Refunded"
+        case .failed:   return "Payment failed"
+        }
+    }
+
+    /// SF Symbol name for the badge (UI maps this to an Image).
+    var systemImage: String {
+        switch self {
+        case .pending:  return "clock.badge.exclamationmark"
+        case .held:     return "lock.shield.fill"
+        case .released: return "checkmark.seal.fill"
+        case .paid_out: return "checkmark.circle.fill"
+        case .refunded: return "arrow.uturn.backward.circle.fill"
+        case .failed:   return "xmark.octagon.fill"
+        }
+    }
+}
+
+/// One escrow row per deal (Postgres `public.escrow_transactions`). The app reads this;
+/// all state changes happen server-side via DB triggers and SECURITY DEFINER RPCs.
+struct EscrowTransaction: Identifiable, Codable, Sendable {
+    let id: String
+    let deal_id: String
+    let client_id: String
+    let provider_id: String
+    let amount: Int
+    let platform_fee: Int
+    let provider_amount: Int
+    let state: EscrowState
+    let currency: String
+    let collection_payment_id: String?
+    let collection_trx_id: String?
+    let payout_trx_id: String?
+    let provider_msisdn: String?
+    let held_at: String?
+    let released_at: String?
+    let paid_out_at: String?
+    let refunded_at: String?
+    let paid_out_by: String?
+    let notes: String?
+    let created_at: String?
+    let updated_at: String?
+
+    var formattedAmount: String { "৳\(amount)" }
+    var formattedProviderAmount: String { "৳\(provider_amount)" }
+}
+
 struct DealInsert: Codable, Sendable {
     let deal_offer_id: String
     let conversation_id: String  // Added to match database schema
@@ -451,12 +516,20 @@ struct Profile: Identifiable, Codable, Sendable {
     
     // Favorite categories (max 4)
     var favorite_categories: [String]?
-    
+
+    // Provider detail fields (editable; power the public provider profile)
+    var profession: String?
+    var tagline: String?
+    var experience_years: Int?
+    var hourly_rate: Double?
+    var team_rate: Double?
+    var team_hours_label: String?
+
     // Presence fields
     let is_online: Bool?
     let last_seen_at: String?
     let average_response_time_minutes: Int?
-    
+
     // Push notification fields
     let device_token: String?
     let push_enabled: Bool?
@@ -607,10 +680,54 @@ struct PublicProfile: Identifiable, Codable, Sendable {
     let trust_level: String
     let last_updated: String?
 
+    // Provider detail fields (editable in own ProfileView; optional for safe decoding)
+    let profession: String?
+    let tagline: String?
+    let experience_years: Int?
+    let hourly_rate: Double?
+    let team_rate: Double?
+    let team_hours_label: String?
+
     // MARK: - Computed Properties
 
     var trustLevelEnum: TrustLevel {
         return TrustLevel(rawValue: trust_level) ?? .unverified
+    }
+
+    /// "৳159/hr" — nil when no hourly rate set.
+    var formattedHourlyRate: String? {
+        guard let rate = hourly_rate, rate > 0 else { return nil }
+        return "৳\(formatAmount(rate))/hr"
+    }
+
+    /// "৳1059" — nil when no team rate set.
+    var formattedTeamRate: String? {
+        guard let rate = team_rate, rate > 0 else { return nil }
+        return "৳\(formatAmount(rate))"
+    }
+
+    /// "8 years of experience" / "1 year of experience" / "New provider" when unset.
+    var experienceText: String {
+        guard let years = experience_years, years > 0 else { return "New provider" }
+        return "\(years) year\(years == 1 ? "" : "s") of experience"
+    }
+
+    /// Derived from completed jobs, e.g. "150+", "12", or "New".
+    var formattedCustomers: String {
+        switch completed_jobs {
+        case 0: return "New"
+        case 1..<10: return "\(completed_jobs)"
+        case 10..<100: return "\((completed_jobs / 10) * 10)+"
+        default: return "\((completed_jobs / 50) * 50)+"
+        }
+    }
+
+    /// Whole-number when integral (৳159), else two decimals (৳159.50).
+    private func formatAmount(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", value)
+        }
+        return String(format: "%.2f", value)
     }
 
     var isOnline: Bool {
@@ -785,6 +902,43 @@ struct ReviewInsert: Codable, Sendable {
     let reviewed_id: String  // uuid
     let rating: Int
     let comment: String?
+}
+
+/// Review enriched with the reviewer's name/avatar, for display in the
+/// provider profile Reviews tab. Assembled in PublicProfileNetworking.fetchReviews.
+struct ProviderReview: Identifiable, Sendable {
+    let id: String
+    let rating: Int
+    let comment: String?
+    let created_at: String?
+    let reviewer_name: String?
+    let reviewer_avatar: String?
+
+    var displayName: String { reviewer_name ?? "Anonymous" }
+
+    var formattedDate: String {
+        guard let created_at else { return "" }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        var date = formatter.date(from: created_at)
+        if date == nil {
+            formatter.formatOptions = [.withInternetDateTime]
+            date = formatter.date(from: created_at)
+        }
+        guard let date else { return "" }
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        return f.string(from: date)
+    }
+}
+
+/// Raw review row used internally for decoding before enrichment.
+struct ReviewRow: Codable, Sendable {
+    let id: String
+    let rating: Int
+    let comment: String?
+    let created_at: String?
+    let reviewer_id: String?
 }
 
 // MARK: - Service Categories

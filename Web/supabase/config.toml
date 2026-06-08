@@ -1,1 +1,15 @@
 project_id = "xatlqnbrvgukuqewsxux"
+
+# --- Edge Functions ---------------------------------------------------------
+# bkash-collect: buyer-initiated; requires a valid user JWT.
+[functions.bkash-collect]
+verify_jwt = true
+
+# bkash-webhook: hit by bKash's browser redirect, so no JWT is present.
+# Security boundary is the server-side bKash credentials + service_role RPC.
+[functions.bkash-webhook]
+verify_jwt = false
+
+# bkash-payout: inert scaffold until B2C disbursement onboarding exists.
+[functions.bkash-payout]
+verify_jwt = true

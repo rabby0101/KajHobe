@@ -209,7 +209,13 @@ class Networking: ObservableObject {
     func fetchConversations(userId: String, forceRefresh: Bool = false) async throws -> [ConversationWithDetails] {
         return try await MessagesNetworking.shared.fetchConversations(userId: userId, forceRefresh: forceRefresh)
     }
-    
+
+    func setConversationArchived(conversationId: String, userId: String, isClient: Bool, archived: Bool) async throws {
+        try await MessagesNetworking.shared.setConversationArchived(
+            conversationId: conversationId, userId: userId, isClient: isClient, archived: archived
+        )
+    }
+
     func createConversation(jobId: String, clientId: String, providerId: String) async throws -> Any? {
         throw NSError(domain: "MessagingDisabled", code: 0, userInfo: [NSLocalizedDescriptionKey: "Messaging functionality is disabled"])
     }

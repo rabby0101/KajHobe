@@ -1,6 +1,5 @@
 import Foundation
 import Supabase
-import Foundation
 import Auth
 
 // MARK: - Profile Networking
@@ -12,7 +11,7 @@ class ProfileNetworking: BaseNetworking {
     // MARK: - Profile Management
     func ensureUserProfile() async throws -> Profile {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Try to fetch existing profile
             let response = try await supabase
@@ -70,7 +69,7 @@ class ProfileNetworking: BaseNetworking {
     }
 
     func getCurrentUserProfile() async throws -> Profile {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         
         let response = try await supabase
             .from("profiles")
@@ -112,7 +111,7 @@ class ProfileNetworking: BaseNetworking {
     
     func updateProfile(_ profile: Profile) async throws -> Profile {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Ensure user can only update their own profile
             guard profile.id == user.id.uuidString else {
@@ -160,7 +159,7 @@ class ProfileNetworking: BaseNetworking {
     // MARK: - Favorite Categories Management
     func updateFavoriteCategories(_ categories: [String]) async throws -> Profile {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Limit to maximum 4 categories
             let limitedCategories = Array(categories.prefix(4))
@@ -187,21 +186,23 @@ class ProfileNetworking: BaseNetworking {
     }
     
     func updateUserPresence(isOnline: Bool) async throws {
-        let user = try await supabase.auth.user()
+        // Use the cached session user id (sync, no network) — presence fires often (foreground,
+        // background, every 5 min), so avoid an extra networked auth.user() round-trip each time.
+        guard let userId = supabase.auth.currentUser?.id.uuidString else { return }
         let now = ISO8601DateFormatter().string(from: Date())
-        
+
         var updateData: [String: AnyJSON] = [
             "is_online": AnyJSON.bool(isOnline)
         ]
-        
+
         if !isOnline {
             updateData["last_seen_at"] = AnyJSON.string(now)
         }
-        
+
         try await supabase
             .from("profiles")
             .update(updateData)
-            .eq("id", value: user.id.uuidString)
+            .eq("id", value: userId)
             .execute()
         
         print("✅ Updated user presence: \(isOnline ? "online" : "offline")")

@@ -14,31 +14,34 @@ class JobsNetworking: BaseNetworking {
         
         do {
             print("🌐 Fetching jobs from network...")
-            
-            // First fetch all available jobs (open status only)
-            let jobsResponse = try await supabase
+
+            // These two queries are independent — run them concurrently so the home load
+            // pays one round-trip's worth of latency instead of two serialized ones.
+            async let jobsResponse = supabase
                 .from("jobs")
                 .select()
                 .eq("status", value: "open")
                 .order("created_at", ascending: false)
                 .execute()
-            
-            // Then fetch job IDs that have any deals (active or completed)
-            let dealsResponse = try await supabase
+
+            async let dealsResponse = supabase
                 .from("deals")
                 .select("job_id")
                 .in("status", values: ["accepted", "in_progress", "active", "completed"])
                 .execute()
-            
-            print("Raw jobs response: \(String(data: jobsResponse.data, encoding: .utf8) ?? "Invalid data")")
-            
+
+            let (jobsResult, dealsResult) = try await (jobsResponse, dealsResponse)
+
             let decoder = JSONDecoder()
-            let allJobs = try decoder.decode([Job].self, from: jobsResponse.data)
-            
-            // Extract job IDs with deals
-            let jobIdsWithDeals = try decoder.decode([[String: String]].self, from: dealsResponse.data)
-                .compactMap { $0["job_id"] }
-            
+            let allJobs = try decoder.decode([Job].self, from: jobsResult.data)
+
+            // Extract job IDs with deals into a Set for O(1) lookups (the deals query returns one
+            // row per deal, so a job with multiple deals appears multiple times — the Set dedupes).
+            let jobIdsWithDeals = Set(
+                try decoder.decode([[String: String]].self, from: dealsResult.data)
+                    .compactMap { $0["job_id"] }
+            )
+
             // Filter out jobs that have any deals (active or completed)
             let availableJobs = allJobs.filter { job in
                 !jobIdsWithDeals.contains(job.id)
@@ -82,7 +85,7 @@ class JobsNetworking: BaseNetworking {
     
     func fetchMyJobs() async throws -> [Job] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             let response = try await supabase
                 .from("jobs")
                 .select()
@@ -101,7 +104,7 @@ class JobsNetworking: BaseNetworking {
     // MARK: - Delete Job
     func deleteJob(jobId: String) async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // First verify that the current user owns this job
             let jobResponse = try await supabase
@@ -148,8 +151,6 @@ class JobsNetworking: BaseNetworking {
                 .order("created_at", ascending: false)
                 .execute()
             
-            print("Raw bids response: \(String(data: response.data, encoding: .utf8) ?? "Invalid data")")
-            
             let decoder = JSONDecoder()
             let bids = try decoder.decode([Bid].self, from: response.data)
             print("Successfully decoded \(bids.count) bids")
@@ -162,7 +163,7 @@ class JobsNetworking: BaseNetworking {
 
     func createBid(_ request: CreateBidRequest) async throws -> Bid {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             var bidData: [String: AnyJSON] = [
                 "job_id": AnyJSON.string(request.job_id),

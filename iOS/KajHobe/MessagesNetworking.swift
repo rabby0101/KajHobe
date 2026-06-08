@@ -14,9 +14,42 @@ struct ConversationWithDetails: Codable, Sendable, Identifiable {
     let job_title: String
     let job_description: String
     let other_user_name: String
+    let other_user_avatar: String?
     let unread_count: Int
     let created_at: String
     let latest_message_time: String
+    // Per-user archive flags. Archiving is one-sided: each participant only ever
+    // reads/writes their own side, so a client archiving the chat never hides it
+    // from the provider (and vice-versa).
+    let client_archived: Bool
+    let provider_archived: Bool
+
+    /// Whether this conversation is archived *for the given user* (resolves which
+    /// side of the conversation they are on). Used to keep archived chats out of the
+    /// main list while leaving them visible to the other participant.
+    func isArchived(for userId: String) -> Bool {
+        client_id.lowercased() == userId.lowercased() ? client_archived : provider_archived
+    }
+
+    /// Returns a copy with the current user's archive flag flipped — used for optimistic
+    /// UI updates so a swipe-to-archive feels instant before the network write returns.
+    func settingArchived(forClient isClient: Bool, _ value: Bool) -> ConversationWithDetails {
+        ConversationWithDetails(
+            id: id,
+            job_id: job_id,
+            client_id: client_id,
+            provider_id: provider_id,
+            job_title: job_title,
+            job_description: job_description,
+            other_user_name: other_user_name,
+            other_user_avatar: other_user_avatar,
+            unread_count: unread_count,
+            created_at: created_at,
+            latest_message_time: latest_message_time,
+            client_archived: isClient ? value : client_archived,
+            provider_archived: isClient ? provider_archived : value
+        )
+    }
 }
 
 // MARK: - Messages Networking Specialized Class
@@ -46,36 +79,18 @@ class MessagesNetworking: ObservableObject {
     
     private func performConversationFetch(userId: String) async throws -> [ConversationWithDetails] {
         print("🔍 DEBUG: Starting conversation fetch for userId: \(userId)")
-        
-        // First, let's test if we can connect to the database at all
-        do {
-            let testQuery = try await supabase
-                .from("conversations")
-                .select("*")
-                .limit(1)
-                .execute()
-            print("🔍 DEBUG: Database connection test - raw response: \(testQuery)")
-        } catch {
-            print("❌ DEBUG: Database connection test failed: \(error)")
-            throw error
-        }
-        
-        // The issue is that Supabase is returning Void instead of data
-        // This suggests a configuration or permissions issue
-        // For now, let's return empty array and log the issue for debugging
-        
+
+        // Fetch the user's conversations directly. (The old pre-flight "connection test"
+        // query was removed: it added a serial round-trip and, as the first awaited call,
+        // turned a cancelled pull-to-refresh into a thrown -999. A real failure here is
+        // handled by the caller's catch.)
         let conversationData = try await supabase
             .from("conversations")
             .select("*")
             .or("client_id.eq.\(userId),provider_id.eq.\(userId)")
             .order("updated_at", ascending: false)
             .execute()
-        
-        print("🔍 DEBUG: Raw conversation data received: \(conversationData)")
-        print("🔍 DEBUG: Response data type: \(type(of: conversationData.data))")
-        print("🔍 DEBUG: Response value type: \(type(of: conversationData.value))")
-        print("🔍 DEBUG: Response status: \(conversationData.response.statusCode)")
-        
+
         // Check if we have actual data in the response
         let jsonData = conversationData.data
         if jsonData.count > 0 {
@@ -116,15 +131,41 @@ class MessagesNetworking: ObservableObject {
             }
         }
         
-        print("🔍 DEBUG: Batch fetching \(uniqueJobIds.count) jobs and \(uniqueUserIds.count) profiles")
-        
-        // Batch fetch jobs (only need title now)
-        let jobsData = try await supabase
+        let uniqueConversationIds = Set(conversations.compactMap { $0["id"] as? String })
+        print("🔍 DEBUG: Batch fetching \(uniqueJobIds.count) jobs, \(uniqueUserIds.count) profiles, and latest/unread messages for \(uniqueConversationIds.count) conversations")
+
+        // All four lookups depend only on ids already extracted from `conversations` (in memory),
+        // not on each other — so issue them concurrently and await together. This collapses what
+        // were four serial round-trips into ~one.
+        async let jobsResp = supabase
             .from("jobs")
             .select("id, title")
             .in("id", values: Array(uniqueJobIds))
             .execute()
-        
+
+        async let latestResp = supabase
+            .from("messages")
+            .select("conversation_id, content, created_at")
+            .in("conversation_id", values: Array(uniqueConversationIds))
+            .order("created_at", ascending: false)
+            .execute()
+
+        async let unreadResp = supabase
+            .from("messages")
+            .select("conversation_id, sender_id, read_at")
+            .in("conversation_id", values: Array(uniqueConversationIds))
+            .is("read_at", value: nil) // Only unread messages
+            .execute()
+
+        async let profilesResp = supabase
+            .from("profiles")
+            .select("id, full_name, avatar_url")
+            .in("id", values: Array(uniqueUserIds))
+            .execute()
+
+        let (jobsData, latestMessagesData, unreadCountsData, profilesData) =
+            try await (jobsResp, latestResp, unreadResp, profilesResp)
+
         var jobsMap: [String: [String: Any]] = [:]
         if let jobsArray = try? JSONSerialization.jsonObject(with: jobsData.data) as? [[String: Any]] {
             for job in jobsArray {
@@ -133,18 +174,7 @@ class MessagesNetworking: ObservableObject {
                 }
             }
         }
-        
-        // Batch fetch latest messages for each conversation
-        let uniqueConversationIds = Set(conversations.compactMap { $0["id"] as? String })
-        print("🔍 DEBUG: Fetching latest messages for \(uniqueConversationIds.count) conversations")
-        
-        let latestMessagesData = try await supabase
-            .from("messages")
-            .select("conversation_id, content, created_at")
-            .in("conversation_id", values: Array(uniqueConversationIds))
-            .order("created_at", ascending: false)
-            .execute()
-        
+
         var latestMessagesMap: [String: [String: Any]] = [:]
         if let messagesArray = try? JSONSerialization.jsonObject(with: latestMessagesData.data) as? [[String: Any]] {
             // Group messages by conversation_id and keep only the latest one
@@ -156,16 +186,7 @@ class MessagesNetworking: ObservableObject {
                 }
             }
         }
-        
-        // Batch fetch unread message counts based on read_at column
-        print("🔍 DEBUG: Calculating unread counts for \(uniqueConversationIds.count) conversations")
-        let unreadCountsData = try await supabase
-            .from("messages")
-            .select("conversation_id, sender_id, read_at")
-            .in("conversation_id", values: Array(uniqueConversationIds))
-            .is("read_at", value: nil) // Only unread messages
-            .execute()
-        
+
         var unreadCountsMap: [String: [String: Int]] = [:]
         if let unreadArray = try? JSONSerialization.jsonObject(with: unreadCountsData.data) as? [[String: Any]] {
             for unreadMessage in unreadArray {
@@ -179,14 +200,7 @@ class MessagesNetworking: ObservableObject {
                 }
             }
         }
-        
-        // Batch fetch profiles
-        let profilesData = try await supabase
-            .from("profiles")
-            .select("id, full_name")
-            .in("id", values: Array(uniqueUserIds))
-            .execute()
-        
+
         var profilesMap: [String: [String: Any]] = [:]
         if let profilesArray = try? JSONSerialization.jsonObject(with: profilesData.data) as? [[String: Any]] {
             for profile in profilesArray {
@@ -231,11 +245,16 @@ class MessagesNetworking: ObservableObject {
                 print("❌ DEBUG: Missing profile data for userId: \(otherUserId)")
                 continue
             }
-            
+            let otherUserAvatar = profileData["avatar_url"] as? String
+
+            // Per-user archive flags (default false for any row predating the migration).
+            let clientArchived = conversationDict["client_archived"] as? Bool ?? false
+            let providerArchived = conversationDict["provider_archived"] as? Bool ?? false
+
             // Calculate unread count based on read_at column: count messages from other user that are unread
             let unreadCount = unreadCountsMap[id]?[otherUserId] ?? 0
             print("🔍 DEBUG: Conversation \(id): unread count from \(userName) = \(unreadCount)")
-            
+
             let detailed = ConversationWithDetails(
                 id: id,
                 job_id: jobId,
@@ -244,9 +263,12 @@ class MessagesNetworking: ObservableObject {
                 job_title: jobTitle,
                 job_description: latestMessageContent,
                 other_user_name: userName,
+                other_user_avatar: otherUserAvatar,
                 unread_count: unreadCount,
                 created_at: createdAt,
-                latest_message_time: latestMessageTime
+                latest_message_time: latestMessageTime,
+                client_archived: clientArchived,
+                provider_archived: providerArchived
             )
             
             detailedConversations.append(detailed)
@@ -669,9 +691,23 @@ class MessagesNetworking: ObservableObject {
         // No-op
     }
     
-    /// Placeholder method - messaging functionality disabled
-    func deleteConversation(conversationId: String) async throws {
-        // No-op
+    /// Archive (or un-archive) a conversation for one participant only.
+    ///
+    /// The conversation has two sides — client and provider — each with its own
+    /// archive flag. `isClient` selects which column to write so that one user's
+    /// archive never affects the other's view. The existing "Users can update
+    /// conversations they are part of" RLS policy authorises this UPDATE.
+    func setConversationArchived(conversationId: String, userId: String, isClient: Bool, archived: Bool) async throws {
+        let column = isClient ? "client_archived" : "provider_archived"
+        print("🔍 ARCHIVE DEBUG: Setting \(column)=\(archived) on conversation \(conversationId) for user \(userId)")
+
+        try await supabase
+            .from("conversations")
+            .update([column: archived])
+            .eq("id", value: conversationId)
+            .execute()
+
+        print("✅ ARCHIVE DEBUG: \(column) updated to \(archived)")
     }
     
     /// Placeholder method - messaging functionality disabled

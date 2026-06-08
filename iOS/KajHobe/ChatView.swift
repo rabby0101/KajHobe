@@ -15,7 +15,12 @@ struct ChatView: View {
     @State private var messages: [ChatMessage] = []
     @State private var newMessageText = ""
     @State private var isLoading = true
-    @State private var currentUserProfile: Profile?
+    // Current user's id read synchronously from the in-memory session (zero network). Used for
+    // "is this my message" checks and as sender id — replaces a networked profiles SELECT that
+    // was blocking the message load on open.
+    // Lowercased to match Postgres' uuid representation (Swift's uuidString is uppercase).
+    // sender_id / participant id comparisons against DB values depend on this.
+    @State private var currentUserId: String? = supabase.auth.currentUser?.id.uuidString.lowercased()
     @State private var realtimeChannel: RealtimeChannelV2?
     @State private var isSending = false
     
@@ -39,10 +44,6 @@ struct ChatView: View {
             if isLoading {
                 VStack {
                     ProgressView("Loading messages...")
-                    Text("Debug: Loading messages for conversation \(conversation.id)")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if messages.isEmpty {
@@ -76,7 +77,7 @@ struct ChatView: View {
                                 let message = messages[index]
                                 ChatMessageBubble(
                                     message: message,
-                                    isFromCurrentUser: message.sender_id == currentUserProfile?.id
+                                    isFromCurrentUser: message.sender_id == currentUserId
                                 )
                                 .id(message.id) // Add ID for ScrollViewReader
                             }
@@ -258,7 +259,7 @@ struct ChatView: View {
             DealOfferSheet(
                 conversation: conversation,
                 isSending: $isSendingDealOffer,
-                currentUserProfile: currentUserProfile,
+                currentUserId: currentUserId,
                 offerCount: offerCount,
                 hasUnansweredOffer: hasUnansweredOffer,
                 existingDealExists: existingDealExists,
@@ -275,12 +276,8 @@ struct ChatView: View {
         print("🔍 CHAT DEBUG: Loading chat data for conversation: \(conversation.id)")
         
         do {
-            // Get current user profile
-            if currentUserProfile == nil {
-                currentUserProfile = try await ProfileNetworking.shared.getCurrentUserProfile()
-            }
-            
-            // Fetch actual messages
+            // The current user id is already resolved synchronously from the session, so we go
+            // straight to fetching messages — no profile round-trip blocking the chat load.
             let fetchedMessages = try await MessagesNetworking.shared.fetchMessages(
                 conversationId: conversation.id
             )
@@ -410,7 +407,7 @@ struct ChatView: View {
                     }
                     
                     // Mark the new message as read if it's not from the current user
-                    if newMessage.sender_id != currentUserProfile?.id {
+                    if newMessage.sender_id != currentUserId {
                         Task {
                             await markMessageAsRead(messageId: newMessage.id)
                         }
@@ -422,8 +419,8 @@ struct ChatView: View {
     }
     
     private func markMessagesAsRead() async {
-        guard let currentUserId = currentUserProfile?.id else {
-            print("❌ READ RECEIPT DEBUG: No current user profile")
+        guard let currentUserId = currentUserId else {
+            print("❌ READ RECEIPT DEBUG: No current user id")
             return
         }
         
@@ -446,8 +443,12 @@ struct ChatView: View {
     
     private func markAllUnreadMessagesAsRead(conversationId: String, currentUserId: String) async {
         do {
+            // Count how many we're about to mark so we can decrement the
+            // messages tab badge by the same number (optimistic local update).
+            let unreadCount = messages.filter { $0.sender_id != currentUserId && $0.read_at == nil }.count
+
             let currentTime = ISO8601DateFormatter().string(from: Date())
-            
+
             // Batch update all unread messages in this conversation that are NOT from the current user
             // This will trigger the database's automatic unread count management
             let result = try await supabase
@@ -457,10 +458,13 @@ struct ChatView: View {
                 .neq("sender_id", value: currentUserId) // Not from current user
                 .is("read_at", value: nil) // Only unread messages
                 .execute()
-            
+
             print("✅ READ RECEIPT DEBUG: Batch marked messages as read for conversation \(conversationId) at \(currentTime)")
             print("🔍 READ RECEIPT DEBUG: Database update result: \(result)")
-            
+
+            // Decrement the messages tab badge by however many we just marked read.
+            // Clamped to 0 inside the manager.
+            MessageBadgeManager.shared.decrement(by: unreadCount)
         } catch {
             print("❌ READ RECEIPT DEBUG: Error batch marking messages as read: \(error)")
         }
@@ -469,7 +473,7 @@ struct ChatView: View {
     private func markMessageAsRead(messageId: String) async {
         do {
             let currentTime = ISO8601DateFormatter().string(from: Date())
-            
+
             // Update only if read_at is currently NULL (not already read)
             let _ = try await supabase
                 .from("messages")
@@ -477,17 +481,20 @@ struct ChatView: View {
                 .eq("id", value: messageId)
                 .is("read_at", value: nil) // Only update if not already read
                 .execute()
-            
+
             print("✅ READ RECEIPT DEBUG: Marked message \(messageId) as read at \(currentTime)")
-            
+
+            // The chat is open and just read a single new incoming message —
+            // decrement the messages tab badge by 1.
+            MessageBadgeManager.shared.decrement(by: 1)
         } catch {
             print("❌ READ RECEIPT DEBUG: Error marking message as read: \(error)")
         }
     }
     
     private func sendImageMessage(image: UIImage) async {
-        guard let currentUserId = currentUserProfile?.id else {
-            print("❌ SEND IMAGE DEBUG: No current user profile")
+        guard let currentUserId = currentUserId else {
+            print("❌ SEND IMAGE DEBUG: No current user id")
             return
         }
         
@@ -519,7 +526,7 @@ struct ChatView: View {
     private func sendMessage() async {
         let trimmedText = newMessageText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty,
-              let currentUserId = currentUserProfile?.id else {
+              let currentUserId = currentUserId else {
             print("❌ SEND MESSAGE DEBUG: Cannot send - invalid text or user")
             return
         }
@@ -553,23 +560,25 @@ struct ChatView: View {
     }
     
     private func loadOfferStatus() async {
-        guard let currentUserId = currentUserProfile?.id else {
+        guard let currentUserId = currentUserId else {
             await MainActor.run {
                 isLoadingOfferStatus = false
             }
             return
         }
-        
+
         do {
-            // First check if a deal already exists for this job
-            await checkExistingDeal()
-            
-            // Then get offer status
-            let status = try await MessagesNetworking.shared.getOfferStatus(
+            // The existing-deal check and the offer-status lookup are independent — run them
+            // concurrently so the offer bar resolves in ~one round-trip instead of two.
+            async let existingDeal: Void = checkExistingDeal()
+            async let offerStatus = MessagesNetworking.shared.getOfferStatus(
                 conversationId: conversation.id,
                 providerId: currentUserId
             )
-            
+
+            _ = await existingDeal
+            let status = try await offerStatus
+
             await MainActor.run {
                 offerCount = status.totalOffers
                 hasUnansweredOffer = status.hasUnansweredOffer
@@ -610,7 +619,7 @@ struct ChatView: View {
     }
     
     private func isCurrentUserProvider() -> Bool {
-        guard (currentUserProfile?.id) != nil else { return false }
+        guard currentUserId != nil else { return false }
         
         // In the conversation structure, determine if current user is provider
         // This can be determined by checking the conversation's provider_id
@@ -754,9 +763,15 @@ struct ChatMessageBubble: View {
 struct DealOfferBubble: View {
     let message: ChatMessage
     let isFromCurrentUser: Bool
-    @State private var currentUserProfile: Profile?
+    // Current user's id from the in-memory session (zero network) — replaces a profiles SELECT
+    // that was previously fetched just to read the id when responding to a deal.
+    private let currentUserId: String? = supabase.auth.currentUser?.id.uuidString.lowercased()
     @State private var dealStatus: String = "pending" // pending, accepted, rejected
-    
+    // Accept-and-pay: the client must pay into escrow to accept, which is what creates the deal.
+    @State private var isPaying: Bool = false
+    @State private var payError: String?
+    @State private var checkoutSession: BkashCheckoutSession?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header with icon, title, and status indicator
@@ -830,6 +845,20 @@ struct DealOfferBubble: View {
                 }
             }
             
+            // Accept & Pay / Reject are done via long-press (context menu). Surface a
+            // payment error inline only if a checkout attempt failed, and a subtle
+            // "opening bKash" hint while a checkout is in flight.
+            if !isFromCurrentUser && dealStatus == "pending" {
+                if isPaying {
+                    HStack(spacing: 6) {
+                        ProgressView().scaleEffect(0.8)
+                        Text("Opening bKash…").font(.system(size: 12)).foregroundColor(.secondary)
+                    }
+                } else if let payError {
+                    Text(payError).font(.system(size: 12)).foregroundColor(.red)
+                }
+            }
+
             // Status text
             if dealStatus != "pending" {
                 HStack {
@@ -854,12 +883,9 @@ struct DealOfferBubble: View {
             // Context menu only for received offers and pending status
             if !isFromCurrentUser && dealStatus == "pending" {
                 Button {
-                    print("🔍 CONTEXT MENU DEBUG: Accept button tapped")
-                    Task {
-                        await respondToDeal(accept: true)
-                    }
+                    acceptAndPay()
                 } label: {
-                    Label("Accept Offer", systemImage: "checkmark.circle.fill")
+                    Label("Accept & Pay", systemImage: "creditcard.fill")
                 }
                 
                 Button {
@@ -881,13 +907,11 @@ struct DealOfferBubble: View {
         .onAppear {
             Task {
                 await loadDealStatus()
-                await getCurrentUser()
             }
         }
         .task {
             // Also run when the view is created (for real-time messages)
             await loadDealStatus()
-            await getCurrentUser()
         }
         .onChange(of: message.id) {
             // Reload status when message changes (covers negotiation data updates)
@@ -971,12 +995,6 @@ struct DealOfferBubble: View {
     }
     
     // MARK: - Functions
-    private func getCurrentUser() async {
-        if (try? await supabase.auth.user()) != nil {
-            currentUserProfile = try? await ProfileNetworking.shared.getCurrentUserProfile()
-        }
-    }
-    
     private func loadDealStatus() async {
         // Check if this deal offer has been responded to by looking for deal_offer_id
         // in the negotiation_data or by checking the deal_offers table
@@ -1008,10 +1026,10 @@ struct DealOfferBubble: View {
     
     private func respondToDeal(accept: Bool) async {
         print("🔍 DEAL RESPONSE DEBUG: respondToDeal called with accept: \(accept)")
-        print("🔍 DEAL RESPONSE DEBUG: Current user profile: \(currentUserProfile?.id ?? "nil")")
+        print("🔍 DEAL RESPONSE DEBUG: Current user id: \(currentUserId ?? "nil")")
         print("🔍 DEAL RESPONSE DEBUG: Negotiation data: \(message.negotiation_data ?? [:])")
-        
-        guard let currentUserId = currentUserProfile?.id else {
+
+        guard let currentUserId = currentUserId else {
             print("❌ DEAL RESPONSE DEBUG: No current user ID")
             return
         }
@@ -1055,13 +1073,51 @@ struct DealOfferBubble: View {
             }
         }
     }
+
+    /// Accept the offer by paying its amount into escrow. The bKash capture is what
+    /// flips the offer to accepted and creates the deal (server-side). No payment → no deal.
+    private func acceptAndPay() {
+        guard let negotiationData = message.negotiation_data,
+              let dealOfferId = negotiationData["deal_offer_id"] as? String else {
+            payError = "This offer can't be paid (missing offer id)."
+            return
+        }
+        Task {
+            await MainActor.run { isPaying = true; payError = nil }
+            do {
+                let url = try await EscrowNetworking.shared.startCollection(dealOfferId: dealOfferId)
+                let session = BkashCheckoutSession()
+                await MainActor.run { self.checkoutSession = session }
+                session.start(url: url, scheme: "kajhobe") { result in
+                    Task { @MainActor in
+                        self.checkoutSession = nil
+                        if case .success(let callback) = result {
+                            let status = BkashCheckoutSession.status(from: callback)
+                            if status == "success" {
+                                self.dealStatus = "accepted"
+                            } else {
+                                self.payError = "Payment not completed (\(status ?? "cancelled"))."
+                            }
+                        }
+                        self.isPaying = false
+                        await self.loadDealStatus()
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    self.payError = error.localizedDescription
+                    self.isPaying = false
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Deal Offer Sheet
 struct DealOfferSheet: View {
     let conversation: ConversationWithDetails
     @Binding var isSending: Bool
-    let currentUserProfile: Profile?
+    let currentUserId: String?
     let offerCount: Int
     let hasUnansweredOffer: Bool
     let existingDealExists: Bool
@@ -1199,9 +1255,9 @@ struct DealOfferSheet: View {
     }
     
     private func sendDealOffer() async {
-        guard let currentUserId = currentUserProfile?.id,
+        guard let currentUserId = currentUserId,
               let amountDouble = Double(amount) else {
-            print("❌ DEAL OFFER DEBUG: Invalid amount or no user profile")
+            print("❌ DEAL OFFER DEBUG: Invalid amount or no user id")
             return
         }
         
@@ -1300,9 +1356,12 @@ struct ImagePicker: UIViewControllerRepresentable {
                 job_title: "Need help with iOS app",
                 job_description: "Looking for an experienced iOS developer",
                 other_user_name: "John Doe",
+                other_user_avatar: nil,
                 unread_count: 3,
                 created_at: "2024-01-15T10:30:00Z",
-                latest_message_time: "2024-01-15T10:45:00Z"
+                latest_message_time: "2024-01-15T10:45:00Z",
+                client_archived: false,
+                provider_archived: false
             )
         )
     }

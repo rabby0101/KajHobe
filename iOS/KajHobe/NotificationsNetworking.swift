@@ -30,61 +30,43 @@ class NotificationsNetworking: BaseNetworking {
     
     // MARK: - Real-time Subscriptions
     
-    /// Subscribe to real-time notification updates
+    /// Subscribe to real-time notification updates.
+    ///
+    /// Mirrors the WORKING realtime pattern used by `ChatView` / `MessagesView` and the
+    /// message badge: a SINGLE `postgresChange(Insert)` binding, with `subscribe()` and
+    /// the `for await` loop inside one Task, and **no fragile record parsing**. On every
+    /// inserted notification row we just fire `onChange()`; the bell's
+    /// `NotificationBadgeManager.refreshCounts()` then re-queries the user's own
+    /// notifications authoritatively, so there's no need to decode the realtime payload
+    /// or filter by `to_user_id` here.
+    ///
+    /// (The previous version registered two bindings — Insert + Update — which prevented
+    /// realtime delivery, AND parsed the payload with `record["to_user_id"] as? String`,
+    /// which is always nil because realtime values are `AnyJSON`, not `String`. Both bugs
+    /// meant the bell never updated live.)
     func subscribeToNotifications(
         userId: String,
-        onNewNotification: @escaping (EnhancedNotification) -> Void,
-        onNotificationUpdate: @escaping (EnhancedNotification) -> Void
+        onChange: @escaping () -> Void
     ) async -> RealtimeChannelV2 {
         let channel = supabase.realtimeV2.channel("notifications_\(userId)")
-        
-        // Set up insertion listener before subscribing
+
+        // Single INSERT binding, registered before subscribe (no await form, exactly
+        // like the working chat/messages subscriptions).
+        let insertions = channel.postgresChange(
+            InsertAction.self,
+            table: "notifications"
+        )
+
+        // Subscribe + iterate in ONE Task so the stream is consumed immediately after join.
         Task {
-            let insertions = await channel.postgresChange(
-                InsertAction.self,
-                table: "notifications"
-            )
-            
-            for await insertion in insertions {
-                // Check if this notification is for the current user
-                if let record = insertion.record as? [String: Any] {
-                    let toUserId = record["to_user_id"] as? String ?? record["user_id"] as? String
-                    
-                    if toUserId == userId,
-                       let notification = try? parseNotificationFromRealtime(record) {
-                        await MainActor.run {
-                            onNewNotification(notification)
-                        }
-                    }
-                }
+            await channel.subscribe()
+            print("🔔 Subscribed to real-time notifications for user: \(userId)")
+            for await _ in insertions {
+                print("🔔 Realtime notification insert → recount")
+                await MainActor.run { onChange() }
             }
         }
-        
-        // Set up update listener before subscribing
-        Task {
-            let updates = await channel.postgresChange(
-                UpdateAction.self,
-                table: "notifications"
-            )
-            
-            for await update in updates {
-                // Check if this notification is for the current user
-                if let record = update.record as? [String: Any] {
-                    let toUserId = record["to_user_id"] as? String ?? record["user_id"] as? String
-                    
-                    if toUserId == userId,
-                       let notification = try? parseNotificationFromRealtime(record) {
-                        await MainActor.run {
-                            onNotificationUpdate(notification)
-                        }
-                    }
-                }
-            }
-        }
-        
-        await channel.subscribe()
-        print("🔔 Subscribed to real-time notifications for user: \(userId)")
-        
+
         return channel
     }
     
@@ -120,7 +102,7 @@ class NotificationsNetworking: BaseNetworking {
         return try await withCheckedThrowingContinuation { continuation in
             Task.detached {
                 do {
-                    let user = try await supabase.auth.user()
+                    let user = try supabase.auth.requireCurrentUser()
                     print("🔍 Fetching enhanced notifications for user: \(user.id.uuidString) with state: \(state?.rawValue ?? "all")")
                     
                     // Use raw response approach to avoid Sendable conformance issues
@@ -168,7 +150,7 @@ class NotificationsNetworking: BaseNetworking {
     /// Update notification state (unread -> read -> archived)
     func updateNotificationState(_ notificationId: String, to state: NotificationState) async throws {
         do {
-            let _ = try await supabase.auth.user()
+            let _ = try supabase.auth.requireCurrentUser()
             print("🔄 Updating notification \(notificationId) to state: \(state.rawValue)")
             
             let now = ISO8601DateFormatter().string(from: Date())
@@ -200,7 +182,7 @@ class NotificationsNetworking: BaseNetworking {
     /// Mark multiple notifications as read
     func markNotificationsAsRead(_ notificationIds: [String]) async throws {
         do {
-            let _ = try await supabase.auth.user()
+            let _ = try supabase.auth.requireCurrentUser()
             let now = ISO8601DateFormatter().string(from: Date())
             
             let updateData = AnyEncodable([
@@ -226,48 +208,62 @@ class NotificationsNetworking: BaseNetworking {
         return try await withCheckedThrowingContinuation { continuation in
             Task.detached {
                 do {
-                    let user = try await supabase.auth.user()
-                    print("🔢 Getting notification counts for user: \(user.id.uuidString)")
-                    
-                    // Use raw response approach to avoid Sendable conformance issues
+                    let user = try supabase.auth.requireCurrentUser()
+                    let userId = user.id.uuidString
+                    print("🔢 Getting notification counts for user: \(userId)")
+
+                    // 1) Business notifications (notifications table) — count only GENUINELY unread.
                     let rawResponse = try await supabase
                         .from("notifications")
                         .select("notification_state, read")
-                        .or("user_id.eq.\(user.id.uuidString),to_user_id.eq.\(user.id.uuidString)")
+                        .or("user_id.eq.\(userId),to_user_id.eq.\(userId)")
                         .neq("type", value: "message_received")
                         .execute()
-                    
+
                     // Manual decoding in detached context
                     let decoder = JSONDecoder()
                     let countData = try decoder.decode([NotificationCountData].self, from: rawResponse.data)
-                    
-                    var unreadCount = 0
+
+                    var businessUnread = 0
                     var readCount = 0
                     var archivedCount = 0
-                    
+
                     for item in countData {
                         if let stateString = item.notification_state,
                            let state = NotificationState(rawValue: stateString) {
                             switch state {
-                            case .unread: unreadCount += 1
+                            case .unread: businessUnread += 1
                             case .read: readCount += 1
                             case .archived: archivedCount += 1
                             }
-                        } else if let readBool = item.read {
-                            // Fallback for legacy read boolean
-                            if readBool {
-                                readCount += 1
-                            } else {
-                                unreadCount += 1
-                            }
                         } else {
-                            // Default to unread if state is unclear
-                            unreadCount += 1
+                            // No explicit notification_state (the large historical backlog
+                            // was inserted with notification_state = NULL). Treat as READ:
+                            // the bell counts ONLY rows explicitly marked 'unread'. This is
+                            // what stops the old backlog from inflating the badge (the "206").
+                            readCount += 1
                         }
                     }
-                    
-                    print("📊 Notification counts - Unread: \(unreadCount), Read: \(readCount), Archived: \(archivedCount)")
-                    continuation.resume(returning: (unread: unreadCount, read: readCount, archived: archivedCount))
+
+                    // 2) Unread interest requests on the user's OWN jobs
+                    //    (job_interests where jobs.client_id == user, status == pending, read == false).
+                    var interestUnread = 0
+                    do {
+                        let interestResponse = try await supabase
+                            .from("job_interests")
+                            .select("id, jobs!inner(client_id)", head: true, count: .exact)
+                            .eq("jobs.client_id", value: userId)
+                            .eq("status", value: "pending")
+                            .eq("read", value: false)
+                            .execute()
+                        interestUnread = interestResponse.count ?? 0
+                    } catch {
+                        print("⚠️ Could not count unread interests: \(error)")
+                    }
+
+                    let totalUnread = businessUnread + interestUnread
+                    print("📊 Notification counts - Unread: \(totalUnread) (business \(businessUnread) + interests \(interestUnread)), Read: \(readCount), Archived: \(archivedCount)")
+                    continuation.resume(returning: (unread: totalUnread, read: readCount, archived: archivedCount))
                 } catch {
                     print("❌ Error getting notification counts: \(error)")
                     continuation.resume(throwing: error)
@@ -279,7 +275,7 @@ class NotificationsNetworking: BaseNetworking {
     // MARK: - Legacy Notification Management
     func fetchNotifications() async throws -> [NotificationItem] {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("notifications")
@@ -301,7 +297,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func markNotificationAsRead(notificationId: String) async throws {
         do {
-            let _ = try await supabase.auth.user()
+            let _ = try supabase.auth.requireCurrentUser()
             print("Marking notification as read: \(notificationId)")
             
             let updateData = AnyEncodable(["read": true])
@@ -360,6 +356,7 @@ class NotificationsNetworking: BaseNetworking {
                 "user_id": toUserId, // Legacy field - recipient of notification
                 "status": "pending",
                 "read": false,
+                "notification_state": "unread", // drives the bell/Business unread badge
                 // Explicitly set unused UUID fields to null
                 "related_proposal_id": NSNull(),
                 "deal_offer_id": NSNull(),
@@ -395,7 +392,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func fetchPendingNotificationCount() async throws -> Int {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("notifications")
@@ -422,7 +419,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func clearNotification(notificationId: String) async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🗑️ Clearing individual notification: \(notificationId)")
             
             try await supabase
@@ -442,7 +439,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func clearAllNotifications() async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🗑️ Clearing all notifications for user: \(user.id.uuidString)")
             
             try await supabase
@@ -463,7 +460,7 @@ class NotificationsNetworking: BaseNetworking {
         // Cache has been removed - always fetch fresh data
         
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🌐 Fetching interest notifications from network...")
             print("🔍 User ID: \(user.id.uuidString)")
             
@@ -498,7 +495,7 @@ class NotificationsNetworking: BaseNetworking {
     // MARK: - Interest Management
     func getInterestStatus(jobId: String) async throws -> String? {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             let response = try await supabase
                 .from("job_interests")
@@ -532,7 +529,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func getInterestCooldownInfo(jobId: String) async throws -> (canShowInterest: Bool, remainingCooldown: TimeInterval?, interestCount: Int, lastStatus: String?) {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             print("🔍 getInterestCooldownInfo - JobId: \(jobId), UserId: \(user.id.uuidString)")
             
             // Count attempts from notifications table (actual attempts)
@@ -693,7 +690,7 @@ class NotificationsNetworking: BaseNetworking {
     }
     
     func showInterestWithMessage(jobId: String, message: String) async throws {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         print("🔔 Showing interest in job \(jobId) with message: \(message)")
         print("🔍 Current auth user ID: \(user.id.uuidString)")
         
@@ -703,7 +700,7 @@ class NotificationsNetworking: BaseNetworking {
     }
     
     func createInterestAttempt(jobId: String, message: String) async throws {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         
         // First check the simple interest status
         let interestStatus = try await getSimpleInterestStatus(
@@ -1080,7 +1077,7 @@ class NotificationsNetworking: BaseNetworking {
     
     func respondToInterest(notificationId: String, accept: Bool) async throws {
         do {
-            let user = try await supabase.auth.user()
+            let user = try supabase.auth.requireCurrentUser()
             
             // Get notification details
             let notificationResponse = try await supabase
@@ -1295,7 +1292,7 @@ class NotificationsNetworking: BaseNetworking {
     
     /// Fetch enriched job interests for real-time notifications
     func fetchEnrichedJobInterests() async throws -> [EnrichedJobInterest] {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         
         print("🔍 Fetching enriched job interests for user: \(user.id.uuidString)")
         
@@ -1396,7 +1393,7 @@ class NotificationsNetworking: BaseNetworking {
     
     /// Subscribe to real-time job interest changes
     func subscribeToJobInterests(onNewInterest: @escaping (EnrichedJobInterest) -> Void) async throws -> RealtimeChannelV2 {
-        let user = try await supabase.auth.user()
+        let user = try supabase.auth.requireCurrentUser()
         
         print("🔄 Setting up real-time subscription for notifications")
         
@@ -1515,13 +1512,22 @@ class NotificationsNetworking: BaseNetworking {
         return try await withCheckedThrowingContinuation { continuation in
             Task.detached {
                 do {
-                    let user = try await supabase.auth.user()
+                    let user = try supabase.auth.requireCurrentUser()
                     print("🔍 Fetching business notifications for user: \(user.id.uuidString)")
 
                     let response = try await supabase
                         .from("notifications")
                         .select("*")
                         .or("user_id.eq.\(user.id.uuidString),to_user_id.eq.\(user.id.uuidString)")
+                        // Interest requests live on the Interests tab (job_interests); chat
+                        // lives in Messages. Keep them out of the feed. deal_offer_received /
+                        // deal_offer_responded are superseded by the rich "deal_created"
+                        // notification, so they're filtered to avoid duplicates.
+                        .neq("type", value: "message_received")
+                        .neq("type", value: "show_interest")
+                        .neq("type", value: "interest_request")
+                        .neq("type", value: "deal_offer_received")
+                        .neq("type", value: "deal_offer_responded")
                         .order("created_at", ascending: false)
                         .limit(limit)
                         .execute()
@@ -1553,7 +1559,6 @@ class NotificationsNetworking: BaseNetworking {
                         .from("notifications")
                         .update(updateData)
                         .eq("id", value: notificationId)
-                        .eq("notification_state", value: "unread")
                         .execute()
 
                     print("✅ Business notification \(notificationId) marked as read")
