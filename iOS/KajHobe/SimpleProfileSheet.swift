@@ -23,6 +23,44 @@ struct SimplePublicProfile: Codable, Identifiable {
     let trust_level: String
     let last_updated: String
 
+    // Provider detail fields (power the redesigned PublicProfileDetailView)
+    var profession: String? = nil
+    var tagline: String? = nil
+    var experience_years: Int? = nil
+    var hourly_rate: Double? = nil
+    var team_rate: Double? = nil
+    var team_hours_label: String? = nil
+
+    /// Bridge to the rich PublicProfile model used by the redesigned profile screen.
+    func toPublicProfile() -> PublicProfile {
+        PublicProfile(
+            id: id,
+            full_name: full_name,
+            avatar_url: avatar_url,
+            bio: bio,
+            location: location,
+            website: website,
+            is_service_provider: is_service_provider,
+            created_at: created_at,
+            completed_jobs: completed_jobs,
+            avg_job_value: avg_job_value,
+            total_earnings: total_earnings,
+            avg_rating: avg_rating,
+            review_count: review_count,
+            is_online: is_online,
+            last_seen_at: last_seen_at,
+            average_response_time_minutes: average_response_time_minutes,
+            service_categories: service_categories,
+            trust_level: trust_level,
+            last_updated: last_updated,
+            profession: profession,
+            tagline: tagline,
+            experience_years: experience_years,
+            hourly_rate: hourly_rate,
+            team_rate: team_rate,
+            team_hours_label: team_hours_label
+        )
+    }
 }
 
 // Simple profile sheet view

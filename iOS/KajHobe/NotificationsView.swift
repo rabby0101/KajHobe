@@ -1101,9 +1101,9 @@ struct NotificationsView: View {
         }
         .sheet(isPresented: $showingProviderProfile) {
             if let profile = selectedProfile {
-                SimpleProfileSheet(profile: profile)
+                PublicProfileDetailView(profile: profile.toPublicProfile())
                     .onAppear {
-                        print("✅ SimpleProfileSheet appeared for: \(profile.full_name ?? "Unknown")")
+                        print("✅ PublicProfileDetailView appeared for: \(profile.full_name ?? "Unknown")")
                         print("✅ Profile ID: \(profile.id), Online: \(profile.is_online)")
                     }
             } else {
@@ -1626,7 +1626,13 @@ struct NotificationsView: View {
                             average_response_time_minutes: profileData["average_response_time_minutes"] as? Int,
                             service_categories: profileData["service_categories"] as? [String] ?? [],
                             trust_level: profileData["trust_level"] as? String ?? "unverified",
-                            last_updated: profileData["last_updated"] as? String ?? ""
+                            last_updated: profileData["last_updated"] as? String ?? "",
+                            profession: profileData["profession"] as? String,
+                            tagline: profileData["tagline"] as? String,
+                            experience_years: profileData["experience_years"] as? Int,
+                            hourly_rate: profileData["hourly_rate"] as? Double,
+                            team_rate: profileData["team_rate"] as? Double,
+                            team_hours_label: profileData["team_hours_label"] as? String
                         )
 
                         print("✅ Successfully created profile: \(profile.full_name ?? "Unknown")")

@@ -8,6 +8,13 @@ nonisolated struct ProfileUpdate: Codable, Sendable {
     let website: String
     let is_service_provider: Bool
     let updated_at: String
+    // Provider detail fields (nil for non-providers)
+    let profession: String?
+    let tagline: String?
+    let experience_years: Int?
+    let hourly_rate: Double?
+    let team_rate: Double?
+    let team_hours_label: String?
 }
 
 struct ProfileView: View {
@@ -25,6 +32,14 @@ struct ProfileView: View {
     @State private var bio = ""
     @State private var website = ""
     @State private var isServiceProvider = false
+
+    // Editable provider-detail fields
+    @State private var profession = ""
+    @State private var tagline = ""
+    @State private var experienceYears = ""
+    @State private var hourlyRate = ""
+    @State private var teamRate = ""
+    @State private var teamHoursLabel = ""
     
     var body: some View {
         NavigationView {
@@ -163,6 +178,12 @@ struct ProfileView: View {
                                         }
                                     }
                                 }
+                            }
+
+                            // Provider details (profession, experience, pricing)
+                            if isEditing ? isServiceProvider : (profile.is_service_provider == true) {
+                                Divider()
+                                providerDetailsSection(profile)
                             }
                         }
                         .padding(.horizontal)
@@ -332,6 +353,61 @@ struct ProfileView: View {
         }
     }
     
+    @ViewBuilder
+    private func providerDetailsSection(_ profile: Profile) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Service Provider Details")
+                .font(.headline)
+
+            if isEditing {
+                providerField(title: "Profession", text: $profession, placeholder: "e.g. Electrician")
+                providerField(title: "Tagline", text: $tagline, placeholder: "e.g. Best Electrician")
+                providerField(title: "Years of experience", text: $experienceYears, placeholder: "e.g. 8", keyboard: .numberPad)
+                providerField(title: "Hourly fee (৳)", text: $hourlyRate, placeholder: "e.g. 159", keyboard: .decimalPad)
+                providerField(title: "Team work fee (৳)", text: $teamRate, placeholder: "e.g. 1059", keyboard: .decimalPad)
+                providerField(title: "Team hours label", text: $teamHoursLabel, placeholder: "e.g. 4-7 hrs")
+            } else {
+                providerReadonlyRow("Profession", profile.profession)
+                providerReadonlyRow("Tagline", profile.tagline)
+                providerReadonlyRow("Experience", profile.experience_years.map { "\($0) year\($0 == 1 ? "" : "s")" })
+                providerReadonlyRow("Hourly fee", profile.hourly_rate.map { "৳\(formattedNumber($0))" })
+                providerReadonlyRow("Team work fee", profile.team_rate.map { "৳\(formattedNumber($0))" })
+                providerReadonlyRow("Team hours", profile.team_hours_label)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func providerField(title: String, text: Binding<String>, placeholder: String, keyboard: UIKeyboardType = .default) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            TextField(placeholder, text: text)
+                .keyboardType(keyboard)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+        }
+    }
+
+    @ViewBuilder
+    private func providerReadonlyRow(_ title: String, _ value: String?) -> some View {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value?.isEmpty == false ? value! : "—")
+                .font(.subheadline)
+                .foregroundColor(value?.isEmpty == false ? .primary : .secondary)
+        }
+    }
+
+    private func formattedNumber(_ value: Double) -> String {
+        value.truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", value)
+            : String(format: "%.2f", value)
+    }
+
     private func loadProfile() {
         isLoading = true
         
@@ -359,6 +435,12 @@ struct ProfileView: View {
         bio = profile.bio ?? ""
         website = profile.website ?? ""
         isServiceProvider = profile.is_service_provider ?? false
+        profession = profile.profession ?? ""
+        tagline = profile.tagline ?? ""
+        experienceYears = profile.experience_years.map(String.init) ?? ""
+        hourlyRate = profile.hourly_rate.map { formattedNumber($0) } ?? ""
+        teamRate = profile.team_rate.map { formattedNumber($0) } ?? ""
+        teamHoursLabel = profile.team_hours_label ?? ""
         isEditing = true
     }
     
@@ -372,28 +454,51 @@ struct ProfileView: View {
         Task {
             do {
                 let user = try supabase.auth.requireCurrentUser()
-                
+
+                // Parse provider-detail fields (only meaningful when a provider).
+                let trimmedProfession = profession.trimmingCharacters(in: .whitespacesAndNewlines)
+                let trimmedTagline = tagline.trimmingCharacters(in: .whitespacesAndNewlines)
+                let trimmedTeamHours = teamHoursLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+                let parsedExperience = isServiceProvider ? Int(experienceYears.trimmingCharacters(in: .whitespacesAndNewlines)) : nil
+                let parsedHourly = isServiceProvider ? Double(hourlyRate.trimmingCharacters(in: .whitespacesAndNewlines)) : nil
+                let parsedTeam = isServiceProvider ? Double(teamRate.trimmingCharacters(in: .whitespacesAndNewlines)) : nil
+                let finalProfession = (isServiceProvider && !trimmedProfession.isEmpty) ? trimmedProfession : nil
+                let finalTagline = (isServiceProvider && !trimmedTagline.isEmpty) ? trimmedTagline : nil
+                let finalTeamHours = (isServiceProvider && !trimmedTeamHours.isEmpty) ? trimmedTeamHours : nil
+
                 // Create a properly encodable update structure
                 let updates = ProfileUpdate(
                     full_name: fullName,
                     bio: bio,
                     website: website,
                     is_service_provider: isServiceProvider,
-                    updated_at: ISO8601DateFormatter().string(from: Date())
+                    updated_at: ISO8601DateFormatter().string(from: Date()),
+                    profession: finalProfession,
+                    tagline: finalTagline,
+                    experience_years: parsedExperience,
+                    hourly_rate: parsedHourly,
+                    team_rate: parsedTeam,
+                    team_hours_label: finalTeamHours
                 )
-                
+
                 try await supabase
                     .from("profiles")
                     .update(updates)
                     .eq("id", value: user.id.uuidString)
                     .execute()
-                
+
                 // Update local profile
                 await MainActor.run {
                     self.profile?.full_name = fullName
                     self.profile?.bio = bio
                     self.profile?.website = website
                     self.profile?.is_service_provider = isServiceProvider
+                    self.profile?.profession = finalProfession
+                    self.profile?.tagline = finalTagline
+                    self.profile?.experience_years = parsedExperience
+                    self.profile?.hourly_rate = parsedHourly
+                    self.profile?.team_rate = parsedTeam
+                    self.profile?.team_hours_label = finalTeamHours
                     self.isEditing = false
                 }
             } catch {
