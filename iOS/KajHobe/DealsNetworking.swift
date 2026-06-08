@@ -486,6 +486,20 @@ class DealsNetworking: ObservableObject {
                     throw NetworkingError.validationError("Couldn't load this completion request. Please try again.")
                 }
 
+                // A1: a disputed deal can't be completed through the normal path — it
+                // must be settled by an admin. (DB guard enforces this too.)
+                let dealStateResp = try await supabase
+                    .from("deals")
+                    .select("completion_status")
+                    .eq("id", value: guardDealId)
+                    .single()
+                    .execute()
+                if let ds = try? JSONSerialization.jsonObject(with: dealStateResp.data) as? [String: Any],
+                   (ds["completion_status"] as? String) == "disputed" {
+                    throw NetworkingError.validationError(
+                        "This deal is under dispute. It can't be marked complete until an admin resolves the dispute.")
+                }
+
                 let fundedStates: Set<EscrowState> = [.held, .released, .paid_out]
                 let escrow = try? await EscrowNetworking.shared.fetchEscrow(forDealId: guardDealId)
                 guard let escrow, fundedStates.contains(escrow.state) else {
@@ -569,13 +583,34 @@ class DealsNetworking: ObservableObject {
             }
             
             print("✅ Completion request \(status) for request: \(requestId)")
-            
+
         } catch {
             print("❌ Error responding to completion request: \(error)")
             throw error
         }
     }
-    
+
+    // MARK: - Disputes (A1)
+
+    /// Open a dispute on an active, funded deal. The `deal_open_dispute` RPC
+    /// validates that the caller is a participant, the deal is `active`, and its
+    /// escrow is `held`; it freezes the deal (`completion_status='disputed'`) and
+    /// notifies the other party. An admin then resolves it from the payout panel.
+    func openDispute(dealId: String, reason: String?) async throws {
+        do {
+            _ = try supabase.auth.requireCurrentUser()
+            let params = AnyEncodable([
+                "p_deal_id": dealId,
+                "p_reason": reason ?? ""
+            ])
+            try await supabase.rpc("deal_open_dispute", params: params).execute()
+            print("✅ Dispute opened for deal \(dealId)")
+        } catch {
+            print("❌ Error opening dispute: \(error)")
+            throw error
+        }
+    }
+
     // MARK: - Dashboard Data
     func fetchDashboardData(forceRefresh: Bool = false) async throws -> DashboardData {
         // Cache has been removed - always fetch fresh data

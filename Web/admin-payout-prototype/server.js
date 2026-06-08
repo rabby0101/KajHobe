@@ -120,6 +120,100 @@ app.post('/api/payouts/:escrowId/approve', async (req, res) => {
   }
 });
 
+// GET /api/disputes — open disputes awaiting an admin decision, enriched with the
+// deal/job context, both parties' names, the held amount, and the provider's bKash
+// number (so the admin can pay the provider's share if they award one).
+app.get('/api/disputes', async (req, res) => {
+  try {
+    const { data: disputes, error } = await supabase
+      .from('deal_disputes')
+      .select('id, deal_id, raised_by, reason, created_at')
+      .eq('status', 'open')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    if (!disputes || disputes.length === 0) return res.json({ disputes: [] });
+
+    const dealIds = [...new Set(disputes.map((d) => d.deal_id).filter(Boolean))];
+    const [{ data: deals }, { data: escrows }] = await Promise.all([
+      supabase.from('deals').select('id, job_id, client_id, provider_id, agreed_amount').in('id', dealIds),
+      supabase.from('escrow_transactions')
+        .select('id, deal_id, amount, provider_amount, provider_msisdn, currency, state').in('deal_id', dealIds),
+    ]);
+    const dealById = indexBy(deals, 'id');
+    const escrowByDeal = indexBy(escrows, 'deal_id');
+
+    const userIds = [...new Set((deals || []).flatMap((d) => [d.client_id, d.provider_id]).filter(Boolean))];
+    const providerIds = [...new Set((deals || []).map((d) => d.provider_id).filter(Boolean))];
+    const jobIds = [...new Set((deals || []).map((d) => d.job_id).filter(Boolean))];
+
+    const [{ data: profiles }, { data: payoutAccounts }, { data: jobs }] = await Promise.all([
+      supabase.from('profiles').select('id, full_name, email').in('id', userIds.length ? userIds : ['00000000-0000-0000-0000-000000000000']),
+      supabase.from('provider_payout_accounts').select('user_id, bkash_number').in('user_id', providerIds.length ? providerIds : ['00000000-0000-0000-0000-000000000000']),
+      jobIds.length ? supabase.from('jobs').select('id, title, category').in('id', jobIds) : Promise.resolve({ data: [] }),
+    ]);
+    const profileById = indexBy(profiles, 'id');
+    const payoutByUser = indexBy(payoutAccounts, 'user_id');
+    const jobById = indexBy(jobs, 'id');
+
+    const out = disputes.map((di) => {
+      const deal = dealById[di.deal_id] || {};
+      const escrow = escrowByDeal[di.deal_id] || {};
+      const job = jobById[deal.job_id] || {};
+      const provider = profileById[deal.provider_id] || {};
+      const client = profileById[deal.client_id] || {};
+      const account = payoutByUser[deal.provider_id] || {};
+      const raiser = profileById[di.raised_by] || {};
+      return {
+        dispute_id: di.id,
+        deal_id: di.deal_id,
+        escrow_id: escrow.id || null,
+        escrow_state: escrow.state || null,
+        amount: escrow.amount ?? deal.agreed_amount ?? 0,
+        currency: escrow.currency || 'BDT',
+        reason: di.reason,
+        raised_at: di.created_at,
+        raised_by_name: raiser.full_name || raiser.email || '(unknown)',
+        job_title: job.title || '(unknown job)',
+        job_category: job.category || null,
+        provider_name: provider.full_name || provider.email || '(unknown provider)',
+        client_name: client.full_name || client.email || '(unknown client)',
+        provider_bkash: account.bkash_number || escrow.provider_msisdn || null,
+      };
+    });
+    res.json({ disputes: out });
+  } catch (err) {
+    console.error('GET /api/disputes failed:', err.message || err);
+    res.status(500).json({ error: err.message || String(err) });
+  }
+});
+
+// POST /api/disputes/:escrowId/resolve — settle a dispute with a refund/payout
+// split. Body: { refund_amount, payout_amount, refund_trx?, payout_trx?, notes? }.
+// Flips the held escrow -> resolved and closes the deal (DB RPC enforces that
+// refund + payout <= amount).
+app.post('/api/disputes/:escrowId/resolve', async (req, res) => {
+  try {
+    const { escrowId } = req.params;
+    const { refund_amount, payout_amount, refund_trx, payout_trx, notes } = req.body || {};
+    const refund = Math.trunc(Number(refund_amount) || 0);
+    const payout = Math.trunc(Number(payout_amount) || 0);
+    if (refund < 0 || payout < 0) throw new Error('amounts must be >= 0');
+    const { data, error } = await supabase.rpc('escrow_service_resolve_dispute', {
+      p_escrow_id: escrowId,
+      p_refund_amount: refund,
+      p_payout_amount: payout,
+      p_refund_trx: refund_trx || null,
+      p_payout_trx: payout_trx || null,
+      p_notes: notes || 'Resolved via admin panel',
+    });
+    if (error) throw error;
+    res.json({ ok: true, escrow: data });
+  } catch (err) {
+    console.error('POST resolve failed:', err.message || err);
+    res.status(400).json({ error: err.message || String(err) });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`\n  KajHobe admin payout panel running at http://localhost:${PORT}\n  (localhost only — holds the service role key; do not expose)\n`);
 });

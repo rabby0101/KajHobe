@@ -429,6 +429,7 @@ enum EscrowState: String, Codable, Sendable, CaseIterable {
     case paid_out  = "paid_out"   // provider has received the money
     case refunded  = "refunded"   // returned to the buyer
     case failed    = "failed"     // a collect/payout attempt failed
+    case resolved  = "resolved"   // a dispute was settled by an admin (refund/payout split)
 
     /// Short human label for badges.
     var label: String {
@@ -439,6 +440,7 @@ enum EscrowState: String, Codable, Sendable, CaseIterable {
         case .paid_out: return "Paid out"
         case .refunded: return "Refunded"
         case .failed:   return "Payment failed"
+        case .resolved: return "Dispute resolved"
         }
     }
 
@@ -451,6 +453,7 @@ enum EscrowState: String, Codable, Sendable, CaseIterable {
         case .paid_out: return "checkmark.circle.fill"
         case .refunded: return "arrow.uturn.backward.circle.fill"
         case .failed:   return "xmark.octagon.fill"
+        case .resolved: return "checkmark.shield.fill"
         }
     }
 }

@@ -12,7 +12,9 @@ struct DealDetailView: View {
     @State private var errorMessage = ""
     @State private var showingCompletionRequest = false
     @State private var showingCompletionResponse = false
-    
+    @State private var showingDisputeSheet = false
+    @State private var disputeReason = ""
+
     init(deal: DealWithCompletion) {
         self._deal = State(initialValue: deal)
     }
@@ -96,6 +98,11 @@ struct DealDetailView: View {
         .sheet(isPresented: $showingCompletionResponse) {
             // Handle completion response if needed
             Text("Completion Response")
+        }
+        .sheet(isPresented: $showingDisputeSheet) {
+            DisputeReasonView(reason: $disputeReason, isProcessing: isProcessing) {
+                Task { await handleOpenDispute() }
+            }
         }
     }
     
@@ -393,7 +400,62 @@ struct DealDetailView: View {
                 }
                 .disabled(true)
             }
-            
+
+            // Under dispute — frozen until an admin resolves it.
+            if deal.completion_status == "disputed" {
+                VStack(spacing: 6) {
+                    HStack {
+                        Image(systemName: "exclamationmark.shield.fill")
+                        Text("Under Dispute")
+                    }
+                    Text("An admin is reviewing this deal. The payment stays in escrow until it's resolved.")
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .opacity(0.9)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.red.opacity(0.85))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+
+            // Dispute settled by an admin.
+            if deal.completion_status == "resolved" {
+                VStack(spacing: 6) {
+                    HStack {
+                        Image(systemName: "checkmark.shield.fill")
+                        Text("Dispute Resolved")
+                    }
+                    Text("An admin settled this deal. See the payment section for how it was split.")
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .opacity(0.9)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.indigo.opacity(0.85))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+
+            // Open a dispute — available on an active deal that isn't already
+            // disputed/resolved/completed. The DB RPC enforces escrow is held.
+            if deal.completion_status == "in_progress" || deal.completion_status == "pending_approval" {
+                Button(action: { showingDisputeSheet = true }) {
+                    HStack {
+                        Image(systemName: "exclamationmark.bubble.fill")
+                        Text("Report a Problem / Open Dispute")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .foregroundColor(.red)
+                    .cornerRadius(10)
+                }
+                .disabled(isProcessing)
+            }
+
             // Message button
             Button(action: {
                 withAnimation(AnimationSystem.Presets.bouncy) {
@@ -454,6 +516,8 @@ struct DealDetailView: View {
             return .blue
         case "disputed":
             return .red
+        case "resolved":
+            return .indigo
         default:
             return .gray
         }
@@ -501,7 +565,29 @@ struct DealDetailView: View {
         
         isProcessing = false
     }
-    
+
+    private func handleOpenDispute() async {
+        isProcessing = true
+        defer { isProcessing = false }
+        do {
+            try await networking.openDispute(
+                dealId: deal.id,
+                reason: disputeReason.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+            await MainActor.run {
+                showingDisputeSheet = false
+                disputeReason = ""
+            }
+            await refreshDealData()
+        } catch {
+            await MainActor.run {
+                showingDisputeSheet = false
+                errorMessage = "Couldn't open the dispute: \(error.localizedDescription)"
+                showingError = true
+            }
+        }
+    }
+
     private func refreshDealData() async {
         do {
             // Fetch updated deal information
@@ -733,6 +819,74 @@ struct DealProgressTimeline: View {
         displayFormatter.dateStyle = .short
         displayFormatter.timeStyle = .short
         return displayFormatter.string(from: date)
+    }
+}
+
+// MARK: - Dispute Reason Sheet
+
+struct DisputeReasonView: View {
+    @Binding var reason: String
+    let isProcessing: Bool
+    let onSubmit: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 10) {
+                    Image(systemName: "exclamationmark.shield.fill")
+                        .foregroundColor(.red)
+                        .font(.title2)
+                    Text("Open a dispute")
+                        .font(.title3).fontWeight(.semibold)
+                }
+
+                Text("If something went wrong and you can't agree on completion, opening a dispute freezes the deal. The payment stays safely in escrow while an admin reviews it and decides how to split it.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Text("What's the problem?")
+                    .font(.subheadline).fontWeight(.medium)
+
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $reason)
+                        .frame(minHeight: 120)
+                        .padding(8)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .cornerRadius(10)
+                    if reason.isEmpty {
+                        Text("Describe what happened…")
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 13)
+                            .padding(.vertical, 16)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+                Button(action: onSubmit) {
+                    HStack {
+                        if isProcessing { ProgressView().tint(.white) }
+                        Text(isProcessing ? "Opening…" : "Open Dispute")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .disabled(isProcessing)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Dispute")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { dismiss() }.disabled(isProcessing)
+                }
+            }
+        }
     }
 }
 

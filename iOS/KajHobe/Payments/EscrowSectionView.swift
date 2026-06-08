@@ -129,6 +129,9 @@ struct EscrowSectionView: View {
             return "This payment was refunded to the buyer."
         case .failed:
             return "The last payment attempt failed."
+        case .resolved:
+            return isBuyer ? "A dispute on this deal was resolved by an admin."
+                           : "A dispute on this deal was resolved by an admin."
         }
     }
 
@@ -140,6 +143,7 @@ struct EscrowSectionView: View {
         case .paid_out: return .green
         case .refunded: return .gray
         case .failed:   return .red
+        case .resolved: return .indigo
         }
     }
 
