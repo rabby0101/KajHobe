@@ -72,6 +72,10 @@ struct MainTabView: View {
             // Switch to Messages tab
             selectedTab = 1
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToJobs"))) { _ in
+            // Switch to Jobs tab (used by PostJobView's back button)
+            selectedTab = 0
+        }
         .onChange(of: selectedTab) { _, newValue in
             if newValue == 0 { // Jobs tab
                 // Do NOT post RefreshJobs here — the realtime subscription + .task already
