@@ -34,7 +34,11 @@ struct PostJobView: View {
     @State private var isUploadingMedia = false
     @State private var uploadProgress: Double = 0.0
     @StateObject private var mediaUploadManager = MediaUploadManager.shared
-    
+
+    // Keyboard focus management — drives field-to-field flow and the Done button.
+    private enum Field { case title, budget, description }
+    @FocusState private var focusedField: Field?
+
     let categories = HardcodedServiceCategory.getCategoryNames()
     
     let locations = [
@@ -51,7 +55,7 @@ struct PostJobView: View {
     ]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     // Tab Loading Indicator
@@ -89,6 +93,10 @@ struct PostJobView: View {
                             TextField("Enter a clear, descriptive title", text: $title)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .font(.body)
+                                .focused($focusedField, equals: .title)
+                                .textInputAutocapitalization(.sentences)
+                                .submitLabel(.next)
+                                .onSubmit { focusedField = .description }
                         }
                         
                         // Category
@@ -156,6 +164,7 @@ struct PostJobView: View {
                                 .fontWeight(.semibold)
                             
                             TextEditor(text: $description)
+                                .focused($focusedField, equals: .description)
                                 .frame(minHeight: 120)
                                 .padding(8)
                                 .background(Color(.systemGray6))
@@ -164,13 +173,19 @@ struct PostJobView: View {
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color(.systemGray4), lineWidth: 1)
                                 )
-                            
-                            if description.isEmpty {
-                                Text("Describe what you need done, required skills, timeline, and any specific requirements")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 4)
-                            }
+                                .overlay(alignment: .topLeading) {
+                                    // Static placeholder — kept in the hierarchy and just
+                                    // shown/hidden, so no view is inserted/removed (and no
+                                    // layout reflow) on each keystroke.
+                                    if description.isEmpty {
+                                        Text("Describe what you need done, required skills, timeline, and any specific requirements")
+                                            .font(.body)
+                                            .foregroundColor(.secondary)
+                                            .padding(.horizontal, 13)
+                                            .padding(.vertical, 16)
+                                            .allowsHitTesting(false)
+                                    }
+                                }
                         }
                         
                         // Budget and Location Row
@@ -185,6 +200,7 @@ struct PostJobView: View {
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .keyboardType(.numberPad)
                                     .font(.body)
+                                    .focused($focusedField, equals: .budget)
                             }
                             
                             // Location
@@ -254,7 +270,25 @@ struct PostJobView: View {
                     .padding(.bottom, 32)
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle("Post a Job")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        focusedField = nil // dismiss keyboard before leaving
+                        NotificationCenter.default.post(name: NSNotification.Name("NavigateToJobs"), object: nil)
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(.white)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { focusedField = nil }
+                }
+            }
             .alert("Error", isPresented: $showingAlert) {
                 Button("OK") { }
             } message: {
