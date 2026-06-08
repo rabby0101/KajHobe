@@ -15,6 +15,11 @@ data class Conversation(
     val provider_unread_count: Int = 0,
     val created_at: String,
     val updated_at: String,
+    // Per-user archive flags. The current user only ever reads/writes their
+    // own side, so archiving is one-sided. See migration
+    // Web/supabase/migrations/20260608010000-conversation-per-user-archive.sql.
+    val client_archived: Boolean = false,
+    val provider_archived: Boolean = false,
 )
 
 /**
@@ -38,6 +43,8 @@ data class ConversationWithDetails(
     val last_message: ChatMessage? = null,
     // App-computed unread count for the current user (messages received & not yet read).
     val unread: Int = 0,
+    val client_archived: Boolean = false,
+    val provider_archived: Boolean = false,
 )
 
 /**
