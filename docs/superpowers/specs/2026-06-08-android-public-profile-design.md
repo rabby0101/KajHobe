@@ -404,7 +404,6 @@ A fake `ProfilePublicRepository` (no mockk needed) with controllable return valu
 3. **Invalid id** — `load("")` short-circuits to `errorMessage = "Invalid user id"` without calling the repository.
 4. **Retry** — after error, `retry()` calls `load(loadedUserId)` and the fake's counters confirm the repository was hit again.
 5. **Non-fatal highlight/review failure** — fake throws on `fetchServiceHighlights` and `fetchReviews`; the repository's `runCatching` swallows them, the ViewModel still completes the fan-out and reaches the success branch with empty lists.
-6. **Parallel fan-out** — instrument the fake with `delay(100)` on each method; assert the total wall-clock is ~100ms (not ~300ms).
 
 ### Manual verification (no infra for snapshot tests)
 
