@@ -98,6 +98,7 @@ private fun EscrowBody(
         EscrowState.paid_out -> Icons.Filled.CheckCircle to StatusGreen
         EscrowState.refunded -> Icons.Filled.Refresh to KajHobeTheme.colors.textSecondary
         EscrowState.failed -> Icons.Filled.WarningAmber to StatusRed
+        EscrowState.resolved -> Icons.Filled.CheckCircle to Color(0xFF5856D6)
     }
     val amountLabel = formatTaka(escrow.amount)
     val roleCopy = when (escrow.state) {
@@ -107,6 +108,7 @@ private fun EscrowBody(
         EscrowState.paid_out -> "Provider has been paid. Deal closed."
         EscrowState.refunded -> "Money returned to the buyer."
         EscrowState.failed -> "A previous payment attempt failed. Please retry."
+        EscrowState.resolved -> "A dispute on this deal was resolved by an admin."
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

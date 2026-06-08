@@ -83,6 +83,7 @@ private val StatusGreen = Color(0xFF34C759)
 private val StatusOrange = Color(0xFFFF9500)
 private val StatusBlue = Color(0xFF007AFF)
 private val StatusRed = Color(0xFFFF3B30)
+private val StatusIndigo = Color(0xFF5856D6)
 private val InfoBlue = Color(0xFF007AFF)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,6 +101,8 @@ fun DealDetailScreen(
     var completionRequestMessage by remember { mutableStateOf("") }
     var showCompletionResponseSheet by remember { mutableStateOf(false) }
     var pendingRequest by remember { mutableStateOf<CompletionRequest?>(null) }
+    var showDisputeSheet by remember { mutableStateOf(false) }
+    var disputeReason by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
     // Collect one-shot events from the ViewModel (e.g. "the other party already
@@ -178,6 +181,10 @@ fun DealDetailScreen(
                             showCompletionResponseSheet = true
                         }
                     },
+                    onOpenDispute = {
+                        disputeReason = ""
+                        showDisputeSheet = true
+                    },
                     onSendMessage = { deal.conversation_id?.let(onOpenChat) },
                 )
             }
@@ -221,6 +228,20 @@ fun DealDetailScreen(
         )
     }
 
+    if (showDisputeSheet) {
+        DisputeReasonSheet(
+            reason = disputeReason,
+            isProcessing = state.isProcessing,
+            errorMessage = state.errorMessage,
+            onReasonChange = { disputeReason = it },
+            onSubmit = {
+                viewModel.openDispute(disputeReason.trim().ifBlank { null })
+                showDisputeSheet = false
+            },
+            onDismiss = { showDisputeSheet = false },
+        )
+    }
+
     state.errorMessage?.let { msg ->
         AlertDialog(
             onDismissRequest = viewModel::clearError,
@@ -236,6 +257,7 @@ private fun statusColor(status: String): Color = when (status) {
     "pending_approval" -> StatusOrange
     "in_progress" -> StatusBlue
     "disputed" -> StatusRed
+    "resolved" -> StatusIndigo
     else -> Color(0xFF8E8E93)
 }
 
@@ -399,6 +421,7 @@ private fun ActionsSection(
     isProcessing: Boolean,
     onRequestCompletion: () -> Unit,
     onReviewCompletion: () -> Unit,
+    onOpenDispute: () -> Unit,
     onSendMessage: () -> Unit,
 ) {
     val cs = deal.completion_status ?: "in_progress"
@@ -429,6 +452,36 @@ private fun ActionsSection(
             }
 
             "completed" -> DisabledActionButton("Deal Completed", StatusGreen, icon = Icons.Filled.CheckCircle)
+
+            "disputed" -> DisputeBanner(
+                color = StatusRed,
+                title = "Under Dispute",
+                message = "An admin is reviewing this deal. The payment stays in escrow until it's resolved.",
+            )
+
+            "resolved" -> DisputeBanner(
+                color = StatusIndigo,
+                title = "Dispute Resolved",
+                message = "An admin settled this deal. See the payment section for how it was split.",
+            )
+        }
+
+        // Open a dispute — available on an active deal that isn't already
+        // disputed/resolved/completed. The DB RPC enforces escrow is held.
+        if (cs == "in_progress" || cs == "pending_approval") {
+            Button(
+                onClick = onOpenDispute,
+                enabled = !isProcessing,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = StatusRed.copy(alpha = 0.12f),
+                    contentColor = StatusRed,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Filled.Cancel, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.size(8.dp))
+                Text("Report a Problem / Open Dispute", fontWeight = FontWeight.SemiBold)
+            }
         }
 
         // Send Message
@@ -471,6 +524,97 @@ private fun DisabledActionButton(text: String, color: Color, icon: androidx.comp
             Spacer(Modifier.size(8.dp))
         }
         Text(text, color = Color.White, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+private fun DisputeBanner(color: Color, title: String, message: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(color.copy(alpha = 0.85f))
+            .padding(14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(title, color = Color.White, fontWeight = FontWeight.SemiBold)
+        Text(
+            message,
+            color = Color.White.copy(alpha = 0.9f),
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DisputeReasonSheet(
+    reason: String,
+    isProcessing: Boolean,
+    errorMessage: String?,
+    onReasonChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = KajHobeTheme.spacing.md)
+                .padding(bottom = KajHobeTheme.spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
+        ) {
+            Text("Open a dispute", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                "If something went wrong and you can't agree on completion, opening a dispute freezes the " +
+                    "deal. The payment stays safely in escrow while an admin reviews it and decides how to split it.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = KajHobeTheme.colors.textSecondary,
+            )
+            OutlinedTextField(
+                value = reason,
+                onValueChange = onReasonChange,
+                label = { Text("What's the problem?") },
+                minLines = 3,
+                maxLines = 6,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (errorMessage != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    color = StatusRed.copy(alpha = 0.1f),
+                ) {
+                    Text(
+                        errorMessage,
+                        modifier = Modifier.padding(KajHobeTheme.spacing.sm),
+                        color = StatusRed,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+            ) {
+                TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+                Button(
+                    onClick = onSubmit,
+                    enabled = !isProcessing,
+                    colors = ButtonDefaults.buttonColors(containerColor = StatusRed, contentColor = Color.White),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    if (isProcessing) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+                        Spacer(Modifier.size(8.dp))
+                    }
+                    Text("Open Dispute", fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
     }
 }
 

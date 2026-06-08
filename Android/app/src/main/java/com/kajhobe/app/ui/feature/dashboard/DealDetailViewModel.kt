@@ -119,6 +119,18 @@ class DealDetailViewModel(
         }
     }
 
+    /** Open a dispute on the current deal (A1). Freezes the deal pending admin resolution. */
+    fun openDispute(reason: String?) {
+        val deal = _uiState.value.deal ?: return
+        _uiState.update { it.copy(isProcessing = true) }
+        viewModelScope.launch {
+            runCatching { dealsRepository.openDispute(deal.id, reason) }
+                .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message ?: "Failed to open dispute") } }
+            refresh(showLoading = false)
+            refreshEscrow()
+        }
+    }
+
     /** Returns the pending completion request (with requester profile) for the currently loaded deal, if any. */
     suspend fun fetchPendingRequestForCurrentDeal(): CompletionRequest? {
         val deal = _uiState.value.deal ?: return null
