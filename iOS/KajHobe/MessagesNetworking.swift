@@ -14,9 +14,42 @@ struct ConversationWithDetails: Codable, Sendable, Identifiable {
     let job_title: String
     let job_description: String
     let other_user_name: String
+    let other_user_avatar: String?
     let unread_count: Int
     let created_at: String
     let latest_message_time: String
+    // Per-user archive flags. Archiving is one-sided: each participant only ever
+    // reads/writes their own side, so a client archiving the chat never hides it
+    // from the provider (and vice-versa).
+    let client_archived: Bool
+    let provider_archived: Bool
+
+    /// Whether this conversation is archived *for the given user* (resolves which
+    /// side of the conversation they are on). Used to keep archived chats out of the
+    /// main list while leaving them visible to the other participant.
+    func isArchived(for userId: String) -> Bool {
+        client_id.lowercased() == userId.lowercased() ? client_archived : provider_archived
+    }
+
+    /// Returns a copy with the current user's archive flag flipped — used for optimistic
+    /// UI updates so a swipe-to-archive feels instant before the network write returns.
+    func settingArchived(forClient isClient: Bool, _ value: Bool) -> ConversationWithDetails {
+        ConversationWithDetails(
+            id: id,
+            job_id: job_id,
+            client_id: client_id,
+            provider_id: provider_id,
+            job_title: job_title,
+            job_description: job_description,
+            other_user_name: other_user_name,
+            other_user_avatar: other_user_avatar,
+            unread_count: unread_count,
+            created_at: created_at,
+            latest_message_time: latest_message_time,
+            client_archived: isClient ? value : client_archived,
+            provider_archived: isClient ? provider_archived : value
+        )
+    }
 }
 
 // MARK: - Messages Networking Specialized Class
@@ -126,7 +159,7 @@ class MessagesNetworking: ObservableObject {
 
         async let profilesResp = supabase
             .from("profiles")
-            .select("id, full_name")
+            .select("id, full_name, avatar_url")
             .in("id", values: Array(uniqueUserIds))
             .execute()
 
@@ -212,11 +245,16 @@ class MessagesNetworking: ObservableObject {
                 print("❌ DEBUG: Missing profile data for userId: \(otherUserId)")
                 continue
             }
-            
+            let otherUserAvatar = profileData["avatar_url"] as? String
+
+            // Per-user archive flags (default false for any row predating the migration).
+            let clientArchived = conversationDict["client_archived"] as? Bool ?? false
+            let providerArchived = conversationDict["provider_archived"] as? Bool ?? false
+
             // Calculate unread count based on read_at column: count messages from other user that are unread
             let unreadCount = unreadCountsMap[id]?[otherUserId] ?? 0
             print("🔍 DEBUG: Conversation \(id): unread count from \(userName) = \(unreadCount)")
-            
+
             let detailed = ConversationWithDetails(
                 id: id,
                 job_id: jobId,
@@ -225,9 +263,12 @@ class MessagesNetworking: ObservableObject {
                 job_title: jobTitle,
                 job_description: latestMessageContent,
                 other_user_name: userName,
+                other_user_avatar: otherUserAvatar,
                 unread_count: unreadCount,
                 created_at: createdAt,
-                latest_message_time: latestMessageTime
+                latest_message_time: latestMessageTime,
+                client_archived: clientArchived,
+                provider_archived: providerArchived
             )
             
             detailedConversations.append(detailed)
@@ -650,9 +691,23 @@ class MessagesNetworking: ObservableObject {
         // No-op
     }
     
-    /// Placeholder method - messaging functionality disabled
-    func deleteConversation(conversationId: String) async throws {
-        // No-op
+    /// Archive (or un-archive) a conversation for one participant only.
+    ///
+    /// The conversation has two sides — client and provider — each with its own
+    /// archive flag. `isClient` selects which column to write so that one user's
+    /// archive never affects the other's view. The existing "Users can update
+    /// conversations they are part of" RLS policy authorises this UPDATE.
+    func setConversationArchived(conversationId: String, userId: String, isClient: Bool, archived: Bool) async throws {
+        let column = isClient ? "client_archived" : "provider_archived"
+        print("🔍 ARCHIVE DEBUG: Setting \(column)=\(archived) on conversation \(conversationId) for user \(userId)")
+
+        try await supabase
+            .from("conversations")
+            .update([column: archived])
+            .eq("id", value: conversationId)
+            .execute()
+
+        print("✅ ARCHIVE DEBUG: \(column) updated to \(archived)")
     }
     
     /// Placeholder method - messaging functionality disabled

@@ -1356,9 +1356,12 @@ struct ImagePicker: UIViewControllerRepresentable {
                 job_title: "Need help with iOS app",
                 job_description: "Looking for an experienced iOS developer",
                 other_user_name: "John Doe",
+                other_user_avatar: nil,
                 unread_count: 3,
                 created_at: "2024-01-15T10:30:00Z",
-                latest_message_time: "2024-01-15T10:45:00Z"
+                latest_message_time: "2024-01-15T10:45:00Z",
+                client_archived: false,
+                provider_archived: false
             )
         )
     }
