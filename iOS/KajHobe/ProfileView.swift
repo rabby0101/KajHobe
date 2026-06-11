@@ -439,21 +439,47 @@ struct ProfileView: View {
     // MARK: - Load / Edit / Save
 
     private func loadProfile() {
-        isLoading = true
         Task {
+            // Seed instantly from cache (memory → disk) so the profile paints
+            // without a spinner; the fetch below refreshes silently.
+            if profile == nil, let uid = supabase.auth.currentUser?.id.uuidString {
+                if let cached = ProfileCache.shared.peek(userId: uid) {
+                    await applyProfileSnapshot(cached)
+                } else if let disk = await ProfileCache.shared.load(userId: uid) {
+                    await applyProfileSnapshot(disk)
+                }
+            }
+            if profile == nil {
+                await MainActor.run { isLoading = true }
+            }
+
             do {
                 let user = try supabase.auth.requireCurrentUser()
-                let fetched = try await Networking.shared.fetchProfile(userId: user.id.uuidString)
+                // Fetch profile and payout number in parallel. The payout result is
+                // only used for service providers, but starting both up front removes
+                // the serial round-trip that used to delay every profile load.
+                async let profileFetch = Networking.shared.fetchProfile(userId: user.id.uuidString)
+                async let payoutFetch = EscrowNetworking.shared.fetchMyPayoutNumber()
+
+                let fetched = try await profileFetch
                 var fetchedPayout = ""
-                if fetched.is_service_provider == true,
-                   let n = try? await EscrowNetworking.shared.fetchMyPayoutNumber() {
-                    fetchedPayout = n ?? ""
+                if fetched.is_service_provider == true {
+                    fetchedPayout = ((try? await payoutFetch) ?? nil) ?? ""
+                } else {
+                    _ = try? await payoutFetch
                 }
+
                 await MainActor.run {
                     self.profile = fetched
                     self.payoutNumberLoaded = fetchedPayout
                     self.payoutBkashNumber = fetchedPayout
                     self.isLoading = false
+
+                    // Persist for instant paint on the next visit / cold start.
+                    ProfileCache.shared.save(
+                        ProfileSnapshot(profile: fetched, payoutNumber: fetchedPayout),
+                        userId: user.id.uuidString
+                    )
                 }
             } catch {
                 await MainActor.run {
@@ -463,6 +489,14 @@ struct ProfileView: View {
                 }
             }
         }
+    }
+
+    @MainActor
+    private func applyProfileSnapshot(_ snap: ProfileSnapshot) {
+        self.profile = snap.profile
+        self.payoutNumberLoaded = snap.payoutNumber
+        self.payoutBkashNumber = snap.payoutNumber
+        self.isLoading = false
     }
 
     private func startEditing() {
