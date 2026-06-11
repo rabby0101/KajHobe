@@ -583,6 +583,15 @@ struct ProfileView: View {
                     self.payoutNumberLoaded = finalPayout ?? self.payoutNumberLoaded
                     self.isEditing = false
                     self.isSaving = false
+
+                    // Keep the cache in step with the edit so the next launch
+                    // doesn't seed pre-edit data.
+                    if let updated = self.profile {
+                        ProfileCache.shared.save(
+                            ProfileSnapshot(profile: updated, payoutNumber: self.payoutNumberLoaded),
+                            userId: user.id.uuidString
+                        )
+                    }
                 }
             } catch {
                 await MainActor.run {
