@@ -983,6 +983,17 @@ struct NotificationsView: View {
             await MainActor.run {
                 self.businessNotifications = loadedNotifications
                 self.isLoadingBusiness = false
+
+                // Persist both feed sources for instant paint on the next visit.
+                if let uid = supabase.auth.currentUser?.id.uuidString {
+                    NotificationsCache.shared.save(
+                        NotificationsSnapshot(
+                            jobInterests: self.notifications,
+                            businessNotifications: loadedNotifications
+                        ),
+                        userId: uid
+                    )
+                }
             }
 
             print("📱 Loaded \(loadedNotifications.count) business notifications")
@@ -1093,6 +1104,19 @@ struct NotificationsView: View {
                 loadingTask = Task {
                     if let uid = supabase.auth.currentUser?.id.uuidString {
                         await MainActor.run { NotificationLocalState.shared.configure(userId: uid) }
+
+                        // Seed instantly from cache (memory → disk) so the feed paints
+                        // on the first frame; the fetches below refresh silently.
+                        if notifications.isEmpty && businessNotifications.isEmpty {
+                            var snap = NotificationsCache.shared.peek(userId: uid)
+                            if snap == nil { snap = await NotificationsCache.shared.load(userId: uid) }
+                            if let snap {
+                                await MainActor.run {
+                                    notifications = snap.jobInterests
+                                    businessNotifications = snap.businessNotifications
+                                }
+                            }
+                        }
                     }
                     await safeLoadUnifiedNotifications()
                     await loadBusinessNotifications()
@@ -1416,6 +1440,15 @@ struct NotificationsView: View {
                 await MainActor.run {
                     self.notifications = parsedNotifications
                     print("✅ Successfully loaded \(parsedNotifications.count) notifications with provider names")
+
+                    // Persist both feed sources for instant paint on the next visit.
+                    NotificationsCache.shared.save(
+                        NotificationsSnapshot(
+                            jobInterests: parsedNotifications,
+                            businessNotifications: self.businessNotifications
+                        ),
+                        userId: user.id.uuidString
+                    )
                 }
             } else {
                 await MainActor.run {
