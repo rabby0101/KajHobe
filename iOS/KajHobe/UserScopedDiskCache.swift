@@ -46,7 +46,16 @@ final class UserScopedDiskCache<T: Codable>: @unchecked Sendable {
         }.value
 
         guard let decoded, decoded.userId == userId else { return nil }
-        lock.lock(); memory = decoded; lock.unlock()
+
+        // Re-check under the lock: a concurrent save() may have installed fresher
+        // data while we were reading disk — never clobber it with the older payload.
+        lock.lock()
+        if let mem = memory, mem.userId == userId {
+            lock.unlock()
+            return mem.value
+        }
+        memory = decoded
+        lock.unlock()
         return decoded.value
     }
 
