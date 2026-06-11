@@ -86,11 +86,25 @@ struct DashboardView: View {
         }
         .onAppear {
             Task {
+                // Seed instantly from cache (memory → disk) so the dashboard paints
+                // on the first frame instead of a spinner — the fetch below then
+                // refreshes silently in the background.
+                if dashboardData == nil,
+                   let uid = supabase.auth.currentUser?.id.uuidString {
+                    if let cached = DashboardCache.shared.peek(userId: uid) {
+                        dashboardData = cached.dashboard
+                        activeDeals = cached.activeDeals
+                        isLoading = false
+                    } else if let disk = await DashboardCache.shared.load(userId: uid) {
+                        dashboardData = disk.dashboard
+                        activeDeals = disk.activeDeals
+                        isLoading = false
+                    }
+                }
                 await loadDashboardData()
                 await setupRealtimeSubscription()
                 startAutoRefreshTimer()
             }
-            // print("📊 Dashboard appeared - refreshing data")
         }
         .onDisappear {
             // Don't cleanup real-time subscription on disappear to keep it alive
@@ -323,52 +337,60 @@ struct DashboardView: View {
             }
         }
         
-        // Cache has been removed from the application
-        
         do {
             print("📊 Starting dashboard data fetch...")
-            async let dashboardDataFetch = Networking.shared.fetchDashboardData(forceRefresh: true) // Always force refresh for now
-            async let activeDealsDataFetch = Networking.shared.fetchActiveDeals(forceRefresh: true)
+            async let dashboardDataFetch = Networking.shared.fetchDashboardData(forceRefresh: forceRefresh)
+            async let activeDealsDataFetch = Networking.shared.fetchActiveDeals(forceRefresh: forceRefresh)
 
             let (dashboard, deals) = try await (dashboardDataFetch, activeDealsDataFetch)
 
             print("📊 Dashboard data received - Active deals: \(dashboard.active_deals_count), Completed: \(dashboard.completed_deals_count)")
             print("📊 Fetched \(deals.count) active deals")
-            
+
+            // Convert Deal to DealWithCompletion and remove duplicates (done outside
+            // the MainActor block so the converted array can also be persisted below).
+            let convertedDeals = deals.map { deal in
+                DealWithCompletion(
+                    id: deal.id,
+                    job_id: deal.job_id,
+                    client_id: deal.client_id,
+                    provider_id: deal.provider_id,
+                    agreed_amount: deal.agreed_amount,
+                    agreed_terms: deal.agreed_terms,
+                    timeline: deal.timeline,
+                    status: deal.status,
+                    completion_status: deal.completion_status ?? "in_progress",
+                    client_completion_requested: deal.client_completion_requested ?? false,
+                    provider_completion_requested: deal.provider_completion_requested ?? false,
+                    client_completion_requested_at: deal.client_completion_requested_at,
+                    provider_completion_requested_at: deal.provider_completion_requested_at,
+                    created_at: deal.created_at,
+                    completed_at: deal.completed_at,
+                    job: deal.job,
+                    client_profile: deal.client_profile,
+                    provider_profile: deal.provider_profile,
+                    pending_completion_requests: nil
+                )
+            }.uniqued(by: \.id)
+
             await MainActor.run {
                 // Add smooth animation for real-time updates
                 withAnimation(.easeInOut(duration: 0.3)) {
                     self.dashboardData = dashboard
-                    // Convert Deal to DealWithCompletion and remove duplicates
-                    let convertedDeals = deals.map { deal in
-                        DealWithCompletion(
-                            id: deal.id,
-                            job_id: deal.job_id,
-                            client_id: deal.client_id,
-                            provider_id: deal.provider_id,
-                            agreed_amount: deal.agreed_amount,
-                            agreed_terms: deal.agreed_terms,
-                            timeline: deal.timeline,
-                            status: deal.status,
-                            completion_status: deal.completion_status ?? "in_progress", // Use actual completion status
-                            client_completion_requested: deal.client_completion_requested ?? false, // Use actual value
-                            provider_completion_requested: deal.provider_completion_requested ?? false, // Use actual value
-                            client_completion_requested_at: deal.client_completion_requested_at, // Use actual value
-                            provider_completion_requested_at: deal.provider_completion_requested_at, // Use actual value
-                            created_at: deal.created_at,
-                            completed_at: deal.completed_at,
-                            job: deal.job, // Pass through job data from Deal struct
-                            client_profile: deal.client_profile, // Pass through client profile data
-                            provider_profile: deal.provider_profile, // Pass through provider profile data
-                            pending_completion_requests: nil // Default value
-                        )
-                    }
-                    self.activeDeals = convertedDeals.uniqued(by: \.id)
+                    self.activeDeals = convertedDeals
                 }
                 self.isLoading = false
                 self.isRefreshing = false
+
+                // Persist for instant paint on the next visit / cold start.
+                if let uid = supabase.auth.currentUser?.id.uuidString {
+                    DashboardCache.shared.save(
+                        DashboardSnapshot(dashboard: dashboard, activeDeals: convertedDeals),
+                        userId: uid
+                    )
+                }
             }
-            
+
             print("📊 Dashboard data refreshed successfully")
         } catch {
             print("❌ Dashboard data refresh failed: \(error)")
