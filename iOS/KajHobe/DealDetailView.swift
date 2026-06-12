@@ -14,12 +14,25 @@ struct DealDetailView: View {
     @State private var showingCompletionResponse = false
     @State private var showingDisputeSheet = false
     @State private var disputeReason = ""
+    @State private var showingReviewSheet = false
+    // nil = not yet checked; drives whether "Leave a Review" or "Reviewed" shows.
+    @State private var hasReviewedCounterparty: Bool? = nil
 
     init(deal: DealWithCompletion) {
         self._deal = State(initialValue: deal)
     }
-    
+
     private let networking = Networking.shared
+    private let reviewNetworking = PublicProfileNetworking()
+
+    /// The other party of the deal from the current user's perspective.
+    private var counterpartyId: String {
+        isUserClient ? deal.provider_id : deal.client_id
+    }
+
+    private var counterpartyProfile: SimpleProfile? {
+        isUserClient ? deal.provider_profile : deal.client_profile
+    }
     
     var body: some View {
         NavigationView {
@@ -79,6 +92,7 @@ struct DealDetailView: View {
         .onAppear {
             Task {
                 await loadUserContext()
+                await refreshReviewStatus()
             }
         }
         .alert("Error", isPresented: $showingError) {
@@ -102,6 +116,16 @@ struct DealDetailView: View {
         .sheet(isPresented: $showingDisputeSheet) {
             DisputeReasonView(reason: $disputeReason, isProcessing: isProcessing) {
                 Task { await handleOpenDispute() }
+            }
+        }
+        .sheet(isPresented: $showingReviewSheet) {
+            ReviewSheet(
+                jobId: deal.job_id,
+                reviewedUserId: counterpartyId,
+                reviewedUserName: counterpartyProfile?.full_name ?? "Unknown User",
+                reviewedUserAvatar: counterpartyProfile?.avatar_url
+            ) {
+                hasReviewedCounterparty = true
             }
         }
     }
@@ -399,6 +423,30 @@ struct DealDetailView: View {
                     .cornerRadius(10)
                 }
                 .disabled(true)
+
+                if hasReviewedCounterparty == true {
+                    HStack {
+                        Image(systemName: "star.fill")
+                        Text("review_submitted_badge".localized)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.yellow.opacity(0.15))
+                    .foregroundColor(.orange)
+                    .cornerRadius(10)
+                } else if hasReviewedCounterparty == false {
+                    Button(action: { showingReviewSheet = true }) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                            Text("leave_review".localized)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.yellow)
+                        .foregroundColor(.black)
+                        .cornerRadius(10)
+                    }
+                }
             }
 
             // Under dispute — frozen until an admin resolves it.
@@ -546,14 +594,23 @@ struct DealDetailView: View {
             if let request = completionRequests.first(where: { $0.deal_id == deal.id }) {
                 // Respond to the completion request
                 try await networking.respondToCompletionRequest(
-                    requestId: request.id, 
+                    requestId: request.id,
                     approve: approved,
                     message: approved ? "Approved" : "Please make the requested changes"
                 )
-                
+
                 // Refresh deal data to reflect the changes
                 await refreshDealData()
-                
+
+                // The deal just completed — prompt for a review unless one
+                // already exists (the DB unique constraint is the backstop).
+                if approved {
+                    await refreshReviewStatus()
+                    if hasReviewedCounterparty != true {
+                        showingReviewSheet = true
+                    }
+                }
+
             } else {
                 errorMessage = "No pending completion request found"
                 showingError = true
@@ -564,6 +621,23 @@ struct DealDetailView: View {
         }
         
         isProcessing = false
+    }
+
+    /// Check whether the current user already reviewed the counterparty, so the
+    /// completed-deal UI can show "Leave a Review" vs "Reviewed". Only relevant
+    /// once the deal is completed.
+    private func refreshReviewStatus() async {
+        guard deal.completion_status == "completed" else { return }
+        do {
+            hasReviewedCounterparty = try await reviewNetworking.hasReviewed(
+                jobId: deal.job_id,
+                reviewedId: counterpartyId
+            )
+        } catch {
+            // Leave as nil (unknown) — the button stays hidden rather than
+            // risking a duplicate-review error surface.
+            print("Failed to check review status: \(error)")
+        }
     }
 
     private func handleOpenDispute() async {
@@ -637,15 +711,7 @@ struct DealDetailView: View {
     }
     
     private func formatDate(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else {
-            return dateString
-        }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .medium
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        AppDateFormatter.mediumDateShortTime(dateString)
     }
 }
 
@@ -808,17 +874,7 @@ struct DealProgressTimeline: View {
     }
     
     private func formatDate(_ dateString: String?) -> String {
-        guard let dateString = dateString else { return "" }
-        
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else {
-            return dateString
-        }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .short
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        AppDateFormatter.shortDateShortTime(dateString, fallback: dateString ?? "")
     }
 }
 

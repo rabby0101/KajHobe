@@ -127,3 +127,19 @@
 "network_error" = "Netzwerkfehler";
 "try_again" = "Bitte versuchen Sie es erneut";
 "something_went_wrong" = "Etwas ist schief gelaufen";
+
+/* Reviews */
+"review_sheet_title" = "Bewerten Sie Ihre Erfahrung";
+"review_sheet_subtitle" = "Wie war die Zusammenarbeit mit %@?";
+"review_comment_label" = "Ihre Bewertung (optional)";
+"review_comment_placeholder" = "Schreiben Sie ein paar Worte dazu — Qualität, Kommunikation, Pünktlichkeit.";
+"review_submit" = "Bewertung absenden";
+"review_maybe_later" = "Vielleicht später";
+"review_thanks" = "Danke für Ihre Bewertung!";
+"review_error_already_reviewed" = "Sie haben diesen Auftrag bereits bewertet.";
+"review_error_job_not_completed" = "Bewertungen sind erst nach Abschluss des Auftrags möglich.";
+"review_error_generic" = "Bewertung konnte nicht gesendet werden. Bitte erneut versuchen.";
+"review_rating_accessibility_label" = "Bewertung";
+"review_rating_accessibility_value" = "%d von 5 Sternen";
+"leave_review" = "Bewertung abgeben";
+"review_submitted_badge" = "Bewertet";

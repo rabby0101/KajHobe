@@ -127,3 +127,20 @@
 "network_error" = "নেটওয়ার্ক ত্রুটি";
 "try_again" = "দয়া করে আবার চেষ্টা করুন";
 "something_went_wrong" = "কিছু ভুল হয়েছে";
+
+
+/* Reviews */
+"review_sheet_title" = "আপনার অভিজ্ঞতা মূল্যায়ন করুন";
+"review_sheet_subtitle" = "%@-এর সাথে কাজ কেমন ছিল?";
+"review_comment_label" = "আপনার রিভিউ (ঐচ্ছিক)";
+"review_comment_placeholder" = "কাজটি কেমন হয়েছে তা নিয়ে কয়েকটি কথা লিখুন — মান, যোগাযোগ, সময়ানুবর্তিতা।";
+"review_submit" = "রিভিউ জমা দিন";
+"review_maybe_later" = "পরে করব";
+"review_thanks" = "আপনার রিভিউয়ের জন্য ধন্যবাদ!";
+"review_error_already_reviewed" = "আপনি ইতিমধ্যে এই কাজের রিভিউ দিয়েছেন।";
+"review_error_job_not_completed" = "কাজ সম্পন্ন হওয়ার পরেই রিভিউ দেওয়া যাবে।";
+"review_error_generic" = "রিভিউ জমা দেওয়া যায়নি। আবার চেষ্টা করুন।";
+"review_rating_accessibility_label" = "রেটিং";
+"review_rating_accessibility_value" = "৫টির মধ্যে %dটি তারা";
+"leave_review" = "রিভিউ দিন";
+"review_submitted_badge" = "রিভিউ দেওয়া হয়েছে";

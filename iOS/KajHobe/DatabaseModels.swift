@@ -537,6 +537,11 @@ struct Profile: Identifiable, Codable, Sendable {
     let device_token: String?
     let push_enabled: Bool?
     let last_push_sent_at: String?
+
+    // Stats (computed server-side)
+    let completed_jobs: Int?
+    let total_earnings: Double?
+    let total_spent: Double?
 }
 
 struct ProfileInsert: Codable, Sendable {
@@ -571,27 +576,7 @@ struct SimpleProfile: Identifiable, Codable, Sendable {
     }
     
     var formattedLastSeen: String {
-        guard let lastSeenAt = last_seen_at else { return "Never" }
-        
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: lastSeenAt) else { return "Unknown" }
-        
-        let now = Date()
-        let interval = now.timeIntervalSince(date)
-        
-        if interval < 60 {
-            return "Just now"
-        } else if interval < 3600 {
-            let minutes = Int(interval / 60)
-            return "\(minutes) min ago"
-        } else if interval < 86400 {
-            let hours = Int(interval / 3600)
-            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
-        } else {
-            let days = Int(interval / 86400)
-            return "\(days) day\(days == 1 ? "" : "s") ago"
-        }
+        AppDateFormatter.presenceTimeAgo(last_seen_at)
     }
     
     var averageResponseTimeText: String {
@@ -760,27 +745,7 @@ struct PublicProfile: Identifiable, Codable, Sendable {
     }
 
     var formattedLastSeen: String {
-        guard let lastSeenAt = last_seen_at else { return "Never" }
-
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: lastSeenAt) else { return "Unknown" }
-
-        let now = Date()
-        let interval = now.timeIntervalSince(date)
-
-        if interval < 60 {
-            return "Just now"
-        } else if interval < 3600 {
-            let minutes = Int(interval / 60)
-            return "\(minutes) min ago"
-        } else if interval < 86400 {
-            let hours = Int(interval / 3600)
-            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
-        } else {
-            let days = Int(interval / 86400)
-            return "\(days) day\(days == 1 ? "" : "s") ago"
-        }
+        AppDateFormatter.presenceTimeAgo(last_seen_at)
     }
 
     var responseTimeText: String {
@@ -825,23 +790,7 @@ struct ServiceHighlight: Identifiable, Codable, Sendable {
     }
 
     var formattedRecentCompletion: String {
-        guard let completion = recent_completion else { return "No recent work" }
-
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: completion) else { return "Unknown" }
-
-        let interval = Date().timeIntervalSince(date)
-        let days = Int(interval / 86400)
-
-        if days == 0 {
-            return "Today"
-        } else if days == 1 {
-            return "Yesterday"
-        } else if days < 30 {
-            return "\(days) days ago"
-        } else {
-            return "Over a month ago"
-        }
+        AppDateFormatter.recentWork(recent_completion)
     }
 }
 
@@ -899,7 +848,7 @@ struct Review: Identifiable, Codable, Sendable {
     let created_at: String?
 }
 
-struct ReviewInsert: Codable, Sendable {
+nonisolated struct ReviewInsert: Codable, Sendable {
     let job_id: String  // Changed from Int to String (uuid)
     let reviewer_id: String  // uuid
     let reviewed_id: String  // uuid
@@ -921,17 +870,7 @@ struct ProviderReview: Identifiable, Sendable {
 
     var formattedDate: String {
         guard let created_at else { return "" }
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        var date = formatter.date(from: created_at)
-        if date == nil {
-            formatter.formatOptions = [.withInternetDateTime]
-            date = formatter.date(from: created_at)
-        }
-        guard let date else { return "" }
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        return f.string(from: date)
+        return AppDateFormatter.mediumDate(created_at, fallback: "")
     }
 }
 
@@ -1163,10 +1102,7 @@ struct EnhancedNotification: Identifiable, Codable, Sendable {
     }
     
     var timeAgo: String {
-        guard let date = ISO8601DateFormatter().date(from: created_at) else {
-            return "Unknown time"
-        }
-        return RelativeDateTimeFormatter().localizedString(for: date, relativeTo: Date())
+        AppDateFormatter.localizedRelativeTime(created_at)
     }
     
     // MARK: - Custom Codable Implementation

@@ -127,3 +127,19 @@
 "network_error" = "Network error";
 "try_again" = "Please try again";
 "something_went_wrong" = "Something went wrong";
+
+/* Reviews */
+"review_sheet_title" = "Rate Your Experience";
+"review_sheet_subtitle" = "How was working with %@?";
+"review_comment_label" = "Your Review (optional)";
+"review_comment_placeholder" = "Share a few words about how it went — quality, communication, timeliness.";
+"review_submit" = "Submit Review";
+"review_maybe_later" = "Maybe Later";
+"review_thanks" = "Thanks for your review!";
+"review_error_already_reviewed" = "You've already reviewed this job.";
+"review_error_job_not_completed" = "Reviews can only be left after the job is completed.";
+"review_error_generic" = "Couldn't submit your review. Please try again.";
+"review_rating_accessibility_label" = "Rating";
+"review_rating_accessibility_value" = "%d of 5 stars";
+"leave_review" = "Leave a Review";
+"review_submitted_badge" = "Reviewed";
