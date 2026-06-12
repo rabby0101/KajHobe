@@ -101,4 +101,29 @@ class PaymentRepository(client: SupabaseClient) : BaseRepository(client) {
         }
         postgrest.rpc("escrow_mark_refunded", params).decodeAs<JsonElement>()
     }
+
+    // MARK: - Provider payout (bKash) number
+
+    /** Fetch the signed-in provider's private bKash payout number. */
+    suspend fun fetchMyPayoutNumber(): String? {
+        val uid = currentUserId ?: return null
+        return runCatching {
+            postgrest.from("provider_payout_accounts")
+                .select { filter { eq("provider_id", uid) }; limit(1) }
+                .decodeList<Map<String, String>>()
+                .firstOrNull()
+                ?.get("bkash_number")
+        }.getOrNull()
+    }
+
+    /** Upsert the signed-in provider's private bKash payout number. */
+    suspend fun upsertMyPayoutNumber(bkashNumber: String) {
+        val uid = currentUserId ?: return
+        postgrest.from("provider_payout_accounts").upsert(
+            buildJsonObject {
+                put("provider_id", uid)
+                put("bkash_number", bkashNumber)
+            },
+        )
+    }
 }

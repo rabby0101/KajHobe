@@ -26,6 +26,7 @@ import com.kajhobe.app.ui.feature.messages.ConversationsViewModel
 import com.kajhobe.app.ui.feature.notifications.NotificationsViewModel
 import com.kajhobe.app.ui.feature.postjob.PostJobViewModel
 import com.kajhobe.app.ui.feature.profile.PublicProfileViewModel
+import com.kajhobe.app.ui.feature.profile.ProfileViewModel
 import com.kajhobe.app.ui.navigation.NavigationEventBus
 import com.kajhobe.app.ui.navigation.RootViewModel
 import io.github.jan.supabase.SupabaseClient
@@ -73,4 +74,5 @@ val appModule = module {
     viewModelOf(::ConversationsViewModel)
     viewModelOf(::ChatViewModel)
     viewModelOf(::PublicProfileViewModel)
+    viewModelOf(::ProfileViewModel)
 }

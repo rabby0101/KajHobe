@@ -45,7 +45,7 @@ class ProfileRepository(client: SupabaseClient) : BaseRepository(client) {
         return fetchProfile(user.id)
     }
 
-    /** Update editable profile fields (bio, website, name, service-provider flag, categories). */
+    /** Update editable profile fields (bio, website, name, service-provider flag, provider details). */
     suspend fun updateProfile(
         fullName: String? = null,
         bio: String? = null,
@@ -53,6 +53,12 @@ class ProfileRepository(client: SupabaseClient) : BaseRepository(client) {
         location: String? = null,
         isServiceProvider: Boolean? = null,
         favoriteCategories: List<String>? = null,
+        profession: String? = null,
+        tagline: String? = null,
+        experienceYears: Int? = null,
+        hourlyRate: Double? = null,
+        teamRate: Double? = null,
+        teamHoursLabel: String? = null,
     ) {
         val uid = currentUserId ?: return
         postgrest.from("profiles").update({
@@ -62,6 +68,12 @@ class ProfileRepository(client: SupabaseClient) : BaseRepository(client) {
             location?.let { set("location", it) }
             isServiceProvider?.let { set("is_service_provider", it) }
             favoriteCategories?.let { set("favorite_categories", it) }
+            profession?.let { set("profession", it) }
+            tagline?.let { set("tagline", it) }
+            experienceYears?.let { set("experience_years", it) }
+            hourlyRate?.let { set("hourly_rate", it) }
+            teamRate?.let { set("team_rate", it) }
+            teamHoursLabel?.let { set("team_hours_label", it) }
             set("updated_at", Instant.now().toString())
         }) { filter { eq("id", uid) } }
     }

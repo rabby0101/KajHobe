@@ -26,6 +26,7 @@ enum class TopLevelDestination(
 object Routes {
     const val JOB_DETAIL = "job/{jobId}"
     const val PUBLIC_PROFILE = "profile/{userId}"
+    const val MY_PROFILE = "my-profile"
     const val CHAT = "chat/{conversationId}"
     const val DEAL_DETAIL = "deal/{dealId}"
 

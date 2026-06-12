@@ -9,14 +9,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kajhobe.app.data.model.Deal
@@ -24,12 +33,14 @@ import com.kajhobe.app.ui.components.PremiumCard
 import com.kajhobe.app.ui.components.PremiumLoadingView
 import com.kajhobe.app.ui.components.TertiaryButton
 import com.kajhobe.app.ui.theme.KajHobeTheme
+import com.kajhobe.app.ui.theme.WarmOrange
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DashboardScreen(
     onSignOut: () -> Unit,
     onDealClick: (String) -> Unit,
+    onMyProfile: () -> Unit,
     viewModel: DashboardViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -55,9 +66,20 @@ fun DashboardScreen(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Dashboard", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            TertiaryButton(text = "Sign out", onClick = onSignOut)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onMyProfile, modifier = Modifier.size(40.dp)) {
+                    Icon(
+                        Icons.Filled.Person,
+                        contentDescription = "My Profile",
+                        tint = WarmOrange,
+                        modifier = Modifier.size(22.dp).clip(CircleShape),
+                    )
+                }
+                TertiaryButton(text = "Sign out", onClick = onSignOut)
+            }
         }
         Spacer(Modifier.height(KajHobeTheme.spacing.md))
 

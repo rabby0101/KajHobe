@@ -21,14 +21,21 @@ data class Profile(
     val created_at: String? = null,
     val updated_at: String? = null,
     val favorite_categories: List<String>? = null,
-    // Presence
     val is_online: Boolean? = null,
     val last_seen_at: String? = null,
     val average_response_time_minutes: Int? = null,
-    // Push
     val device_token: String? = null,
     val push_enabled: Boolean? = null,
     val last_push_sent_at: String? = null,
+    val profession: String? = null,
+    val tagline: String? = null,
+    val experience_years: Int? = null,
+    val hourly_rate: Double? = null,
+    val team_rate: Double? = null,
+    val team_hours_label: String? = null,
+    val completed_jobs: Int? = null,
+    val total_earnings: Double? = null,
+    val total_spent: Double? = null,
 )
 
 @Serializable

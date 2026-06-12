@@ -38,6 +38,7 @@ import com.kajhobe.app.ui.feature.messages.ConversationsScreen
 import com.kajhobe.app.ui.feature.notifications.NotificationsScreen
 import com.kajhobe.app.ui.feature.postjob.PostJobScreen
 import com.kajhobe.app.ui.feature.profile.PublicProfileScreen
+import com.kajhobe.app.ui.feature.profile.ProfileScreen
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import org.koin.compose.koinInject
 
@@ -186,6 +187,7 @@ fun MainScaffold(onSignOut: () -> Unit) {
                 DashboardScreen(
                     onSignOut = onSignOut,
                     onDealClick = { dealId -> navController.navigate(Routes.dealDetail(dealId)) },
+                    onMyProfile = { navController.navigate(Routes.MY_PROFILE) },
                 )
             }
             composable(Routes.DEAL_DETAIL) { entry ->
@@ -199,6 +201,12 @@ fun MainScaffold(onSignOut: () -> Unit) {
                 PublicProfileScreen(
                     userId = entry.arguments?.getString("userId").orEmpty(),
                     onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.MY_PROFILE) {
+                ProfileScreen(
+                    onBack = { navController.popBackStack() },
+                    onSignOut = onSignOut,
                 )
             }
         }
