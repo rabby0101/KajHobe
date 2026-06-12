@@ -32,6 +32,13 @@ struct MainTabView: View {
                 }
                 .tag(AppRouter.Tab.postJob)
 
+            DashboardView()
+                .tabItem {
+                    Image(systemName: "chart.bar.fill")
+                    Text("dashboard".localized)
+                }
+                .tag(AppRouter.Tab.dashboard)
+
             NotificationsView()
                 .tabItem {
                     Image(systemName: notificationBadgeManager.unreadCount > 0 ? "bell.fill" : "bell")
@@ -40,13 +47,6 @@ struct MainTabView: View {
                 .badge(notificationBadgeManager.unreadCount > 0 ? notificationBadgeManager.unreadCount : 0)
                 .tag(AppRouter.Tab.notifications)
                 .environmentObject(notificationBadgeManager)
-
-            DashboardView()
-                .tabItem {
-                    Image(systemName: "chart.bar.fill")
-                    Text("dashboard".localized)
-                }
-                .tag(AppRouter.Tab.dashboard)
         }
         .accentColor(.white)
         .gradientBackground()
