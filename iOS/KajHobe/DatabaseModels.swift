@@ -38,14 +38,14 @@ public enum DatabaseNotificationType: String, Sendable, CaseIterable {
 }
 
 // MARK: - Helper struct for encoding Any values
-struct AnyEncodable: Encodable, Sendable {
+nonisolated struct AnyEncodable: Encodable {
     let value: Any
-    
-    nonisolated init(_ value: Any) {
+
+    init(_ value: Any) {
         self.value = value
     }
-    
-    nonisolated func encode(to encoder: Encoder) throws {
+
+    func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         
         switch value {
@@ -773,12 +773,31 @@ struct PublicProfile: Identifiable, Codable, Sendable {
 
 /// Service highlight showing provider's expertise in specific categories
 struct ServiceHighlight: Identifiable, Codable, Sendable {
-    let id = UUID().uuidString
+    let id: String
     let category: String
     let job_count: Int
     let avg_rating: Double?
     let recent_completion: String?
     let avg_job_value: Double?
+
+    init(id: String = UUID().uuidString, category: String, job_count: Int, avg_rating: Double?, recent_completion: String?, avg_job_value: Double?) {
+        self.id = id
+        self.category = category
+        self.job_count = job_count
+        self.avg_rating = avg_rating
+        self.recent_completion = recent_completion
+        self.avg_job_value = avg_job_value
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = (try? c.decode(String.self, forKey: .id)) ?? UUID().uuidString
+        self.category = try c.decode(String.self, forKey: .category)
+        self.job_count = try c.decode(Int.self, forKey: .job_count)
+        self.avg_rating = try c.decodeIfPresent(Double.self, forKey: .avg_rating)
+        self.recent_completion = try c.decodeIfPresent(String.self, forKey: .recent_completion)
+        self.avg_job_value = try c.decodeIfPresent(Double.self, forKey: .avg_job_value)
+    }
 
     var formattedJobCount: String {
         return job_count == 1 ? "1 job" : "\(job_count) jobs"
@@ -1030,7 +1049,7 @@ enum InteractionType: String, Codable, CaseIterable {
 
 // Notification action
 struct NotificationAction: Identifiable, Codable, Sendable {
-    let id = UUID().uuidString
+    let id: String
     let type: String // "accept", "reject", "view", etc.
     let label: String
     let style: String // "primary", "secondary", "destructive"
@@ -1039,12 +1058,23 @@ struct NotificationAction: Identifiable, Codable, Sendable {
     let title: String
     let systemIcon: String?
 
-    init(type: String, label: String, style: String, title: String? = nil, systemIcon: String? = nil) {
+    init(id: String = UUID().uuidString, type: String, label: String, style: String, title: String? = nil, systemIcon: String? = nil) {
+        self.id = id
         self.type = type
         self.label = label
         self.style = style
         self.title = title ?? label
         self.systemIcon = systemIcon
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = (try? c.decode(String.self, forKey: .id)) ?? UUID().uuidString
+        self.type = try c.decode(String.self, forKey: .type)
+        self.label = try c.decode(String.self, forKey: .label)
+        self.style = try c.decode(String.self, forKey: .style)
+        self.title = (try? c.decode(String.self, forKey: .title)) ?? ""
+        self.systemIcon = try c.decodeIfPresent(String.self, forKey: .systemIcon)
     }
 }
 
@@ -1658,6 +1688,35 @@ struct DealWithCompletion: Identifiable, Codable, Sendable {
     var client_profile: SimpleProfile?
     var provider_profile: SimpleProfile?
     var pending_completion_requests: [CompletionRequest]?
+}
+
+extension DealWithCompletion {
+    /// Lift a plain `Deal` into the completion-aware shape used by
+    /// DealDetailView. Shared by the Dashboard, NotificationsView and AppRouter
+    /// so the field-by-field mapping lives in one place.
+    init(from deal: Deal) {
+        self.init(
+            id: deal.id,
+            job_id: deal.job_id,
+            client_id: deal.client_id,
+            provider_id: deal.provider_id,
+            agreed_amount: deal.agreed_amount,
+            agreed_terms: deal.agreed_terms,
+            timeline: deal.timeline,
+            status: deal.status,
+            completion_status: deal.completion_status ?? "in_progress",
+            client_completion_requested: deal.client_completion_requested ?? false,
+            provider_completion_requested: deal.provider_completion_requested ?? false,
+            client_completion_requested_at: deal.client_completion_requested_at,
+            provider_completion_requested_at: deal.provider_completion_requested_at,
+            created_at: deal.created_at,
+            completed_at: deal.completed_at,
+            job: deal.job,
+            client_profile: deal.client_profile,
+            provider_profile: deal.provider_profile,
+            pending_completion_requests: nil
+        )
+    }
 }
 
 // MARK: - Chat Models

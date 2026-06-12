@@ -128,7 +128,6 @@ struct NotificationsView: View {
     @State private var isLoadingProfile = false
 
     // Deal Details sheet (opened by tapping a "deal created" notification)
-    @State private var selectedDeal: DealWithCompletion?
 
     // MARK: - Job Interest Notifications (Convert existing to unified)
     private func convertJobInterestsToUnified() -> [UnifiedNotification] {
@@ -1009,57 +1008,22 @@ struct NotificationsView: View {
     private func handleBusinessNotificationTap(_ notification: BusinessNotification) async {
         print("📱 Business notification tapped: \(notification.displayTitle)")
 
-        // Opening a notification mutes it (device-local read state).
+        // Opening a notification mutes it. Local state is the immediate UI
+        // source of truth; the server sync is best-effort so a flaky network
+        // never blocks navigation.
         localState.markRead(notification.id)
         NotificationBadgeManager.shared.recomputeFromLocal()
+        Task.detached {
+            try? await NotificationsNetworking.shared.markBusinessNotificationAsRead(notification.id)
+        }
 
-        // A "deal created" notification opens the Deal Details view (same as the Dashboard).
-        if notification.type == "deal_created", let jobId = notification.job_id {
-            await openDeal(forJobId: jobId)
-        }
-        // A completion-request notification opens the same Deal Details view, where the
-        // responder approves / requests changes (the approval surface moved here from the
-        // Dashboard). Reuses openDeal — all completion notifications carry a job_id.
-        else if notification.type == "completion_request" || notification.type == "completion_requested",
-                let jobId = notification.job_id {
-            await openDeal(forJobId: jobId)
-        }
-    }
-
-    /// Resolve the deal for a job and present Deal Details — mirrors the Dashboard's
-    /// active-deal tap (reuses DealsNetworking.fetchActiveDeals, which joins job + profiles).
-    private func openDeal(forJobId jobId: String) async {
-        do {
-            let deals = try await DealsNetworking.shared.fetchActiveDeals()
-            guard let deal = deals.first(where: { $0.job_id == jobId }) else {
-                print("ℹ️ No active deal found for job \(jobId); nothing to open.")
-                return
-            }
-            let dealWithCompletion = DealWithCompletion(
-                id: deal.id,
-                job_id: deal.job_id,
-                client_id: deal.client_id,
-                provider_id: deal.provider_id,
-                agreed_amount: deal.agreed_amount,
-                agreed_terms: deal.agreed_terms,
-                timeline: deal.timeline,
-                status: deal.status,
-                completion_status: deal.completion_status ?? "in_progress",
-                client_completion_requested: deal.client_completion_requested ?? false,
-                provider_completion_requested: deal.provider_completion_requested ?? false,
-                client_completion_requested_at: deal.client_completion_requested_at,
-                provider_completion_requested_at: deal.provider_completion_requested_at,
-                created_at: deal.created_at,
-                completed_at: deal.completed_at,
-                job: deal.job,
-                client_profile: deal.client_profile,
-                provider_profile: deal.provider_profile,
-                pending_completion_requests: nil
-            )
-            await MainActor.run { self.selectedDeal = dealWithCompletion }
-        } catch {
-            print("❌ Error opening deal for job \(jobId): \(error)")
-        }
+        // Every notification type routes through the central AppRouter, which
+        // switches tabs and presents the destination at the MainTabView level.
+        await AppRouter.shared.handleNotificationTap(
+            type: notification.type,
+            jobId: notification.job_id,
+            fromUserId: notification.from_user_id
+        )
     }
 
     private func markBusinessNotificationAsRead(_ notification: BusinessNotification) async {
@@ -1125,9 +1089,6 @@ struct NotificationsView: View {
             .onDisappear {
                 loadingTask?.cancel()
                 loadingTask = nil
-            }
-            .sheet(item: $selectedDeal) { deal in
-                DealDetailView(deal: deal)
             }
         }
         .sheet(isPresented: $showingProviderProfile) {
