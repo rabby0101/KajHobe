@@ -777,14 +777,7 @@ struct ChatMessageBubble: View {
     }
     
     private func formatMessageTime(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else {
-            return ""
-        }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        AppDateFormatter.shortTime(dateString)
     }
 }
 

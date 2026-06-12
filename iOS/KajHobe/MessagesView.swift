@@ -548,14 +548,6 @@ struct ConversationRow: View {
 
     private let accent = KajHobeDesignSystem.Colors.warmOrange
 
-    // Static formatters to avoid expensive creation on every render
-    private static let isoFormatter = ISO8601DateFormatter()
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter
-    }()
-
     var body: some View {
         HStack(spacing: 12) {
             avatar
@@ -636,75 +628,7 @@ struct ConversationRow: View {
     }
 
     private func formatDate(_ dateString: String) -> String {
-        // Try multiple date parsing strategies
-        var date: Date?
-
-        // First try with the standard ISO formatter
-        date = Self.isoFormatter.date(from: dateString)
-
-        // If that fails, try with fractional seconds
-        if date == nil {
-            let isoFormatterWithFractionalSeconds = ISO8601DateFormatter()
-            isoFormatterWithFractionalSeconds.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            date = isoFormatterWithFractionalSeconds.date(from: dateString)
-        }
-
-        // If still fails, try manual parsing
-        if date == nil {
-            let manualFormatter = DateFormatter()
-            manualFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ"
-            date = manualFormatter.date(from: dateString)
-        }
-
-        // If still fails, try without fractional seconds
-        if date == nil {
-            let simpleFormatter = DateFormatter()
-            simpleFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
-            date = simpleFormatter.date(from: dateString)
-        }
-
-        guard let parsedDate = date else {
-            return dateString
-        }
-
-        return formatRelativeTime(from: parsedDate)
-    }
-
-    private func formatRelativeTime(from date: Date) -> String {
-        let now = Date()
-        let timeInterval = now.timeIntervalSince(date)
-
-        // Just now (less than 1 minute)
-        if timeInterval < 60 {
-            return "just now"
-        }
-
-        // Minutes ago (1-59 minutes)
-        let minutes = Int(timeInterval / 60)
-        if minutes < 60 {
-            return minutes == 1 ? "1 min ago" : "\(minutes) mins ago"
-        }
-
-        // Hours ago (1-23 hours)
-        let hours = Int(timeInterval / 3600)
-        if hours < 24 {
-            return hours == 1 ? "1 h ago" : "\(hours) h ago"
-        }
-
-        // Days ago (1-6 days)
-        let days = Int(timeInterval / 86400)
-        if days < 7 {
-            return days == 1 ? "1 day ago" : "\(days) days ago"
-        }
-
-        // Weeks ago (1-3 weeks)
-        let weeks = Int(timeInterval / 604800)
-        if weeks < 4 {
-            return weeks == 1 ? "1 week ago" : "\(weeks) weeks ago"
-        }
-
-        // More than a month - show actual date
-        return Self.dateFormatter.string(from: date)
+        AppDateFormatter.compactRelativeTime(dateString)
     }
 }
 

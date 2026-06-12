@@ -98,14 +98,6 @@ struct EscrowSectionView: View {
                         .background(Color.green).foregroundColor(.white).cornerRadius(10)
                 }.disabled(isWorking)
             }
-
-            if escrow.state == .held || escrow.state == .released {
-                Button(action: { adminRefund(escrow) }) {
-                    Label("Refund to buyer", systemImage: "arrow.uturn.backward.circle")
-                        .frame(maxWidth: .infinity).padding()
-                        .background(Color.orange.opacity(0.15)).foregroundColor(.orange).cornerRadius(10)
-                }.disabled(isWorking)
-            }
         }
     }
 
@@ -175,16 +167,4 @@ struct EscrowSectionView: View {
         }
     }
 
-    private func adminRefund(_ escrow: EscrowTransaction) {
-        Task {
-            await MainActor.run { isWorking = true; errorMessage = nil }
-            do {
-                try await EscrowNetworking.shared.markRefunded(escrowId: escrow.id, note: "Manual refund")
-            } catch {
-                await MainActor.run { self.errorMessage = error.localizedDescription }
-            }
-            await reload()
-            await MainActor.run { isWorking = false }
-        }
-    }
 }

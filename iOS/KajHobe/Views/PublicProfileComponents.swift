@@ -934,31 +934,11 @@ struct ProfileActivitySection: View {
     }
 
     private var formattedMemberSince: String {
-        guard let createdAt = profile.created_at else { return "Unknown" }
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: createdAt) else { return "Unknown" }
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "MMM yyyy"
-        return monthFormatter.string(from: date)
+        AppDateFormatter.monthYear(profile.created_at)
     }
 
     private var formattedLastUpdated: String {
-        guard let lastUpdated = profile.last_updated else { return "Unknown" }
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: lastUpdated) else { return "Unknown" }
-        let now = Date()
-        let interval = now.timeIntervalSince(date)
-        let days = Int(interval / 86400)
-
-        if days == 0 {
-            return "Today"
-        } else if days == 1 {
-            return "Yesterday"
-        } else if days < 7 {
-            return "\(days) days ago"
-        } else {
-            return "Over a week ago"
-        }
+        AppDateFormatter.lastUpdated(profile.last_updated)
     }
 }
 
