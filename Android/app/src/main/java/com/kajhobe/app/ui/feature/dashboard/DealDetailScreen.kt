@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Work
@@ -71,6 +72,7 @@ import com.kajhobe.app.data.model.SimpleProfile
 import com.kajhobe.app.data.model.parseIsoMillis
 import com.kajhobe.app.ui.components.PremiumCard
 import com.kajhobe.app.ui.components.PremiumLoadingView
+import com.kajhobe.app.ui.feature.reviews.ReviewSheet
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import java.time.Instant
 import java.time.ZoneId
@@ -103,6 +105,7 @@ fun DealDetailScreen(
     var pendingRequest by remember { mutableStateOf<CompletionRequest?>(null) }
     var showDisputeSheet by remember { mutableStateOf(false) }
     var disputeReason by remember { mutableStateOf("") }
+    var showReviewSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     // Collect one-shot events from the ViewModel (e.g. "the other party already
@@ -116,6 +119,8 @@ fun DealDetailScreen(
                     showCompletionRequestSheet = false
                     showCompletionResponseSheet = true
                 }
+
+                DealDetailEvent.ShowReviewPrompt -> showReviewSheet = true
             }
         }
     }
@@ -174,6 +179,8 @@ fun DealDetailScreen(
                     deal = deal,
                     isUserClient = state.isUserClient,
                     isProcessing = state.isProcessing,
+                    hasReviewedCounterparty = state.hasReviewedCounterparty,
+                    onLeaveReview = { showReviewSheet = true },
                     onRequestCompletion = { showCompletionRequestSheet = true },
                     onReviewCompletion = {
                         scope.launch {
@@ -224,6 +231,22 @@ fun DealDetailScreen(
             onDismiss = {
                 showCompletionResponseSheet = false
                 pendingRequest = null
+            },
+        )
+    }
+
+    if (showReviewSheet) {
+        val counterparty = viewModel.counterpartyProfile()
+        ReviewSheet(
+            reviewedUserName = counterparty?.full_name,
+            reviewedUserAvatar = counterparty?.avatar_url,
+            isSubmitting = state.isSubmittingReview,
+            submitted = state.reviewSubmitted,
+            errorMessage = state.reviewErrorMessage,
+            onSubmit = { rating, comment -> viewModel.submitReview(rating, comment) },
+            onDismiss = {
+                showReviewSheet = false
+                viewModel.clearReviewState()
             },
         )
     }
@@ -419,6 +442,8 @@ private fun ActionsSection(
     deal: Deal,
     isUserClient: Boolean,
     isProcessing: Boolean,
+    hasReviewedCounterparty: Boolean?,
+    onLeaveReview: () -> Unit,
     onRequestCompletion: () -> Unit,
     onReviewCompletion: () -> Unit,
     onOpenDispute: () -> Unit,
@@ -451,7 +476,42 @@ private fun ActionsSection(
                 }
             }
 
-            "completed" -> DisabledActionButton("Deal Completed", StatusGreen, icon = Icons.Filled.CheckCircle)
+            "completed" -> {
+                DisabledActionButton("Deal Completed", StatusGreen, icon = Icons.Filled.CheckCircle)
+                // Review the counterparty (iOS "Leave a Review" / "Reviewed ✓" parity).
+                // null = review status still unknown — show nothing rather than flicker.
+                when (hasReviewedCounterparty) {
+                    false -> Button(
+                        onClick = onLeaveReview,
+                        enabled = !isProcessing,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = StatusOrange.copy(alpha = 0.15f),
+                            contentColor = StatusOrange,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.size(8.dp))
+                        Text("Leave a Review", fontWeight = FontWeight.SemiBold)
+                    }
+
+                    true -> Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = StatusGreen, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.size(6.dp))
+                        Text(
+                            "You reviewed this deal",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = KajHobeTheme.colors.textSecondary,
+                        )
+                    }
+
+                    null -> Unit
+                }
+            }
 
             "disputed" -> DisputeBanner(
                 color = StatusRed,

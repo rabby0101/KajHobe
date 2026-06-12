@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.kajhobe.app.data.model.CompletionRequest
 import com.kajhobe.app.data.model.Deal
 import com.kajhobe.app.data.model.EscrowTransaction
+import com.kajhobe.app.data.repository.AlreadyReviewedException
 import com.kajhobe.app.data.repository.DealsRepository
 import com.kajhobe.app.data.repository.CompletionRequestAlreadyPendingException
 import com.kajhobe.app.data.repository.PaymentRepository
+import com.kajhobe.app.data.repository.ProfilePublicRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +29,11 @@ data class DealDetailUiState(
     val escrow: EscrowTransaction? = null,
     val escrowLoading: Boolean = false,
     val isAdmin: Boolean = false,
+    // Reviews (null = unknown / not yet checked)
+    val hasReviewedCounterparty: Boolean? = null,
+    val isSubmittingReview: Boolean = false,
+    val reviewSubmitted: Boolean = false,
+    val reviewErrorMessage: String? = null,
 )
 
 /**
@@ -36,6 +43,9 @@ data class DealDetailUiState(
 sealed interface DealDetailEvent {
     /** The other party already filed a pending completion request — re-route to the response sheet. */
     data class OpenResponseSheet(val request: CompletionRequest) : DealDetailEvent
+
+    /** Completion was just approved and the counterparty isn't reviewed yet — offer the review sheet. */
+    data object ShowReviewPrompt : DealDetailEvent
 }
 
 /**
@@ -45,6 +55,7 @@ sealed interface DealDetailEvent {
 class DealDetailViewModel(
     private val dealsRepository: DealsRepository,
     private val paymentRepository: PaymentRepository,
+    private val profilePublicRepository: ProfilePublicRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DealDetailUiState())
@@ -58,7 +69,10 @@ class DealDetailViewModel(
     fun load(id: String) {
         dealId = id
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch { refresh(showLoading = true) }
+        viewModelScope.launch {
+            refresh(showLoading = true)
+            refreshReviewStatus()
+        }
         viewModelScope.launch { refreshEscrow() }
         viewModelScope.launch { refreshAdmin() }
     }
@@ -102,7 +116,7 @@ class DealDetailViewModel(
         val deal = _uiState.value.deal ?: return
         _uiState.update { it.copy(isProcessing = true) }
         viewModelScope.launch {
-            runCatching {
+            val outcome = runCatching {
                 val request = dealsRepository.fetchPendingCompletionRequests()
                     .firstOrNull { it.deal_id == deal.id }
                     ?: return@runCatching
@@ -116,8 +130,73 @@ class DealDetailViewModel(
             }
             refresh(showLoading = false)
             refreshEscrow()
+            // Mirror iOS handleCompletionResponse: after a successful approve, offer the
+            // review sheet unless this counterparty was already reviewed for this job.
+            if (approve && outcome.isSuccess) {
+                refreshReviewStatus()
+                val refreshed = _uiState.value.deal
+                val nowCompleted = refreshed?.completion_status == "completed" || refreshed?.status == "completed"
+                if (nowCompleted && _uiState.value.hasReviewedCounterparty != true) {
+                    _events.send(DealDetailEvent.ShowReviewPrompt)
+                }
+            }
         }
     }
+
+    // MARK: - Reviews (iOS DealDetailView review hooks)
+
+    /** The other party in the loaded deal: provider when the viewer is the client, else client. */
+    fun counterpartyProfile(): com.kajhobe.app.data.model.SimpleProfile? {
+        val state = _uiState.value
+        val deal = state.deal ?: return null
+        return if (state.isUserClient) deal.provider_profile else deal.client_profile
+    }
+
+    private fun counterpartyId(): String? {
+        val state = _uiState.value
+        val deal = state.deal ?: return null
+        return if (state.isUserClient) deal.provider_id else deal.client_id
+    }
+
+    /** Check whether the current user already reviewed the counterparty (completed deals only). */
+    suspend fun refreshReviewStatus() {
+        val deal = _uiState.value.deal ?: return
+        if ((deal.completion_status ?: "") != "completed" && deal.status != "completed") return
+        val otherId = counterpartyId() ?: return
+        val reviewed = runCatching {
+            profilePublicRepository.hasReviewed(deal.job_id, otherId)
+        }.getOrNull()
+        _uiState.update { it.copy(hasReviewedCounterparty = reviewed) }
+    }
+
+    /** Submit the review from the sheet. Success flips [DealDetailUiState.reviewSubmitted]. */
+    fun submitReview(rating: Int, comment: String?) {
+        val deal = _uiState.value.deal ?: return
+        val otherId = counterpartyId() ?: return
+        _uiState.update { it.copy(isSubmittingReview = true, reviewErrorMessage = null) }
+        viewModelScope.launch {
+            runCatching {
+                profilePublicRepository.submitReview(deal.job_id, otherId, rating, comment)
+            }.onSuccess {
+                _uiState.update {
+                    it.copy(isSubmittingReview = false, reviewSubmitted = true, hasReviewedCounterparty = true)
+                }
+            }.onFailure { e ->
+                val alreadyReviewed = e is AlreadyReviewedException
+                _uiState.update {
+                    it.copy(
+                        isSubmittingReview = false,
+                        reviewErrorMessage = e.message ?: "Failed to submit review",
+                        hasReviewedCounterparty = if (alreadyReviewed) true else it.hasReviewedCounterparty,
+                    )
+                }
+            }
+        }
+    }
+
+    /** Reset transient review-sheet state when it closes. */
+    fun clearReviewState() =
+        _uiState.update { it.copy(reviewSubmitted = false, reviewErrorMessage = null, isSubmittingReview = false) }
 
     /** Open a dispute on the current deal (A1). Freezes the deal pending admin resolution. */
     fun openDispute(reason: String?) {
