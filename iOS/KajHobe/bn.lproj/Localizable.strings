@@ -144,3 +144,24 @@
 "review_rating_accessibility_value" = "৫টির মধ্যে %dটি তারা";
 "leave_review" = "রিভিউ দিন";
 "review_submitted_badge" = "রিভিউ দেওয়া হয়েছে";
+
+/* Dashboard Analytics & Reputation */
+"dashboard_analytics" = "বিশ্লেষণ";
+"dashboard_money_flow" = "মাসভিত্তিক অর্থপ্রবাহ";
+"dashboard_deal_status" = "ডিলের অবস্থা";
+"dashboard_rating_trend" = "রেটিং প্রবণতা";
+"dashboard_chart_needs_history" = "সময়ের সাথে অর্থপ্রবাহ দেখতে কয়েকটি ডিল সম্পন্ন করুন।";
+"dashboard_chart_no_deals" = "এখনও কোনো ডিল নেই।";
+"dashboard_chart_needs_reviews" = "কয়েকটি রিভিউ পাওয়ার পর আপনার রেটিং প্রবণতা দেখা যাবে।";
+"dashboard_reputation" = "সুনাম";
+"dashboard_no_reviews_yet" = "এখনও কোনো রিভিউ নেই — ক্লায়েন্টরা রেটিং দিলে এখানে দেখা যাবে।";
+"dashboard_latest_reviews" = "সাম্প্রতিক রিভিউ";
+"dashboard_view_all_reviews" = "সবগুলো %dটি রিভিউ দেখুন";
+"dashboard_trust_progress" = "পরবর্তী স্তর: %@ (%dটি কাজ, %.1f+ রেটিং)";
+"dashboard_trust_top_tier" = "সর্বোচ্চ স্তরে পৌঁছেছেন — আপনি একজন বিশেষজ্ঞ!";
+"dashboard_reviews_title" = "রিভিউসমূহ";
+"deals_filter_active" = "চলমান";
+"deals_filter_completed" = "সম্পন্ন";
+"deals_filter_all" = "সব";
+"deals_list_title" = "আমার ডিলসমূহ";
+"deals_list_empty" = "দেখানোর মতো কোনো ডিল নেই।";

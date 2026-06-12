@@ -15,6 +15,14 @@ struct DashboardView: View {
     @State private var hasRealtimeUpdate = false
     @State private var refreshTimer: Timer?
     @State private var autoRefreshInterval: TimeInterval = 300 // 5 minutes
+
+    // Analytics & reputation data (feeds charts, reputation card, drill-downs).
+    @State private var myDeals: [Deal] = []
+    @State private var myReviews: [ProviderReview] = []
+    @State private var drillDownFilter: DealsListView.Filter?
+    @State private var showingReviewsList = false
+
+    private let reviewNetworking = PublicProfileNetworking()
     
     // MARK: - Main Dashboard Content
     private var dashboardContent: some View {
@@ -35,13 +43,33 @@ struct DashboardView: View {
                             .animatedContainer(delay: 0.3)
                     }
                     
+                    // Analytics charts (money flow, status breakdown, rating trend)
+                    if let data = dashboardData, !myDeals.isEmpty || !myReviews.isEmpty {
+                        DashboardChartsSection(
+                            deals: myDeals,
+                            reviews: myReviews,
+                            userId: currentUserId ?? ""
+                        )
+                        .animatedContainer(delay: 0.4)
+
+                        // Reputation: trust progress, rating distribution, latest reviews
+                        DashboardReputationCard(
+                            reviews: myReviews,
+                            averageRating: data.average_rating,
+                            completedJobs: data.completed_deals_count
+                        ) {
+                            showingReviewsList = true
+                        }
+                        .animatedContainer(delay: 0.5)
+                    }
+
                     // Active Deals (read-only overview; tap a card to open Deal Details,
                     // where completion is requested/approved/rejected)
                     if !activeDeals.isEmpty {
                         activeDealsSection()
                             .animatedContainer(delay: 0.6)
                     }
-                    
+
                     // Recent Activity
                     if let data = dashboardData, let recentDeals = data.recent_deals, !recentDeals.isEmpty {
                         recentActivitySection(deals: recentDeals)
@@ -143,6 +171,16 @@ struct DashboardView: View {
         .sheet(isPresented: $showingProfile) {
             ProfileView()
         }
+        .sheet(item: $drillDownFilter) { filter in
+            DealsListView(deals: myDeals, filter: filter)
+        }
+        .sheet(isPresented: $showingReviewsList) {
+            ReviewsListView(reviews: myReviews)
+        }
+    }
+
+    private var currentUserId: String? {
+        supabase.auth.currentUser?.id.uuidString
     }
     
     @ViewBuilder
@@ -253,28 +291,36 @@ struct DashboardView: View {
                     value: "\(data.active_deals_count)",
                     icon: "briefcase.fill",
                     color: .blue
-                )
-                
+                ) {
+                    drillDownFilter = .active
+                }
+
                 StatCard(
                     title: "Completed",
                     value: "\(data.completed_deals_count)",
                     icon: "checkmark.circle.fill",
                     color: .green
-                )
-                
+                ) {
+                    drillDownFilter = .completed
+                }
+
                 StatCard(
                     title: data.user_type == "provider" ? "Total Earned" : "Total Spent",
                     value: "$\(Int(data.user_type == "provider" ? data.total_earnings : data.total_spent))",
                     icon: data.user_type == "provider" ? "dollarsign.circle.fill" : "creditcard.fill",
                     color: .orange
-                )
-                
+                ) {
+                    drillDownFilter = .completed
+                }
+
                 StatCard(
                     title: "Rating",
                     value: String(format: "%.1f", data.average_rating),
                     icon: "star.fill",
                     color: .yellow
-                )
+                ) {
+                    showingReviewsList = true
+                }
             }
         }
         .padding()
@@ -316,7 +362,14 @@ struct DashboardView: View {
             }
             
             ForEach(deals, id: \.id) { deal in
-                RecentDealCard(deal: deal)
+                RecentDealCard(deal: deal) {
+                    // Resolve the summary row to a full deal for the detail view.
+                    if let fullDeal = myDeals.first(where: { $0.id == deal.id }) {
+                        selectedDeal = DealWithCompletion(from: fullDeal)
+                    } else if let active = activeDeals.first(where: { $0.id == deal.id }) {
+                        selectedDeal = active
+                    }
+                }
             }
         }
         .padding()
@@ -344,34 +397,16 @@ struct DashboardView: View {
 
             let (dashboard, deals) = try await (dashboardDataFetch, activeDealsDataFetch)
 
+            // Analytics data (charts, reputation, drill-downs) loads alongside but
+            // never fails the dashboard — charts just show their empty states.
+            await loadAnalyticsData()
+
             print("📊 Dashboard data received - Active deals: \(dashboard.active_deals_count), Completed: \(dashboard.completed_deals_count)")
             print("📊 Fetched \(deals.count) active deals")
 
             // Convert Deal to DealWithCompletion and remove duplicates (done outside
             // the MainActor block so the converted array can also be persisted below).
-            let convertedDeals = deals.map { deal in
-                DealWithCompletion(
-                    id: deal.id,
-                    job_id: deal.job_id,
-                    client_id: deal.client_id,
-                    provider_id: deal.provider_id,
-                    agreed_amount: deal.agreed_amount,
-                    agreed_terms: deal.agreed_terms,
-                    timeline: deal.timeline,
-                    status: deal.status,
-                    completion_status: deal.completion_status ?? "in_progress",
-                    client_completion_requested: deal.client_completion_requested ?? false,
-                    provider_completion_requested: deal.provider_completion_requested ?? false,
-                    client_completion_requested_at: deal.client_completion_requested_at,
-                    provider_completion_requested_at: deal.provider_completion_requested_at,
-                    created_at: deal.created_at,
-                    completed_at: deal.completed_at,
-                    job: deal.job,
-                    client_profile: deal.client_profile,
-                    provider_profile: deal.provider_profile,
-                    pending_completion_requests: nil
-                )
-            }.uniqued(by: \.id)
+            let convertedDeals = deals.map(DealWithCompletion.init(from:)).uniqued(by: \.id)
 
             await MainActor.run {
                 // Add smooth animation for real-time updates
@@ -403,8 +438,26 @@ struct DashboardView: View {
         }
     }
     
+    /// Fetch the full deal list and the user's received reviews for the
+    /// analytics + reputation sections. Best-effort: failures leave the
+    /// previous data in place and never surface an error alert.
+    private func loadAnalyticsData() async {
+        guard let userId = currentUserId else { return }
+
+        async let dealsFetch = try? Networking.shared.fetchMyDeals()
+        async let reviewsFetch = try? reviewNetworking.fetchReviews(userId.lowercased())
+        let (deals, reviews) = await (dealsFetch, reviewsFetch)
+
+        await MainActor.run {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                if let deals { self.myDeals = deals }
+                if let reviews { self.myReviews = reviews }
+            }
+        }
+    }
+
     // MARK: - Real-time Functions
-    
+
     private func setupRealtimeSubscription() async {
         // Clean up any existing subscription first
         await cleanupRealtimeSubscription()
@@ -419,7 +472,7 @@ struct DashboardView: View {
             let channel = supabase.realtimeV2.channel(channelId)
             
             // Listen for deal changes (INSERT, UPDATE, DELETE)
-            await channel.onPostgresChange(
+            _ = channel.onPostgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "deals"
@@ -448,7 +501,7 @@ struct DashboardView: View {
             }
             
             // Listen for completion request changes
-            await channel.onPostgresChange(
+            _ = channel.onPostgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "deal_completion_requests"
@@ -465,7 +518,7 @@ struct DashboardView: View {
             }
             
             // Listen for deal offer changes (for new offers coming in)
-            await channel.onPostgresChange(
+            _ = channel.onPostgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "deal_offers"
@@ -482,7 +535,7 @@ struct DashboardView: View {
             }
             
             // Listen for job status changes (in case jobs get completed)
-            await channel.onPostgresChange(
+            _ = channel.onPostgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "jobs"
@@ -559,19 +612,26 @@ struct StatCard: View {
     let value: String
     let icon: String
     let color: Color
-    
+    /// When set, the card is tappable and drills into a detail list.
+    var onTap: (() -> Void)? = nil
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: icon)
                     .foregroundColor(color)
                 Spacer()
+                if onTap != nil {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
             }
-            
+
             Text(value)
                 .font(.title2)
                 .fontWeight(.bold)
-            
+
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -579,6 +639,10 @@ struct StatCard: View {
         .padding()
         .background(Color(.tertiarySystemGroupedBackground))
         .cornerRadius(8)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap?()
+        }
     }
 }
 
@@ -646,7 +710,9 @@ struct ActiveDealCard: View {
 
 struct RecentDealCard: View {
     let deal: DashboardDeal
-    
+    /// When set, tapping the card opens the deal's detail view.
+    var onTap: (() -> Void)? = nil
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -674,14 +740,23 @@ struct RecentDealCard: View {
                     Text(deal.completion_status.replacingOccurrences(of: "_", with: " ").capitalized)
                         .font(.caption)
                         .foregroundColor(.secondary)
+                    if onTap != nil {
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }
         .padding()
         .background(Color(.tertiarySystemGroupedBackground))
         .cornerRadius(8)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap?()
+        }
     }
-    
+
     private func statusColor(_ status: String) -> Color {
         switch status {
         case "completed":
