@@ -69,6 +69,7 @@ fun MainScaffold(onSignOut: () -> Unit) {
                     navController.navigate(Routes.chat(event.conversationId))
                 is NavEvent.ToJob ->
                     navController.navigate(Routes.jobDetail(event.jobId))
+                NavEvent.ToJobs -> navController.navigate(TopLevelDestination.JOBS.route)
                 NavEvent.ToMessages -> navController.navigate(TopLevelDestination.MESSAGES.route)
                 NavEvent.ToNotifications -> navController.navigate(TopLevelDestination.NOTIFICATIONS.route)
                 NavEvent.ToDashboard -> navController.navigate(TopLevelDestination.DASHBOARD.route)
