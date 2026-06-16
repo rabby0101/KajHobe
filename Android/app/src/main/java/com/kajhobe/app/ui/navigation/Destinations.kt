@@ -41,4 +41,6 @@ object Routes {
     fun dealDetail(dealId: String) = "deal/$dealId"
     fun allJobs(kindSlug: String) = "jobs/list/$kindSlug"
     fun categoryJobs(name: String) = "jobs/category/${Uri.encode(name)}"
+
+    const val NOTIFICATION_SETTINGS = "notification-settings"
 }
