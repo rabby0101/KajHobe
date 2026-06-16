@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
 import TrustBadge from '@/components/TrustBadge';
+import OnlineIndicator from '@/components/OnlineIndicator';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 import { useUserReviews } from '@/hooks/useReviews';
 
@@ -66,6 +67,12 @@ export default function PublicProfile() {
                   <TrustBadge trustLevel={profile.trust_level} />
                   {profile.location && <span className="text-sm text-muted-foreground">{profile.location}</span>}
                 </div>
+                <OnlineIndicator
+                  isOnline={profile.is_online}
+                  lastSeenAt={profile.last_seen_at}
+                  showLabel
+                  className="mt-1"
+                />
               </div>
             </div>
 

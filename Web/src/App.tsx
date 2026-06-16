@@ -22,6 +22,7 @@ import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import ConditionalBottomNavigation from "./components/ConditionalBottomNavigation";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PresenceTracker from "./components/PresenceTracker";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <PresenceTracker />
                 <div className="min-h-screen bg-background">
                   <Routes>
                     <Route path="/" element={<Index />} />
