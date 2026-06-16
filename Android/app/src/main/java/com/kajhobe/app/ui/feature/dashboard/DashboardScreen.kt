@@ -261,7 +261,7 @@ private fun StatsSection(
             Spacer(Modifier.width(8.dp))
             Text("Overview", style = MaterialTheme.typography.titleMedium)
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md)) {
             StatCard(
                 title = "Active deals",
@@ -312,7 +312,7 @@ private fun EmptyStatsSection(onOpenJobs: () -> Unit, onPostJob: () -> Unit) {
             Spacer(Modifier.width(8.dp))
             Text("Overview", style = MaterialTheme.typography.titleMedium)
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md)) {
             StatCard("Active deals", "0", Icons.Filled.Work, MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
             StatCard("Completed", "0", Icons.Filled.CheckCircle, KajHobeTheme.colors.success, modifier = Modifier.weight(1f))
