@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kajhobe.app.data.model.ProviderReview
 import com.kajhobe.app.ui.components.PremiumCard
@@ -55,6 +57,8 @@ fun DashboardReputationCard(
         }
         Spacer(Modifier.height(12.dp))
         TrustProgressRow(completedJobs = completedJobs, averageRating = averageRating)
+        Spacer(Modifier.height(12.dp))
+        HorizontalDivider(color = KajHobeTheme.colors.divider)
         Spacer(Modifier.height(12.dp))
         if (reviews.isEmpty()) {
             Box(
@@ -162,8 +166,9 @@ private fun DistributionBars(distribution: List<Pair<Int, Int>>, maxCount: Int) 
                 Spacer(Modifier.width(6.dp))
                 Text(
                     count.toString(),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = KajHobeTheme.colors.textSecondary,
+                    fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.width(20.dp),
                 )
             }
