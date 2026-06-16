@@ -94,7 +94,7 @@ fun ChatScreen(
 
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages.size) {
-        if (state.messages.isNotEmpty()) listState.animateScrollToItem(state.messages.lastIndex)
+        if (state.messages.isNotEmpty()) listState.animateScrollToItem(0)
     }
 
     // Launch the bKash checkout in Chrome Custom Tabs as soon as the ViewModel
@@ -136,6 +136,7 @@ fun ChatScreen(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentPadding = PaddingValues(KajHobeTheme.spacing.md),
                 verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+                reverseLayout = true,
             ) {
                 items(state.messages, key = { it.id }) { msg ->
                     val isMine = msg.sender_id == state.currentUserId
