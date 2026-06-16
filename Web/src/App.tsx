@@ -10,6 +10,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
 import PostJob from "./pages/PostJob";
 import BrowseJobs from "./pages/BrowseJobs";
 import Category from "./pages/Category";
@@ -50,6 +51,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/provider/:id" element={<PublicProfile />} />
                     <Route path="/post-job" element={<PostJob />} />
                     <Route path="/jobs" element={<BrowseJobs />} />
                     <Route path="/my-jobs" element={<MyJobs />} />
