@@ -25,7 +25,6 @@ const Index = () => {
   const { data: jobs = [], isLoading: jobsLoading, refetch } = useJobs();
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showAllCategories, setShowAllCategories] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Filter jobs based on search and category
@@ -52,15 +51,17 @@ const Index = () => {
   // Get recent jobs (first 6 open jobs)
   const recentJobs = jobs.filter((job: any) => job.status === 'open').slice(0, 6);
 
-  // Get first 4 categories for display
-  const displayCategories = serviceCategories.slice(0, 4);
+  // Show every category (scrollable), matching iOS/Android.
+  const displayCategories = serviceCategories;
 
-  // Get job count for a category
+  // Get open-job count for a category.
   const getJobCount = (categoryName: string) => {
-    return jobs.filter((job: any) => 
-      job.category.toLowerCase().includes(categoryName.toLowerCase())
+    return jobs.filter((job: any) =>
+      job.status === 'open' && job.category.toLowerCase().includes(categoryName.toLowerCase())
     ).length;
   };
+
+  const openJobsCount = jobs.filter((job: any) => job.status === 'open').length;
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -126,19 +127,16 @@ const Index = () => {
 
         {/* Categories Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Service Categories</h2>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowAllCategories(true)}
-              className="text-blue-600"
-            >
-              Show All
-            </Button>
-          </div>
-          
+          <h2 className="text-2xl font-bold">Service Categories</h2>
+
           <div className="flex gap-4 overflow-x-auto pb-2">
+            {/* "All" resets the filter (parity with the iOS "All" chip). */}
+            <CategoryCard
+              category={{ id: 'all', name: 'All', bengaliName: 'সব কাজ', icon: '📋', color: 'blue' }}
+              jobCount={openJobsCount}
+              isSelected={selectedCategory === null}
+              onClick={() => setSelectedCategory(null)}
+            />
             {displayCategories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -232,19 +230,6 @@ const Index = () => {
         </>
       )}
 
-      {/* All Categories Modal */}
-      {showAllCategories && (
-        <AllCategoriesModal
-          categories={serviceCategories}
-          jobs={jobs}
-          selectedCategory={selectedCategory}
-          onCategorySelect={(category) => {
-            setSelectedCategory(selectedCategory === category ? null : category);
-            setShowAllCategories(false);
-          }}
-          onClose={() => setShowAllCategories(false)}
-        />
-      )}
     </div>
   );
 };
@@ -294,58 +279,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </Badge>
       </div>
     </button>
-  );
-};
-
-// All Categories Modal Component
-interface AllCategoriesModalProps {
-  categories: ServiceCategory[];
-  jobs: any[];
-  selectedCategory: string | null;
-  onCategorySelect: (category: string) => void;
-  onClose: () => void;
-}
-
-const AllCategoriesModal: React.FC<AllCategoriesModalProps> = ({
-  categories,
-  jobs,
-  selectedCategory,
-  onCategorySelect,
-  onClose
-}) => {
-  const getJobCount = (categoryName: string) => {
-    return jobs.filter((job: any) => 
-      job.category.toLowerCase().includes(categoryName.toLowerCase())
-    ).length;
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-        <div className="p-6 border-b">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">All Categories</h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              ✕
-            </Button>
-          </div>
-        </div>
-        
-        <div className="p-6 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-4">
-            {categories.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                jobCount={getJobCount(category.name)}
-                isSelected={selectedCategory === category.name}
-                onClick={() => onCategorySelect(category.name)}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
   );
 };
 
