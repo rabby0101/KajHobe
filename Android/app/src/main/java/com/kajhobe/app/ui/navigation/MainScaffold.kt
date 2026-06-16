@@ -8,6 +8,8 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -109,7 +111,21 @@ fun MainScaffold(onSignOut: () -> Unit) {
                                 Icon(dest.icon, contentDescription = dest.label)
                             }
                         },
-                        label = { Text(dest.label) },
+                        label = {
+                            Text(
+                                dest.label,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Visible,
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                            unselectedIconColor = KajHobeTheme.colors.textSecondary,
+                            unselectedTextColor = KajHobeTheme.colors.textSecondary,
+                        ),
                     )
                 }
             }
