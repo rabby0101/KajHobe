@@ -45,6 +45,10 @@ nonisolated struct AnyEncodable: Encodable {
         self.value = value
     }
 
+    init<T: Encodable>(_ value: T?) {
+        self.value = value as Any
+    }
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         

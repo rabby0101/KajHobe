@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common -->
+    <string name="cancel">বাতিল</string>
+    <string name="save">সংরক্ষণ</string>
+    <string name="back">পিছনে</string>
+    <string name="language">ভাষা</string>
+    <string name="settings">সেটিংস</string>
+    <string name="loading">লোড হচ্ছে…</string>
+
+    <!-- Job list / search -->
+    <string name="search_type_hint">কাজ খুঁজতে টাইপ করুন।</string>
+    <string name="no_jobs_found">কোনো কাজ পাওয়া যায়নি।</string>
+
+    <!-- Notifications settings -->
+    <string name="notifications">নোটিফিকেশন</string>
+    <string name="notifications_coming_soon">নোটিফিকেশন সেটিংস — শীঘ্রই আসছে</string>
+
+    <!-- Favorite categories sheet -->
+    <string name="fav_categories_title">পছন্দের ক্যাটাগরি</string>
+    <string name="fav_categories_subtitle">সর্বোচ্চ %1$d টি পছন্দের ক্যাটাগরি বেছে নিন</string>
+    <string name="selected_count">%1$d/%2$d নির্বাচিত</string>
+
+    <!-- Post a job -->
+    <string name="post_job_heading">কাজ পোস্ট করুন</string>
+    <string name="post_job_title_label">শিরোনাম</string>
+    <string name="post_job_title_placeholder">একটি স্পষ্ট, বর্ণনামূলক শিরোনাম লিখুন</string>
+    <string name="post_job_description_label">বিবরণ</string>
+    <string name="post_job_category_label">ক্যাটাগরি</string>
+    <string name="post_job_photos_videos">ছবি ও ভিডিও</string>
+    <string name="post_job_optional">ঐচ্ছিক</string>
+    <string name="post_job_location_label">অবস্থান</string>
+    <string name="post_job_budget_label">বাজেট (৳)</string>
+    <string name="post_job_mark_urgent">জরুরি হিসেবে চিহ্নিত করুন</string>
+    <string name="post_job_urgent_subtitle">জরুরি কাজ সেবা প্রদানকারীদের কাছে হাইলাইট করা হয়</string>
+    <string name="post_job_uploading_media">মিডিয়া আপলোড হচ্ছে…</string>
+    <string name="post_job_posting">পোস্ট করা হচ্ছে…</string>
+    <string name="post_job_submit">কাজ পোস্ট করুন</string>
+
+    <!-- Job search -->
+    <string name="search_jobs_placeholder">কাজ খুঁজুন</string>
+
+    <!-- Chat -->
+    <string name="chat_message_placeholder">বার্তা</string>
+
+    <!-- Profile -->
+    <string name="profile_bio_label">বায়ো</string>
+    <string name="profile_bio_placeholder">নিজের সম্পর্কে লিখুন…</string>
+    <string name="profile_no_bio">এখনো কোনো বায়ো নেই</string>
+</resources>

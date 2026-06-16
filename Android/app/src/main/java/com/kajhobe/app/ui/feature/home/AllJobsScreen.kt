@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,10 +25,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kajhobe.app.R
 import com.kajhobe.app.data.model.Job
+import com.kajhobe.app.ui.components.PhoneticTextField
 import com.kajhobe.app.ui.components.PremiumLoadingView
 import com.kajhobe.app.ui.feature.jobs.JobCard
 import com.kajhobe.app.ui.theme.KajHobeTheme
@@ -57,12 +61,16 @@ fun AllJobsScreen(
     val visible = filterJobs(state, kind, categoryName, isSearch)
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                        )
                     }
                 },
             )
@@ -70,23 +78,22 @@ fun AllJobsScreen(
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (isSearch) {
-                OutlinedTextField(
+                PhoneticTextField(
                     value = state.query,
                     onValueChange = viewModel::setQuery,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = KajHobeTheme.spacing.md, vertical = KajHobeTheme.spacing.sm),
-                    placeholder = { Text("Search jobs") },
+                    placeholder = stringResource(R.string.search_jobs_placeholder),
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
                 )
             }
 
             when {
-                state.isLoading && state.jobs.isEmpty() -> PremiumLoadingView(message = "Loading…")
+                state.isLoading && state.jobs.isEmpty() -> PremiumLoadingView(message = stringResource(R.string.loading))
                 visible.isEmpty() -> Text(
-                    if (isSearch && state.query.isBlank()) "Type to search jobs." else "No jobs found.",
+                    if (isSearch && state.query.isBlank()) stringResource(R.string.search_type_hint)
+                    else stringResource(R.string.no_jobs_found),
                     style = MaterialTheme.typography.bodyLarge,
                     color = KajHobeTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,

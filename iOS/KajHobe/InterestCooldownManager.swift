@@ -271,8 +271,8 @@ class InterestCooldownManager {
         do {
             // Update the notification status to rejected
             let currentTime = ISO8601DateFormatter().string(from: Date())
-            
-            let response = try await supabase
+
+            _ = try await supabase
                 .from("notifications")
                 .update([
                     "status": AnyEncodable("rejected"),

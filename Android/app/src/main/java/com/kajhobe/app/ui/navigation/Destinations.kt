@@ -2,24 +2,35 @@ package com.kajhobe.app.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.outlined.AddCircleOutline
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Work
 import androidx.compose.ui.graphics.vector.ImageVector
 import android.net.Uri
 
-/** The five bottom-nav tabs — mirrors iOS MainTabView. */
+/**
+ * The five bottom-nav tabs — mirrors iOS MainTabView.
+ *
+ * [icon] is the unselected (outlined) glyph; [selectedIcon] is the filled glyph
+ * shown for the active tab, matching the YouTube-style bottom bar.
+ */
 enum class TopLevelDestination(
     val route: String,
     val label: String,
     val icon: ImageVector,
+    val selectedIcon: ImageVector,
 ) {
-    JOBS("jobs", "Jobs", Icons.Filled.Work),
-    MESSAGES("messages", "Messages", Icons.AutoMirrored.Filled.Message),
-    POST("post", "Post", Icons.Filled.AddCircle),
-    DASHBOARD("dashboard", "Dashboard", Icons.Filled.BarChart),
-    NOTIFICATIONS("notifications", "Notifications", Icons.Filled.Notifications),
+    JOBS("jobs", "Jobs", Icons.Outlined.Work, Icons.Filled.Work),
+    MESSAGES("messages", "Messages", Icons.AutoMirrored.Outlined.Message, Icons.AutoMirrored.Filled.Message),
+    POST("post", "Post", Icons.Outlined.AddCircleOutline, Icons.Filled.AddCircle),
+    DASHBOARD("dashboard", "Dashboard", Icons.Outlined.BarChart, Icons.Filled.BarChart),
+    NOTIFICATIONS("notifications", "Notifications", Icons.Outlined.Notifications, Icons.Filled.Notifications),
 }
 
 /** Detail/stack routes presented within the main graph. */

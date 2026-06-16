@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import com.kajhobe.app.data.SupabaseConfig
 import com.kajhobe.app.data.payment.EscrowDeepLink
 import com.kajhobe.app.data.payment.PaymentDeepLinkBus
+import com.kajhobe.app.ui.i18n.ProvideAppLanguage
 import com.kajhobe.app.ui.navigation.RootNavHost
 import com.kajhobe.app.ui.theme.KajHobeTheme
 
@@ -21,9 +22,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            KajHobeTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    RootNavHost()
+            ProvideAppLanguage {
+                KajHobeTheme {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        RootNavHost()
+                    }
                 }
             }
         }

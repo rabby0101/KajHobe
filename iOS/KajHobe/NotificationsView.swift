@@ -407,25 +407,22 @@ struct NotificationsView: View {
                           let status = item["status"] as? String,
                           let created_at = item["created_at"] as? String,
                           let deal_data = item["deals"] as? [String: Any],
-                          let client_id = deal_data["client_id"] as? String,
-                          let provider_id = deal_data["provider_id"] as? String,
                           let agreed_amount = deal_data["agreed_amount"] as? Int else {
                         continue
                     }
-                    
+
                     // Skip if the current user is the requester (they don't need to see their own request as notification)
                     if requester_id == user.id.uuidString {
                         continue
                     }
-                    
+
                     // Extract job info
                     let job_data = deal_data["jobs"] as? [String: Any]
                     let job_title = job_data?["title"] as? String ?? "Unknown Job"
                     let job_id = deal_data["job_id"] as? String
-                    
+
                     // Get requester name (we'll need to fetch this separately for now)
                     let requester_name = requester_type == "client" ? "Client" : "Provider"
-                    let request_message = item["request_message"] as? String
                     
                     // Create notification based on status and user role
                     let notificationType: DatabaseNotificationType
@@ -931,7 +928,7 @@ struct NotificationsView: View {
                 self.errorMessage = "Failed to process action: \(error.localizedDescription)"
             }
         }
-        await MainActor.run { processingNotificationIds.remove(interest.id) }
+        _ = await MainActor.run { processingNotificationIds.remove(interest.id) }
         await safeLoadUnifiedNotifications()
         await NotificationBadgeManager.shared.refreshCounts()
     }
@@ -1196,10 +1193,10 @@ struct NotificationsView: View {
                     print("ℹ️ Informational notification tapped: \(notification.source.rawValue)")
                 }
                 
-                await MainActor.run {
+                _ = await MainActor.run {
                     self.processingNotificationIds.remove(notification.id)
                 }
-                
+
                 // Refresh notifications after action
                 await safeLoadUnifiedNotifications()
                 
@@ -1218,7 +1215,7 @@ struct NotificationsView: View {
         let status = accept ? "accepted" : "rejected"
         
         do {
-            let updateResponse = try await supabase
+            _ = try await supabase
                 .from("job_interests")
                 .update([
                     "status": AnyEncodable(status),
@@ -1515,11 +1512,11 @@ struct NotificationsView: View {
                     print("❌ Status is REJECTED - NOT creating conversation")
                 }
                 
-                await MainActor.run {
+                _ = await MainActor.run {
                     // Remove from processing set
                     self.processingNotificationIds.remove(notification.id)
                 }
-                
+
                 // Refresh the notifications list safely
                 await safeLoadNotifications()
                 
@@ -1641,24 +1638,20 @@ struct NotificationsView: View {
 
                         // Update UI on main actor with immediate sheet presentation
                         print("🚀 About to run MainActor.run block...")
-                        do {
-                            await MainActor.run {
-                                print("🎭 INSIDE MainActor.run - Setting profile for: \(profile.full_name ?? "Unknown")")
-                                print("🎭 Current selectedProfile before assignment: \(self.selectedProfile?.full_name ?? "nil")")
-                                self.selectedProfile = profile
-                                print("🎭 selectedProfile after assignment: \(self.selectedProfile?.full_name ?? "nil")")
-                                self.isLoadingProfile = false
-                                print("🎭 Profile successfully set and loading stopped")
-                            }
-                            print("🚀 MainActor.run completed successfully")
-                        } catch {
-                            print("❌ Error in MainActor.run: \(error)")
+                        await MainActor.run {
+                            print("🎭 INSIDE MainActor.run - Setting profile for: \(profile.full_name ?? "Unknown")")
+                            print("🎭 Current selectedProfile before assignment: \(self.selectedProfile?.full_name ?? "nil")")
+                            self.selectedProfile = profile
+                            print("🎭 selectedProfile after assignment: \(self.selectedProfile?.full_name ?? "nil")")
+                            self.isLoadingProfile = false
+                            print("🎭 Profile successfully set and loading stopped")
                         }
+                        print("🚀 MainActor.run completed successfully")
                     } else {
                         print("❌ No profile data found in response")
                         await MainActor.run {
                             self.isLoadingProfile = false
-                        }
+                        }67
                     }
                 } else {
                     print("❌ Failed to parse JSON response")

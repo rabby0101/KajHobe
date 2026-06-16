@@ -459,31 +459,27 @@ struct MessagesView: View {
     }
 
     private func handleNewMessage(_ action: HasRecord) async {
-        do {
-            print("🔍 REALTIME DEBUG: New message received via real-time")
+        print("🔍 REALTIME DEBUG: New message received via real-time")
 
-            // Access the record directly (it's already a JSONObject which is [String: AnyJSON])
-            let record = action.record
+        // Access the record directly (it's already a JSONObject which is [String: AnyJSON])
+        let record = action.record
 
-            guard let conversationId = record["conversation_id"]?.stringValue,
-                  let content = record["content"]?.stringValue,
-                  let senderId = record["sender_id"]?.stringValue else {
-                print("❌ REALTIME DEBUG: Failed to parse message data from record: \(record)")
-                return
-            }
+        guard let conversationId = record["conversation_id"]?.stringValue,
+              let content = record["content"]?.stringValue,
+              let senderId = record["sender_id"]?.stringValue else {
+            print("❌ REALTIME DEBUG: Failed to parse message data from record: \(record)")
+            return
+        }
 
-            print("🔍 REALTIME DEBUG: Processing message for conversation: \(conversationId)")
+        print("🔍 REALTIME DEBUG: Processing message for conversation: \(conversationId)")
 
-            // Update the conversation list on main actor
-            await MainActor.run {
-                updateConversationWithNewMessage(
-                    conversationId: conversationId,
-                    newContent: content,
-                    senderId: senderId
-                )
-            }
-        } catch {
-            print("❌ REALTIME DEBUG: Error handling new message: \(error)")
+        // Update the conversation list on main actor
+        await MainActor.run {
+            updateConversationWithNewMessage(
+                conversationId: conversationId,
+                newContent: content,
+                senderId: senderId
+            )
         }
     }
 

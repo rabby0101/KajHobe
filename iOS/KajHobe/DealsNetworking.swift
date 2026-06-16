@@ -465,7 +465,7 @@ class DealsNetworking: ObservableObject {
     
     func respondToCompletionRequest(requestId: String, approve: Bool, message: String?) async throws {
         do {
-            let user = try supabase.auth.requireCurrentUser()
+            _ = try supabase.auth.requireCurrentUser()
             let status = approve ? "approved" : "rejected"
             let now = ISO8601DateFormatter().string(from: Date())
 

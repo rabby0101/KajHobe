@@ -11,17 +11,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useJobs } from "@/hooks/useJobs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { serviceCategories, ServiceCategory } from "@/lib/categories";
+import { serviceCategories, ServiceCategory, categoryLabel } from "@/lib/categories";
 import CategoryCard from "@/components/CategoryCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { PhoneticInput } from "@/components/PhoneticInput";
 import { Search, RefreshCw, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
   const { data: jobs = [], isLoading: jobsLoading, refetch } = useJobs();
   const [searchText, setSearchText] = useState("");
@@ -164,18 +167,18 @@ const Index = () => {
         
         {/* Search Section */}
         <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search jobs..."
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+          <PhoneticInput
+            placeholder={t('home.searchPlaceholder')}
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={setSearchText}
             className="pl-10 h-12 bg-muted/50"
           />
         </div>
 
         {/* Categories Section */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Service Categories</h2>
+          <h2 className="text-2xl font-bold">{t('home.serviceCategories')}</h2>
 
           <div className="flex gap-4 overflow-x-auto pb-2">
             {/* "All" resets the filter (parity with the iOS "All" chip). */}
@@ -206,8 +209,8 @@ const Index = () => {
             {favoriteCategories.length > 0 && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-bold">Your Favourite Categories</h2>
-                  <p className="text-sm text-muted-foreground">Quick access to your preferred services</p>
+                  <h2 className="text-2xl font-bold">{t('home.favouriteCategories')}</h2>
+                  <p className="text-sm text-muted-foreground">{t('home.favouriteCategoriesDesc')}</p>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {favoriteCategories.map((category) => (
@@ -217,8 +220,8 @@ const Index = () => {
                       className="flex flex-col items-center gap-2 rounded-xl bg-muted/50 p-4 transition-colors hover:bg-muted"
                     >
                       <span className="text-2xl">{category.icon}</span>
-                      <span className="text-center text-sm font-medium leading-tight line-clamp-2">{category.name}</span>
-                      <span className="text-xs text-muted-foreground">{getJobCount(category.name)} jobs</span>
+                      <span className="text-center text-sm font-medium leading-tight line-clamp-2">{categoryLabel(category, language)}</span>
+                      <span className="text-xs text-muted-foreground">{getJobCount(category.name)} {t('common.jobsCount')}</span>
                     </button>
                   ))}
                 </div>
@@ -228,8 +231,8 @@ const Index = () => {
             {/* Jobs Near You */}
             {jobsNearYou.length > 0 && (
               <JobCarousel
-                title="Jobs Near You"
-                subtitle="Opportunities in your area"
+                title={t('home.jobsNearYou')}
+                subtitle={t('home.jobsNearYouDesc')}
                 jobs={jobsNearYou}
                 onViewAll={() => navigate('/jobs')}
                 onOpenChat={handleOpenChat}
@@ -239,8 +242,8 @@ const Index = () => {
             {/* Featured Jobs */}
             {featuredJobs.length > 0 && (
               <JobCarousel
-                title="Featured Jobs"
-                subtitle="Urgent and high-value opportunities"
+                title={t('home.featuredJobs')}
+                subtitle={t('home.featuredJobsDesc')}
                 jobs={featuredJobs}
                 onViewAll={() => navigate('/jobs')}
                 onOpenChat={handleOpenChat}
@@ -249,8 +252,8 @@ const Index = () => {
 
             {/* Recently Posted Jobs */}
             <JobCarousel
-              title="Recently Posted Jobs"
-              subtitle="The latest jobs in Khulna"
+              title={t('home.recentJobs')}
+              subtitle={t('home.recentJobsDesc')}
               jobs={recentJobs}
               onViewAll={() => navigate('/jobs')}
               onOpenChat={handleOpenChat}
@@ -259,9 +262,9 @@ const Index = () => {
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Search Results</h2>
+              <h2 className="text-2xl font-bold">{t('home.searchResults')}</h2>
               <span className="text-muted-foreground">
-                {filteredJobs.length} jobs
+                {filteredJobs.length} {t('common.jobsCount')}
               </span>
             </div>
             
@@ -325,7 +328,9 @@ interface JobCarouselProps {
   onOpenChat: (job: any) => void;
 }
 
-const JobCarousel: React.FC<JobCarouselProps> = ({ title, subtitle, jobs, onViewAll, onOpenChat }) => (
+const JobCarousel: React.FC<JobCarouselProps> = ({ title, subtitle, jobs, onViewAll, onOpenChat }) => {
+  const { t } = useLanguage();
+  return (
   <div className="space-y-4">
     <div className="flex items-end justify-between">
       <div>
@@ -333,7 +338,7 @@ const JobCarousel: React.FC<JobCarouselProps> = ({ title, subtitle, jobs, onView
         {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
       <Button variant="ghost" size="sm" onClick={onViewAll} className="text-primary">
-        View All
+        {t('home.viewAll')}
       </Button>
     </div>
     <div className="flex gap-6 overflow-x-auto pb-2">
@@ -344,6 +349,7 @@ const JobCarousel: React.FC<JobCarouselProps> = ({ title, subtitle, jobs, onView
       ))}
     </div>
   </div>
-);
+  );
+};
 
 export default Index;

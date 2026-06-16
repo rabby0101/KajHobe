@@ -444,9 +444,9 @@ struct ProfileView: View {
             // without a spinner; the fetch below refreshes silently.
             if profile == nil, let uid = supabase.auth.currentUser?.id.uuidString {
                 if let cached = ProfileCache.shared.peek(userId: uid) {
-                    await applyProfileSnapshot(cached)
+                    applyProfileSnapshot(cached)
                 } else if let disk = await ProfileCache.shared.load(userId: uid) {
-                    await applyProfileSnapshot(disk)
+                    applyProfileSnapshot(disk)
                 }
             }
             if profile == nil {

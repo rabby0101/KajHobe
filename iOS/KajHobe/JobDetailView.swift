@@ -469,7 +469,7 @@ struct JobDetailView: View {
             guard let currentUserProfile = currentUserProfile else { return }
             
             // Fetch conversations for current user and find one for this job
-            let conversations = try await Networking.shared.fetchConversations(userId: currentUserProfile.id)
+            _ = try await Networking.shared.fetchConversations(userId: currentUserProfile.id)
             
             // Since fetchConversations returns [Any], we need to safely handle the type casting
             // For now, messaging is disabled, so we set existingConversation to nil

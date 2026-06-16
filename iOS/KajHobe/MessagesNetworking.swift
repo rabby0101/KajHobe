@@ -118,18 +118,10 @@ class MessagesNetworking: ObservableObject {
         print("🔍 DEBUG: Processing \(conversations.count) conversations with batch optimization")
         
         // Extract unique job IDs and user IDs for batch fetching
-        var uniqueJobIds = Set<String>()
-        var uniqueUserIds = Set<String>()
-        
-        for conversationDict in conversations {
-            if let jobId = conversationDict["job_id"] as? String,
-               let clientId = conversationDict["client_id"] as? String,
-               let providerId = conversationDict["provider_id"] as? String {
-                uniqueJobIds.insert(jobId)
-                uniqueUserIds.insert(clientId)
-                uniqueUserIds.insert(providerId)
-            }
-        }
+        let uniqueJobIds = Set(conversations.compactMap { $0["job_id"] as? String })
+        let uniqueUserIds: Set<String> = Set(conversations.flatMap { conv in
+            [conv["client_id"] as? String, conv["provider_id"] as? String].compactMap { $0 }
+        })
         
         let uniqueConversationIds = Set(conversations.compactMap { $0["id"] as? String })
         print("🔍 DEBUG: Batch fetching \(uniqueJobIds.count) jobs, \(uniqueUserIds.count) profiles, and latest/unread messages for \(uniqueConversationIds.count) conversations")
@@ -383,9 +375,9 @@ class MessagesNetworking: ObservableObject {
         print("🔍 SEND IMAGE DEBUG: Uploading to filename: \(filename)")
         
         // Upload to Supabase Storage
-        let uploadResult = try await supabase.storage
+        _ = try await supabase.storage
             .from("chat-images")
-            .upload(path: filename, file: imageData, options: FileOptions(contentType: "image/jpeg"))
+            .upload(filename, data: imageData, options: FileOptions(contentType: "image/jpeg"))
         
         // Get public URL
         let publicURL = try supabase.storage
@@ -616,7 +608,7 @@ class MessagesNetworking: ObservableObject {
         let statusValue = accept ? "accepted" : "rejected"
         let currentTime = ISO8601DateFormatter().string(from: Date())
         
-        let updateResult = try await supabase
+        _ = try await supabase
             .from("deal_offers")
             .update([
                 "status": AnyEncodable(statusValue),

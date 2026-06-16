@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -54,7 +55,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
+import com.kajhobe.app.R
 import com.kajhobe.app.data.model.Profile
+import com.kajhobe.app.ui.components.PhoneticTextField
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import com.kajhobe.app.ui.theme.WarmOrange
 import org.koin.androidx.compose.koinViewModel
@@ -89,6 +93,7 @@ fun ProfileScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text("My Profile") },
@@ -360,18 +365,18 @@ private fun AboutSection(
     onWebsiteChange: (String) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        SectionCard(title = "Bio") {
+        SectionCard(title = stringResource(R.string.profile_bio_label)) {
             if (isEditing) {
-                OutlinedTextField(
+                PhoneticTextField(
                     value = editBio,
                     onValueChange = onBioChange,
                     modifier = Modifier.fillMaxWidth().height(120.dp),
-                    placeholder = { Text("Tell us about yourself...") },
-                    colors = profileEditColors(),
+                    placeholder = stringResource(R.string.profile_bio_placeholder),
+                    singleLine = false,
                 )
             } else {
                 Text(
-                    text = profile.bio ?: "No bio yet",
+                    text = profile.bio ?: stringResource(R.string.profile_no_bio),
                     color = if (profile.bio == null) KajHobeTheme.colors.textSecondary else MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyMedium,
                 )

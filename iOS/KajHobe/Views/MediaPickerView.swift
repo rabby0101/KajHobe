@@ -221,33 +221,42 @@ struct MediaThumbnailView: View {
 
 struct VideoThumbnailView: View {
     let url: URL
+    @State private var thumbnail: UIImage?
 
     var body: some View {
-        if let thumbnail = generateThumbnail(from: url) {
-            Image(uiImage: thumbnail)
-                .resizable()
-                .scaledToFill()
-        } else {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
+        Group {
+            if let thumbnail = thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
                 .overlay {
                     Image(systemName: "video")
                         .font(.system(size: 32))
                         .foregroundColor(.gray)
                 }
+            }
+        }
+        .task(id: url) {
+            thumbnail = await generateThumbnail(from: url)
         }
     }
 
-    private func generateThumbnail(from url: URL) -> UIImage? {
-        let asset = AVAsset(url: url)
+    private func generateThumbnail(from url: URL) async -> UIImage? {
+        let asset = AVURLAsset(url: url)
         let imageGenerator = AVAssetImageGenerator(asset: asset)
         imageGenerator.appliesPreferredTrackTransform = true
 
-        do {
-            let cgImage = try imageGenerator.copyCGImage(at: .zero, actualTime: nil)
-            return UIImage(cgImage: cgImage)
-        } catch {
-            return nil
+        return await withCheckedContinuation { continuation in
+            imageGenerator.generateCGImageAsynchronously(for: .zero) { cgImage, _, _ in
+                if let cgImage = cgImage {
+                    continuation.resume(returning: UIImage(cgImage: cgImage))
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
         }
     }
 }

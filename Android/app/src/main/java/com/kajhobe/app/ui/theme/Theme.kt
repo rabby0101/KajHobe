@@ -127,4 +127,6 @@ object KajHobeTheme {
         @Composable @ReadOnlyComposable get() = LocalSpacing.current
     val colors: KajHobeExtraColors
         @Composable @ReadOnlyComposable get() = LocalKajHobeColors.current
+    val isDark: Boolean
+        @Composable @ReadOnlyComposable get() = isSystemInDarkTheme()
 }
