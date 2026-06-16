@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
+import PayoutAccountForm from '@/components/payments/PayoutAccountForm';
 
 interface Profile {
   id: string;
@@ -252,6 +253,12 @@ const Profile = () => {
               </CardContent>
             </Card>
           </div>
+
+          {isServiceProvider && (
+            <div className="mt-6">
+              <PayoutAccountForm />
+            </div>
+          )}
         </div>
       </div>
     </div>
