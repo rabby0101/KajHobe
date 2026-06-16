@@ -1,6 +1,8 @@
 package com.kajhobe.app.di
 
 import com.kajhobe.app.data.cache.JobsCache
+import com.kajhobe.app.data.dashboard.DashboardCache
+import com.kajhobe.app.data.dashboard.DashboardRealtime
 import com.kajhobe.app.data.createKajHobeSupabaseClient
 import com.kajhobe.app.data.local.NotificationLocalState
 import com.kajhobe.app.data.media.MediaUploadManager
@@ -43,6 +45,8 @@ val appModule = module {
     single<SupabaseClient> { createKajHobeSupabaseClient() }
     single { NavigationEventBus() }
     single { JobsCache(androidContext()) }
+    single { DashboardCache(androidContext()) }
+    single { DashboardRealtime(get()) }
     single { MediaUploadManager(androidContext(), get()) }
 
     // Notification device-local state + bell badge
