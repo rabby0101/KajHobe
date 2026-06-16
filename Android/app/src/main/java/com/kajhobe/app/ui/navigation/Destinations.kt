@@ -18,8 +18,8 @@ enum class TopLevelDestination(
     JOBS("jobs", "Jobs", Icons.Filled.Work),
     MESSAGES("messages", "Messages", Icons.AutoMirrored.Filled.Message),
     POST("post", "Post", Icons.Filled.AddCircle),
-    NOTIFICATIONS("notifications", "Notifications", Icons.Filled.Notifications),
     DASHBOARD("dashboard", "Dashboard", Icons.Filled.BarChart),
+    NOTIFICATIONS("notifications", "Notifications", Icons.Filled.Notifications),
 }
 
 /** Detail/stack routes presented within the main graph. */
