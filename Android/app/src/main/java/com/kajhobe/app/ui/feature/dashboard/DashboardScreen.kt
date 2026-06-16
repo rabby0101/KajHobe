@@ -192,7 +192,7 @@ private fun DashboardContent(
             .fillMaxSize()
             .padding(horizontal = KajHobeTheme.spacing.lg),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(vertical = KajHobeTheme.spacing.md),
+        contentPadding = PaddingValues(top = KajHobeTheme.spacing.md, bottom = 32.dp),
     ) {
         item {
             if (state.hasRealtimeUpdate) {
