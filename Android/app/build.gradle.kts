@@ -97,4 +97,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.process)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // Charts
+    implementation(libs.mpandroidchart)
 }

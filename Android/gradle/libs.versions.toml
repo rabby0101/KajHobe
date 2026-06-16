@@ -18,6 +18,7 @@ androidxBrowser = "1.10.0"
 googleServices = "4.4.4"
 workManager = "2.11.2"
 accompanist = "0.37.3"
+mpandroidchart = "v3.1.0"
 
 [libraries]
 # AndroidX core
@@ -72,6 +73,9 @@ firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 # WorkManager / permissions
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
+
+# Charts
+mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
