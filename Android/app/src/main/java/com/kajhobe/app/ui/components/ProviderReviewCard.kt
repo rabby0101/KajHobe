@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -90,9 +89,9 @@ fun ProviderReviewCard(review: ProviderReview, modifier: Modifier = Modifier) {
                     repeat(5) { i ->
                         val filled = i < review.rating
                         Icon(
-                            imageVector = if (filled) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                            imageVector = Icons.Filled.Star,
                             contentDescription = null,
-                            tint = if (filled) KajHobeTheme.colors.accentOrange else KajHobeTheme.colors.textSecondary,
+                            tint = if (filled) KajHobeTheme.colors.accentOrange else KajHobeTheme.colors.divider,
                             modifier = Modifier.size(14.dp),
                         )
                     }
