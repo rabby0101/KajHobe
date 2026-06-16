@@ -33,6 +33,7 @@ data class DashboardUiState(
     val activeDeals: List<Deal> = emptyList(),
     val myDeals: List<Deal> = emptyList(),
     val myReviews: List<ProviderReview> = emptyList(),
+    val currentUserId: String = "",
     val hasRealtimeUpdate: Boolean = false,
     val errorMessage: String? = null,
 )
@@ -72,6 +73,7 @@ class DashboardViewModel(
                 )
             }
         }
+        _uiState.update { it.copy(currentUserId = (currentUserId ?: "").lowercase()) }
         load(silent = snapshot != null, forceRefresh = true)
     }
 

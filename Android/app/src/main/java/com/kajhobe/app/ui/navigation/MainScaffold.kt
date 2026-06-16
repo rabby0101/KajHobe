@@ -186,9 +186,21 @@ fun MainScaffold(onSignOut: () -> Unit) {
             }
             composable(TopLevelDestination.DASHBOARD.route) {
                 DashboardScreen(
-                    onSignOut = onSignOut,
-                    onDealClick = { dealId -> navController.navigate(Routes.dealDetail(dealId)) },
                     onMyProfile = { navController.navigate(Routes.MY_PROFILE) },
+                    onNotificationSettings = { navController.navigate(Routes.NOTIFICATION_SETTINGS) },
+                    onOpenJobs = {
+                        navController.navigate(TopLevelDestination.JOBS.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onPostJob = { navController.navigate(TopLevelDestination.POST.route) },
+                    onDealClick = { dealId -> navController.navigate(Routes.dealDetail(dealId)) },
+                )
+            }
+            composable(Routes.NOTIFICATION_SETTINGS) {
+                com.kajhobe.app.ui.feature.dashboard.NotificationSettingsScreen(
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable(Routes.DEAL_DETAIL) { entry ->
