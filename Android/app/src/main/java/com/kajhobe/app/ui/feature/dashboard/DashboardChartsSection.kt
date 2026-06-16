@@ -111,7 +111,7 @@ fun DashboardChartsSection(
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
+                modifier = Modifier.padding(vertical = 12.dp),
                 color = KajHobeTheme.colors.divider,
             )
 
@@ -128,7 +128,7 @@ fun DashboardChartsSection(
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
+                modifier = Modifier.padding(vertical = 12.dp),
                 color = KajHobeTheme.colors.divider,
             )
 
