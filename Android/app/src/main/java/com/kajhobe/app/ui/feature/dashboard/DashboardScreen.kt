@@ -350,23 +350,15 @@ private fun StatCard(
         modifier = baseModifier
             .clip(RoundedCornerShape(8.dp))
             .background(KajHobeTheme.colors.subtleBackground)
-            .padding(12.dp),
+            .padding(10.dp),
     ) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.weight(1f))
-                if (onTap != null) {
-                    Icon(
-                        Icons.Filled.ChevronRight,
-                        contentDescription = null,
-                        tint = KajHobeTheme.colors.textSecondary,
-                        modifier = Modifier.size(14.dp),
-                    )
-                }
             }
-            Spacer(Modifier.size(8.dp))
-            Text(value, style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(4.dp))
+            Text(value, style = MaterialTheme.typography.titleLarge)
             Text(
                 title,
                 style = MaterialTheme.typography.labelSmall,
