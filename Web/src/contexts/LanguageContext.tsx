@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Language = 'en' | 'bn';
+type Language = 'en' | 'bn' | 'de';
 
 interface LanguageContextType {
   language: Language;
@@ -69,6 +69,7 @@ const translations = {
     // Language values
     'language.english': 'English',
     'language.bengali': 'Bengali',
+    'language.german': 'German',
   },
   bn: {
     // Header
@@ -126,6 +127,65 @@ const translations = {
     // Language values
     'language.english': 'ইংরেজি',
     'language.bengali': 'বাংলা',
+    'language.german': 'জার্মান',
+  },
+  de: {
+    // Header
+    'header.browseJobs': 'Jobs durchsuchen',
+    'header.myJobs': 'Meine Jobs',
+    'header.postJob': 'Job einstellen',
+    'header.signIn': 'Anmelden',
+
+    // Settings
+    'settings.title': 'Einstellungen',
+    'settings.appearance': 'Darstellung',
+    'settings.theme': 'Design',
+    'settings.themeDesc': 'Wähle dein bevorzugtes Design',
+    'settings.language': 'Sprache',
+    'settings.languageDesc': 'Wähle deine bevorzugte Sprache',
+    'settings.notifications': 'Benachrichtigungen',
+    'settings.emailNotifications': 'E-Mail-Benachrichtigungen',
+    'settings.emailNotificationsDesc': 'Benachrichtigungen per E-Mail erhalten',
+    'settings.jobAlerts': 'Job-Benachrichtigungen',
+    'settings.jobAlertsDesc': 'Über neue Jobs benachrichtigt werden',
+    'settings.bidUpdates': 'Angebots-Updates',
+    'settings.bidUpdatesDesc': 'Über Angebotsantworten benachrichtigt werden',
+    'settings.privacy': 'Datenschutz & Sicherheit',
+    'settings.profileVisibility': 'Profil-Sichtbarkeit',
+    'settings.profileVisibilityDesc': 'Mache dein Profil für andere sichtbar',
+    'settings.showContactInfo': 'Kontaktdaten anzeigen',
+    'settings.showContactInfoDesc': 'Anderen erlauben, deine Kontaktdaten zu sehen',
+    'settings.account': 'Konto',
+    'settings.signOut': 'Abmelden',
+    'settings.signedOut': 'Abgemeldet',
+    'settings.signedOutDesc': 'Du wurdest erfolgreich abgemeldet',
+    'settings.error': 'Fehler',
+    'settings.signOutError': 'Abmeldung fehlgeschlagen',
+
+    // Hero Section
+    'hero.title': 'Vernetze dich mit lokalen Dienstleistern in',
+    'hero.subtitle': 'KajHobe macht es einfach, vertrauenswürdige Fachkräfte für Reparaturen, Reinigung, Nachhilfe und mehr zu finden. Stelle deinen Job ein und werde mit qualifizierten Dienstleistern in deiner Nähe zusammengebracht.',
+    'hero.getStarted': 'Loslegen',
+    'hero.findServices': 'Dienste finden',
+    'hero.findServicesDesc': 'Verfügbare Dienste durchsuchen oder deinen Job einstellen',
+    'hero.connect': 'Verbinden',
+    'hero.connectDesc': 'Chatte mit Dienstleistern und verhandle Konditionen',
+    'hero.getItDone': 'Erledigen',
+    'hero.getItDoneDesc': 'Schließe dein Projekt mit vertrauenswürdigen lokalen Fachkräften ab',
+
+    // User Menu
+    'userMenu.profile': 'Profil',
+    'userMenu.settings': 'Einstellungen',
+    'userMenu.logOut': 'Abmelden',
+
+    // Theme values
+    'theme.light': 'Hell',
+    'theme.dark': 'Dunkel',
+
+    // Language values
+    'language.english': 'Englisch',
+    'language.bengali': 'Bengalisch',
+    'language.german': 'Deutsch',
   },
 };
 
@@ -134,7 +194,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') as Language;
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'bn')) {
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'bn' || savedLanguage === 'de')) {
       setLanguageState(savedLanguage);
     }
   }, []);
@@ -145,7 +205,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['en']] || key;
+    const k = key as keyof typeof translations['en'];
+    // Fall back to English for any key missing in the active language, then the key itself.
+    return translations[language][k] ?? translations.en[k] ?? key;
   };
 
   return (
