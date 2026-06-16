@@ -191,7 +191,7 @@ private fun DashboardContent(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = KajHobeTheme.spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(vertical = KajHobeTheme.spacing.md),
     ) {
         item {
@@ -366,7 +366,7 @@ private fun StatCard(
                 }
             }
             Spacer(Modifier.size(8.dp))
-            Text(value, style = MaterialTheme.typography.titleLarge)
+            Text(value, style = MaterialTheme.typography.headlineSmall)
             Text(
                 title,
                 style = MaterialTheme.typography.labelSmall,
@@ -447,6 +447,8 @@ private fun ActiveDealRow(deal: Deal, onTap: () -> Unit) {
                     modifier = Modifier.size(14.dp),
                 )
             }
+            Spacer(Modifier.height(8.dp))
+            HairlineDivider()
         }
     }
 }
@@ -505,9 +507,17 @@ private fun RecentActivitySection(
                     }
                 }
             }
-            Spacer(Modifier.height(8.dp))
+            HairlineDivider()
         }
     }
+}
+
+@Composable
+private fun HairlineDivider() {
+    androidx.compose.material3.HorizontalDivider(
+        modifier = Modifier.padding(vertical = 8.dp),
+        color = KajHobeTheme.colors.divider,
+    )
 }
 
 @Composable
