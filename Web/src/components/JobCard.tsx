@@ -13,6 +13,8 @@ import { toast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useInterestCooldown } from '@/hooks/useInterestCooldown';
 import CooldownTimer from '@/components/CooldownTimer';
+import MediaCarousel from '@/components/MediaCarousel';
+import { parseMediaItems } from '@/lib/media';
 
 interface JobCardProps {
   job: Job;
@@ -306,6 +308,11 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
         <h3 className="font-semibold text-lg text-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors">
           {job.title}
         </h3>
+
+        {(() => {
+          const media = parseMediaItems(job.media_urls);
+          return media.length > 0 ? <MediaCarousel items={media} className="mb-3" height={180} /> : null;
+        })()}
 
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-sm text-muted-foreground">
