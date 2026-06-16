@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-16
 **Author:** Sk Fazla Rabby (with Claude)
-**Status:** Approved design — ready for implementation plan
+**Status:** Implemented (2026-06-16) — see `docs/superpowers/plans/2026-06-16-android-dashboard-polish.md`
 
 ## 1. Goal
 
