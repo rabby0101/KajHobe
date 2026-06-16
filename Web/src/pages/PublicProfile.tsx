@@ -3,9 +3,24 @@ import { Star, Briefcase, Wallet, Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
 import TrustBadge from '@/components/TrustBadge';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
+import { useUserReviews } from '@/hooks/useReviews';
+
+function StarRow({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Star
+          key={s}
+          className={cn('h-4 w-4', s <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/40')}
+        />
+      ))}
+    </div>
+  );
+}
 
 function StatTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
@@ -22,6 +37,7 @@ function StatTile({ icon, label, value }: { icon: React.ReactNode; label: string
 export default function PublicProfile() {
   const { id } = useParams<{ id: string }>();
   const { data: profile, isLoading } = usePublicProfile(id);
+  const { data: reviews } = useUserReviews(id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,6 +92,28 @@ export default function PublicProfile() {
                 <CardContent className="flex flex-wrap gap-2">
                   {profile.service_categories.map((c) => (
                     <Badge key={c} variant="secondary">{c}</Badge>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Reviews */}
+            {reviews && reviews.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reviews ({reviews.length})</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {reviews.map((r) => (
+                    <div key={r.id} className="border-b pb-3 last:border-0 last:pb-0">
+                      <div className="flex items-center justify-between">
+                        <StarRow rating={r.rating} />
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(r.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {r.comment && <p className="mt-2 text-sm text-muted-foreground">{r.comment}</p>}
+                    </div>
                   ))}
                 </CardContent>
               </Card>
