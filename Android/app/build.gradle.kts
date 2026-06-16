@@ -100,4 +100,8 @@ dependencies {
 
     // Charts
     implementation(libs.mpandroidchart)
+
+    // Testing
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
