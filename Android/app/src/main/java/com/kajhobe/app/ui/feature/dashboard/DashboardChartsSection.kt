@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,11 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
@@ -37,22 +39,31 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.kajhobe.app.data.model.Deal
 import com.kajhobe.app.data.model.ProviderReview
 import com.kajhobe.app.ui.components.PremiumCard
 import com.kajhobe.app.ui.theme.KajHobeTheme
+import java.text.DecimalFormat
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-/**
- * Analytics section of the Dashboard: money flow bar, status donut, rating-trend line.
- * Uses MPAndroidChart (Swift Charts equivalent on Android). Mirrors iOS
- * `DashboardChartsSection.swift` section-for-section.
- */
+private val TAKA_FORMAT = DecimalFormat("#,##0")
+
+private fun formatTaka(value: Double): String {
+    val abs = kotlin.math.abs(value)
+    return when {
+        abs >= 1_000_000 -> "৳" + TAKA_FORMAT.format(value / 1_000_000) + "M"
+        abs >= 1_000 -> "৳" + TAKA_FORMAT.format(value / 1_000) + "K"
+        else -> "৳" + TAKA_FORMAT.format(value)
+    }
+}
+
+private class TakaAxisFormatter : ValueFormatter() {
+    override fun getFormattedValue(value: Float): String = formatTaka(value.toDouble())
+}
+
 @Composable
 fun DashboardChartsSection(
     deals: List<Deal>,
@@ -60,39 +71,111 @@ fun DashboardChartsSection(
     userId: String,
     modifier: Modifier = Modifier,
 ) {
-    val moneyFlow = remember(deals, userId) { DashboardAnalytics.monthlyMoneyFlow(deals, userId) }
+    // Hide zero-amount months so the bar chart doesn't show empty slivers
+    val moneyFlow = remember(deals, userId) {
+        DashboardAnalytics.monthlyMoneyFlow(deals, userId).filter { it.amount > 0.0 }
+    }
     val statusSlices = remember(deals) { DashboardAnalytics.statusBreakdown(deals) }
     val ratingPoints = remember(reviews) { DashboardAnalytics.ratingTrend(reviews) }
 
-    PremiumCard(modifier = modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.Insights, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
-            Spacer(Modifier.width(8.dp))
-            Text("Analytics", style = MaterialTheme.typography.titleMedium)
+    PremiumCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 0.dp,
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            SectionHeader(
+                icon = Icons.Filled.Insights,
+                tint = MaterialTheme.colorScheme.tertiary,
+                title = "Analytics",
+                trailing = {
+                    InlineLegend(
+                        items = listOf(
+                            "Earned" to KajHobeTheme.colors.success,
+                            "Spent" to KajHobeTheme.colors.accentOrange,
+                        ),
+                    )
+                },
+            )
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                "Money flow",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            if (moneyFlow.size < 2) {
+                ChartPlaceholder("Needs more history")
+            } else {
+                MoneyFlowChart(points = moneyFlow)
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = KajHobeTheme.colors.divider,
+            )
+
+            Text(
+                "Deal status",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            if (statusSlices.isEmpty()) {
+                ChartPlaceholder("No deals yet")
+            } else {
+                StatusBarList(slices = statusSlices)
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = KajHobeTheme.colors.divider,
+            )
+
+            Text(
+                "Rating trend",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            if (ratingPoints.size < 2) {
+                ChartPlaceholder("Needs more reviews")
+            } else {
+                RatingTrendChart(points = ratingPoints)
+            }
         }
-        Spacer(Modifier.height(16.dp))
-        Text("Money flow", style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(8.dp))
-        if (moneyFlow.size < 2) {
-            ChartPlaceholder("Needs more history")
-        } else {
-            MoneyFlowChart(points = moneyFlow)
-        }
-        Spacer(Modifier.height(16.dp))
-        Text("Deal status", style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(8.dp))
-        if (statusSlices.isEmpty()) {
-            ChartPlaceholder("No deals yet")
-        } else {
-            StatusDonut(slices = statusSlices)
-        }
-        Spacer(Modifier.height(16.dp))
-        Text("Rating trend", style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(8.dp))
-        if (ratingPoints.size < 2) {
-            ChartPlaceholder("Needs more reviews")
-        } else {
-            RatingTrendChart(points = ratingPoints)
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    icon: ImageVector,
+    tint: Color,
+    title: String,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        if (trailing != null) trailing()
+    }
+}
+
+@Composable
+private fun InlineLegend(items: List<Pair<String, Color>>) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        items.forEach { (label, color) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
+                Spacer(Modifier.width(4.dp))
+                Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface)
+            }
         }
     }
 }
@@ -117,19 +200,30 @@ private fun ChartPlaceholder(message: String) {
 private fun MoneyFlowChart(points: List<DashboardAnalytics.MoneyPoint>) {
     val earnedColor = KajHobeTheme.colors.success.toArgb()
     val spentColor = KajHobeTheme.colors.accentOrange.toArgb()
+    val dividerColor = KajHobeTheme.colors.divider.toArgb()
+    val secondaryTextColor = KajHobeTheme.colors.textSecondary.toArgb()
     val months = remember(points) { points.map { it.month }.distinct().sorted() }
-    val labels = remember(months) { months.map { it.format(DateTimeFormatter.ofPattern("MMM", Locale.US)) } }
+    val labels = remember(months) {
+        months.map { it.format(DateTimeFormatter.ofPattern("MMM", Locale.US)) }
+    }
 
     AndroidView(
-        modifier = Modifier.fillMaxWidth().height(180.dp),
+        modifier = Modifier.fillMaxWidth().height(160.dp),
         factory = { ctx ->
             BarChart(ctx).apply {
                 description.isEnabled = false
-                legend.isEnabled = true
+                legend.isEnabled = false
                 axisRight.isEnabled = false
-                axisLeft.setDrawGridLines(false)
+                axisLeft.setDrawGridLines(true)
+                axisLeft.gridColor = dividerColor
+                axisLeft.textColor = secondaryTextColor
+                axisLeft.valueFormatter = TakaAxisFormatter()
+                axisLeft.axisMinimum = 0f
                 xAxis.position = XAxis.XAxisPosition.BOTTOM
                 xAxis.setDrawGridLines(false)
+                xAxis.granularity = 1f
+                xAxis.isGranularityEnabled = true
+                xAxis.textColor = secondaryTextColor
                 setNoDataText("")
             }
         },
@@ -153,56 +247,61 @@ private fun MoneyFlowChart(points: List<DashboardAnalytics.MoneyPoint>) {
             chart.data = data
             chart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
             chart.groupBars(0f, 0.2f, 0.05f)
+            chart.notifyDataSetChanged()
             chart.invalidate()
         },
     )
 }
 
 @Composable
-private fun StatusDonut(slices: List<DashboardAnalytics.StatusSlice>) {
+private fun StatusBarList(slices: List<DashboardAnalytics.StatusSlice>) {
+    val total = slices.sumOf { it.count }.coerceAtLeast(1)
     val colors = slices.map { statusColor(it.status) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        AndroidView(
-            modifier = Modifier.size(130.dp),
-            factory = { ctx ->
-                PieChart(ctx).apply {
-                    description.isEnabled = false
-                    isDrawHoleEnabled = true
-                    holeRadius = 60f
-                    transparentCircleRadius = 0f
-                    setUsePercentValues(false)
-                    legend.isEnabled = false
-                }
-            },
-            update = { chart ->
-                val entries = slices.map { PieEntry(it.count.toFloat(), it.status) }
-                val ds = PieDataSet(entries, "").apply {
-                    setColors(colors.map { it.toArgb() })
-                    setDrawValues(false)
-                    sliceSpace = 2f
-                }
-                chart.data = PieData(ds)
-                chart.invalidate()
-            },
-        )
-        Spacer(Modifier.width(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            slices.forEach { slice ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(colors[slices.indexOf(slice)]),
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        slice.status,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(slice.count.toString(), style = MaterialTheme.typography.bodySmall)
-                }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        slices.forEachIndexed { idx, slice ->
+            StatusBarRow(
+                label = slice.status,
+                count = slice.count,
+                color = colors[idx],
+                fraction = slice.count.toFloat() / total,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatusBarRow(label: String, count: Int, color: Color, fraction: Float) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
+            Spacer(Modifier.width(8.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                count.toString(),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(KajHobeTheme.colors.subtleBackground),
+        ) {
+            if (fraction > 0f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction)
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(color),
+                )
             }
         }
     }
@@ -211,7 +310,11 @@ private fun StatusDonut(slices: List<DashboardAnalytics.StatusSlice>) {
 @Composable
 private fun RatingTrendChart(points: List<DashboardAnalytics.RatingPoint>) {
     val yellow = KajHobeTheme.colors.accentOrange.toArgb()
-    val labels = remember(points) { points.map { it.month.format(DateTimeFormatter.ofPattern("MMM", Locale.US)) } }
+    val dividerColor = KajHobeTheme.colors.divider.toArgb()
+    val secondaryTextColor = KajHobeTheme.colors.textSecondary.toArgb()
+    val labels = remember(points) {
+        points.map { it.month.format(DateTimeFormatter.ofPattern("MMM", Locale.US)) }
+    }
 
     AndroidView(
         modifier = Modifier.fillMaxWidth().height(140.dp),
@@ -222,8 +325,13 @@ private fun RatingTrendChart(points: List<DashboardAnalytics.RatingPoint>) {
                 axisRight.isEnabled = false
                 xAxis.position = XAxis.XAxisPosition.BOTTOM
                 xAxis.setDrawGridLines(false)
+                xAxis.granularity = 1f
+                xAxis.isGranularityEnabled = true
+                xAxis.textColor = secondaryTextColor
                 axisLeft.axisMinimum = 0f
                 axisLeft.axisMaximum = 5f
+                axisLeft.textColor = secondaryTextColor
+                axisLeft.gridColor = dividerColor
                 setNoDataText("")
             }
         },
@@ -239,6 +347,7 @@ private fun RatingTrendChart(points: List<DashboardAnalytics.RatingPoint>) {
             }
             chart.data = LineData(ds)
             chart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+            chart.notifyDataSetChanged()
             chart.invalidate()
         },
     )
