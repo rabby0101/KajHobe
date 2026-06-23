@@ -15,6 +15,7 @@ data class Profile(
     val bio: String? = null,
     val website: String? = null,
     val is_service_provider: Boolean? = null,
+    val is_verified_provider: Boolean? = null,
     val role: String? = null,
     val average_rating: Double? = null,
     val ratings_count: Int? = null,
@@ -80,6 +81,7 @@ data class PublicProfile(
     val location: String? = null,
     val website: String? = null,
     val is_service_provider: Boolean? = null,
+    val is_verified_provider: Boolean? = null,
     val created_at: String? = null,
     val completed_jobs: Int = 0,
     val avg_job_value: Double = 0.0,
@@ -152,6 +154,37 @@ data class PublicProfile(
         return if (isWhole) "%.0f".format(v) else "%.2f".format(v)
     }
 }
+
+/** A provider's verification application (provider_verifications). */
+@Serializable
+data class ProviderVerification(
+    val user_id: String? = null,
+    val status: String = "pending",
+    val nid_number: String? = null,
+    val nid_front_path: String? = null,
+    val nid_back_path: String? = null,
+    val phone: String? = null,
+    val phone_verified: Boolean? = null,
+    val certificate_paths: List<String> = emptyList(),
+    val demo_video_urls: List<String> = emptyList(),
+    val rejection_reason: String? = null,
+    val submitted_at: String? = null,
+)
+
+/** Insert/upsert payload for submitting (or resubmitting) a verification request. */
+@Serializable
+data class ProviderVerificationSubmit(
+    val user_id: String,
+    val status: String = "pending",
+    val nid_number: String? = null,
+    val nid_front_path: String? = null,
+    val nid_back_path: String? = null,
+    val phone: String? = null,
+    val phone_verified: Boolean = false,
+    val certificate_paths: List<String> = emptyList(),
+    val demo_video_urls: List<String> = emptyList(),
+    val submitted_at: String,
+)
 
 /** Minimal profile for list batch loads — iOS PublicProfileSummary. */
 @Serializable

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
 import TrustBadge from '@/components/TrustBadge';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import OnlineIndicator from '@/components/OnlineIndicator';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 import { useUserReviews } from '@/hooks/useReviews';
@@ -64,6 +65,7 @@ export default function PublicProfile() {
               <div>
                 <h1 className="text-2xl font-bold">{profile.full_name ?? 'Anonymous'}</h1>
                 <div className="mt-1 flex items-center gap-2">
+                  {(profile as any).is_verified_provider && <VerifiedBadge />}
                   <TrustBadge trustLevel={profile.trust_level} />
                   {profile.location && <span className="text-sm text-muted-foreground">{profile.location}</span>}
                 </div>

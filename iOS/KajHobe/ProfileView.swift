@@ -44,6 +44,9 @@ struct ProfileView: View {
     @State private var payoutNumberLoaded = ""
     @State private var payoutBkashNumber = ""
 
+    @State private var verification: ProviderVerification?
+    @State private var showVerificationSheet = false
+
     @State private var selectedTab = ProfileTab.about
 
     var body: some View {
@@ -112,6 +115,19 @@ struct ProfileView: View {
         } message: {
             Text("Are you sure you want to logout? You will need to sign in again to access your account.")
         }
+        .sheet(isPresented: $showVerificationSheet) {
+            ServiceProviderVerificationView(
+                existing: verification,
+                accountPhone: accountPhoneLocal(),
+                onSubmitted: { loadProfile() }
+            )
+        }
+    }
+
+    /// The auth account's verified phone in BD-local (01…) form, or nil.
+    private func accountPhoneLocal() -> String? {
+        guard let raw = supabase.auth.currentUser?.phone, !raw.isEmpty else { return nil }
+        return raw.hasPrefix("880") ? "0" + raw.dropFirst(3) : raw
     }
 
     // MARK: - Hero Section
@@ -177,9 +193,14 @@ struct ProfileView: View {
                         .font(.title2.weight(.bold)).foregroundColor(.white)
                         .tint(.orange)
                 } else {
-                    Text(displayName)
-                        .font(.title2.weight(.bold)).foregroundColor(.white)
-                        .lineLimit(1)
+                    HStack(spacing: 6) {
+                        Text(displayName)
+                            .font(.title2.weight(.bold)).foregroundColor(.white)
+                            .lineLimit(1)
+                        if profile.is_verified_provider == true {
+                            VerifiedBadge(compact: true)
+                        }
+                    }
                 }
                 Text(profile.email ?? "")
                     .font(.caption).foregroundColor(.white.opacity(0.6))
@@ -321,27 +342,14 @@ struct ProfileView: View {
 
     @ViewBuilder
     private func detailsSection(_ profile: Profile) -> some View {
-        let isProvider = isEditing ? isServiceProvider : (profile.is_service_provider ?? false)
+        let isVerified = profile.is_verified_provider ?? false
 
         VStack(spacing: 16) {
-            sectionCard(title: "Account Type") {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Service Provider").font(.subheadline.weight(.medium))
-                        Text("Enable to apply for jobs and offer services")
-                            .font(.caption).foregroundColor(.secondary)
-                    }
-                    Spacer()
-                    Toggle("", isOn: Binding(
-                        get: { isProvider },
-                        set: { _ in isServiceProvider.toggle() }
-                    ))
-                    .disabled(!isEditing)
-                    .labelsHidden()
-                }
+            sectionCard(title: "verify_account_type".localized) {
+                accountTypeContent(profile)
             }
 
-            if isProvider {
+            if isVerified {
                 sectionCard(title: "Provider Details") {
                     if isEditing {
                         providerField(title: "Profession", text: $profession, placeholder: "e.g. Electrician")
@@ -399,6 +407,49 @@ struct ProfileView: View {
     }
 
     // MARK: - Helpers
+
+    @ViewBuilder
+    private func accountTypeContent(_ profile: Profile) -> some View {
+        if profile.is_verified_provider == true {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("verify_service_provider".localized).font(.subheadline.weight(.medium))
+                    Text("verify_status_verified".localized).font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+                VerifiedBadge()
+            }
+        } else if verification?.status == "pending" {
+            HStack(spacing: 10) {
+                Image(systemName: "clock.badge.checkmark").foregroundStyle(.orange)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("verify_status_pending_title".localized).font(.subheadline.weight(.medium))
+                    Text("verify_status_pending_body".localized).font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+        } else if verification?.status == "rejected" {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("verify_status_rejected_title".localized, systemImage: "xmark.octagon.fill")
+                    .font(.subheadline.weight(.medium)).foregroundStyle(.red)
+                if let reason = verification?.rejection_reason, !reason.isEmpty {
+                    Text(reason).font(.caption).foregroundColor(.secondary)
+                }
+                Button("verify_reapply".localized) { showVerificationSheet = true }
+                    .buttonStyle(.borderedProminent)
+            }
+        } else {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("verify_service_provider".localized).font(.subheadline.weight(.medium))
+                    Text("verify_become_subtitle".localized).font(.caption).foregroundColor(.secondary)
+                }
+                Spacer()
+                Button("verify_become_button".localized) { showVerificationSheet = true }
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+    }
 
     private func sectionCard<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -469,8 +520,12 @@ struct ProfileView: View {
                     _ = try? await payoutFetch
                 }
 
+                // Verification request (drives the Account Type card state).
+                let fetchedVerification = try? await ProfileNetworking.shared.fetchMyVerification()
+
                 await MainActor.run {
                     self.profile = fetched
+                    self.verification = fetchedVerification
                     self.payoutNumberLoaded = fetchedPayout
                     self.payoutBkashNumber = fetchedPayout
                     self.isLoading = false

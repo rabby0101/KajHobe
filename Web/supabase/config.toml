@@ -13,3 +13,23 @@ verify_jwt = false
 # bkash-payout: inert scaffold until B2C disbursement onboarding exists.
 [functions.bkash-payout]
 verify_jwt = true
+
+# send-sms-otp: Supabase Auth's "Send SMS" hook target. Auth posts the payload
+# directly (no user JWT), so JWT verification is off; the hook secret guards it.
+[functions.send-sms-otp]
+verify_jwt = false
+
+# --- Auth: phone signup + BD SMS OTP ---------------------------------------
+# Phone is the primary identity in the BD market. Supabase has no built-in BD
+# SMS provider, so OTP delivery is delegated to the send-sms-otp edge function.
+[auth.sms]
+enable_signup = true
+enable_confirmations = true
+
+[auth.sms.twilio]
+enabled = false
+
+# Route all outbound auth SMS through our edge function (the BD gateway relay).
+[auth.hook.send_sms]
+enabled = true
+uri = "https://xatlqnbrvgukuqewsxux.supabase.co/functions/v1/send-sms-otp"

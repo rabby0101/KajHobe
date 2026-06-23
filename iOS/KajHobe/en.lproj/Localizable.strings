@@ -164,3 +164,45 @@
 "deals_filter_all" = "All";
 "deals_list_title" = "My Deals";
 "deals_list_empty" = "No deals to show.";
+
+/* --- Signup / phone OTP --- */
+"phone" = "Phone";
+"verify" = "Verify";
+"signup_identity" = "Sign up with";
+"phone_hint_bd" = "01XXXXXXXXX";
+"password_min_hint" = "At least 6 characters.";
+"check_email_confirm" = "Check your email to confirm your account.";
+"signup_failed" = "Sign up failed: %@";
+"signin_failed" = "Sign in failed: %@";
+"otp_sent_to" = "We sent a 6-digit code to %@";
+"otp_code" = "Verification code";
+"otp_failed" = "Verification failed: %@";
+
+/* --- Provider verification --- */
+"verified" = "Verified";
+"verify_title" = "Become a Verified Provider";
+"verify_intro" = "To offer services, submit your NID, a verified phone number, and (optionally) certificates and work-demo videos. Our team reviews every application manually.";
+"verify_account_type" = "Account Type";
+"verify_service_provider" = "Service Provider";
+"verify_status_verified" = "Verified by KajHobe";
+"verify_status_pending_title" = "Verification pending";
+"verify_status_pending_body" = "Your application is under review. We'll notify you once it's approved.";
+"verify_status_rejected_title" = "Verification rejected";
+"verify_reapply" = "Reapply";
+"verify_become_subtitle" = "Get verified to apply for jobs and offer services.";
+"verify_become_button" = "Get Verified";
+"verify_nid_section" = "National ID (NID)";
+"verify_nid_number" = "NID number";
+"verify_nid_front" = "NID front photo";
+"verify_nid_back" = "NID back photo";
+"verify_phone_section" = "Phone verification";
+"verify_send_otp" = "Send code";
+"verify_certificates_section" = "Certificates (optional)";
+"verify_add_certificates" = "Add certificates";
+"verify_certificates_count" = "%d file(s) selected";
+"verify_certificates_hint" = "Upload trade certificates or training documents to strengthen your application.";
+"verify_demos_section" = "Work demos (optional)";
+"verify_demos_hint" = "Paste YouTube, Facebook, or Drive links showing your work.";
+"verify_demo_url_placeholder" = "https://youtube.com/...";
+"verify_submit" = "Submit for review";
+"verify_submit_failed" = "Submission failed: %@";

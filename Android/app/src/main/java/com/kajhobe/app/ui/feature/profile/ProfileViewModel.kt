@@ -3,8 +3,11 @@ package com.kajhobe.app.ui.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kajhobe.app.data.model.Profile
+import com.kajhobe.app.data.model.ProviderVerification
+import com.kajhobe.app.data.model.ProviderVerificationSubmit
 import com.kajhobe.app.data.repository.PaymentRepository
 import com.kajhobe.app.data.repository.ProfileRepository
+import java.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +33,9 @@ data class ProfileUiState(
     val editTeamRate: String = "",
     val editTeamHoursLabel: String = "",
     val editPayoutBkash: String = "",
+    val verification: ProviderVerification? = null,
+    val showVerificationDialog: Boolean = false,
+    val submittingVerification: Boolean = false,
 )
 
 class ProfileViewModel(
@@ -50,11 +56,13 @@ class ProfileViewModel(
             if (profile?.is_service_provider == true) {
                 payout = paymentRepository.fetchMyPayoutNumber() ?: ""
             }
+            val verification = runCatching { profileRepository.fetchMyVerification() }.getOrNull()
             _uiState.update {
                 it.copy(
                     isLoading = false,
                     profile = profile,
                     payoutNumber = payout,
+                    verification = verification,
                     errorMessage = if (profile == null) "Profile not found" else null,
                 )
             }
@@ -104,6 +112,56 @@ class ProfileViewModel(
 
     fun toggleProvider() {
         _uiState.update { it.copy(editIsProvider = !it.editIsProvider) }
+    }
+
+    // MARK: - Provider verification
+
+    fun openVerification() { _uiState.update { it.copy(showVerificationDialog = true) } }
+    fun dismissVerification() { _uiState.update { it.copy(showVerificationDialog = false) } }
+
+    /** The auth account's phone in 01… form (verified at signup), or null. */
+    fun accountPhoneLocal(): String? = profileRepository.accountPhoneLocal()
+
+    fun submitVerification(
+        nidNumber: String,
+        nidFront: ByteArray?,
+        nidBack: ByteArray?,
+        certs: List<ByteArray>,
+        demoUrls: List<String>,
+        phone: String,
+    ) {
+        if (_uiState.value.submittingVerification) return
+        _uiState.update { it.copy(submittingVerification = true, errorMessage = null) }
+        viewModelScope.launch {
+            try {
+                val uid = profileRepository.currentUserIdOrNull() ?: error("Not signed in")
+                val stamp = System.currentTimeMillis()
+                val frontPath = nidFront?.let { profileRepository.uploadProviderDoc("provider-nid", "nid-front-$stamp.jpg", it) }
+                val backPath = nidBack?.let { profileRepository.uploadProviderDoc("provider-nid", "nid-back-$stamp.jpg", it) }
+                val certPaths = certs.mapIndexed { i, bytes ->
+                    profileRepository.uploadProviderDoc("provider-certificates", "cert-$stamp-$i.jpg", bytes)
+                }
+                val accountPhone = profileRepository.accountPhoneLocal()
+                profileRepository.submitVerification(
+                    ProviderVerificationSubmit(
+                        user_id = uid,
+                        status = "pending",
+                        nid_number = nidNumber.trim(),
+                        nid_front_path = frontPath,
+                        nid_back_path = backPath,
+                        phone = phone.ifBlank { accountPhone },
+                        phone_verified = accountPhone != null,
+                        certificate_paths = certPaths,
+                        demo_video_urls = demoUrls,
+                        submitted_at = Instant.now().toString(),
+                    ),
+                )
+                load(silent = true)
+                _uiState.update { it.copy(submittingVerification = false, showVerificationDialog = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(submittingVerification = false, errorMessage = "Submission failed: ${e.message}") }
+            }
+        }
     }
 
     fun save() {

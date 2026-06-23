@@ -300,4 +300,39 @@ class ProfileNetworking: BaseNetworking {
         return averageMinutes
         */
     }
+
+    // MARK: - Provider verification
+
+    /// The signed-in user's verification request, or nil if they haven't applied.
+    func fetchMyVerification() async throws -> ProviderVerification? {
+        let user = try supabase.auth.requireCurrentUser()
+        let response = try await supabase
+            .from("provider_verifications")
+            .select()
+            .eq("user_id", value: user.id.uuidString)
+            .limit(1)
+            .execute()
+        let decoder = JSONDecoder()
+        return try? decoder.decode([ProviderVerification].self, from: response.data).first
+    }
+
+    /// Upload a document image to a PRIVATE provider bucket under `{uid}/...`
+    /// (matches the per-user-folder Storage RLS). Returns the stored object path.
+    func uploadProviderDoc(bucket: String, fileName: String, data: Data) async throws -> String {
+        let user = try supabase.auth.requireCurrentUser()
+        let path = "\(user.id.uuidString)/\(fileName)"
+        _ = try await supabase.storage
+            .from(bucket)
+            .upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))
+        return path
+    }
+
+    /// Submit (or resubmit) the verification request; lands as `pending` for the
+    /// admin panel to review. Upserts on user_id so a rejected user can reapply.
+    func submitVerification(_ submit: ProviderVerificationSubmit) async throws {
+        try await supabase
+            .from("provider_verifications")
+            .upsert(submit, onConflict: "user_id")
+            .execute()
+    }
 }

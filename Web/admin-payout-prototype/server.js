@@ -214,6 +214,103 @@ app.post('/api/disputes/:escrowId/resolve', async (req, res) => {
   }
 });
 
+// --- Provider verifications -------------------------------------------------
+// Manual review of provider applications: NID + phone + certificates + work
+// demos. NID/certificate files live in PRIVATE Storage buckets, so we mint
+// short-lived signed URLs for the reviewer. Approve/reject call the service-role
+// RPCs which flip profiles.is_verified_provider and refresh public_profiles.
+
+const NID_BUCKET = 'provider-nid';
+const CERT_BUCKET = 'provider-certificates';
+
+// Best-effort signed URL; returns null if the object is missing.
+async function signed(bucket, path, expires = 600) {
+  if (!path) return null;
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expires);
+  if (error) return null;
+  return data?.signedUrl || null;
+}
+
+// GET /api/verifications — pending applications, enriched + signed file URLs.
+app.get('/api/verifications', async (req, res) => {
+  try {
+    const { data: rows, error } = await supabase
+      .from('provider_verifications')
+      .select('user_id, status, nid_number, nid_front_path, nid_back_path, phone, phone_verified, certificate_paths, demo_video_urls, submitted_at')
+      .eq('status', 'pending')
+      .order('submitted_at', { ascending: true });
+    if (error) throw error;
+    if (!rows || rows.length === 0) return res.json({ verifications: [] });
+
+    const userIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))];
+    const { data: profiles } = await supabase
+      .from('profiles').select('id, full_name, email').in('id', userIds);
+    const profileById = indexBy(profiles, 'id');
+
+    const verifications = await Promise.all(rows.map(async (r) => {
+      const p = profileById[r.user_id] || {};
+      const certPaths = Array.isArray(r.certificate_paths) ? r.certificate_paths : [];
+      const [nidFront, nidBack, certUrls] = await Promise.all([
+        signed(NID_BUCKET, r.nid_front_path),
+        signed(NID_BUCKET, r.nid_back_path),
+        Promise.all(certPaths.map((path) => signed(CERT_BUCKET, path))),
+      ]);
+      return {
+        user_id: r.user_id,
+        applicant_name: p.full_name || p.email || '(unknown)',
+        applicant_email: p.email || null,
+        nid_number: r.nid_number,
+        phone: r.phone,
+        phone_verified: r.phone_verified,
+        submitted_at: r.submitted_at,
+        nid_front_url: nidFront,
+        nid_back_url: nidBack,
+        certificate_urls: (certUrls || []).filter(Boolean),
+        demo_video_urls: Array.isArray(r.demo_video_urls) ? r.demo_video_urls : [],
+      };
+    }));
+
+    res.json({ verifications });
+  } catch (err) {
+    console.error('GET /api/verifications failed:', err.message || err);
+    res.status(500).json({ error: err.message || String(err) });
+  }
+});
+
+// POST /api/verifications/:userId/approve — grant the Verified badge.
+app.post('/api/verifications/:userId/approve', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { data, error } = await supabase.rpc('approve_provider_verification', {
+      p_user_id: userId,
+      p_reviewer: null,
+    });
+    if (error) throw error;
+    res.json({ ok: true, verification: data });
+  } catch (err) {
+    console.error('POST approve verification failed:', err.message || err);
+    res.status(400).json({ error: err.message || String(err) });
+  }
+});
+
+// POST /api/verifications/:userId/reject — Body: { reason? }.
+app.post('/api/verifications/:userId/reject', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { reason } = req.body || {};
+    const { data, error } = await supabase.rpc('reject_provider_verification', {
+      p_user_id: userId,
+      p_reason: reason || null,
+      p_reviewer: null,
+    });
+    if (error) throw error;
+    res.json({ ok: true, verification: data });
+  } catch (err) {
+    console.error('POST reject verification failed:', err.message || err);
+    res.status(400).json({ error: err.message || String(err) });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`\n  KajHobe admin payout panel running at http://localhost:${PORT}\n  (localhost only — holds the service role key; do not expose)\n`);
 });

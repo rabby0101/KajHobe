@@ -515,6 +515,7 @@ struct Profile: Identifiable, Codable, Sendable {
     var bio: String?
     var website: String?
     var is_service_provider: Bool?
+    var is_verified_provider: Bool?
     let role: String?
     let average_rating: Double?
     let ratings_count: Int?
@@ -546,6 +547,39 @@ struct Profile: Identifiable, Codable, Sendable {
     let completed_jobs: Int?
     let total_earnings: Double?
     let total_spent: Double?
+}
+
+// MARK: - Provider verification
+/// One row in `provider_verifications`: a provider's application to be verified.
+/// Decoded for the signed-in user to drive the verification screen's state.
+struct ProviderVerification: Codable, Sendable {
+    let id: String?
+    let user_id: String?
+    let status: String            // pending | approved | rejected
+    let nid_number: String?
+    let nid_front_path: String?
+    let nid_back_path: String?
+    let phone: String?
+    let phone_verified: Bool?
+    let certificate_paths: [String]?
+    let demo_video_urls: [String]?
+    let rejection_reason: String?
+    let submitted_at: String?
+    let reviewed_at: String?
+}
+
+/// Insert/upsert payload for submitting (or resubmitting) a verification request.
+nonisolated struct ProviderVerificationSubmit: Codable, Sendable {
+    let user_id: String
+    let status: String            // always "pending" on submit
+    let nid_number: String?
+    let nid_front_path: String?
+    let nid_back_path: String?
+    let phone: String?
+    let phone_verified: Bool
+    let certificate_paths: [String]
+    let demo_video_urls: [String]
+    let submitted_at: String
 }
 
 struct ProfileInsert: Codable, Sendable {
@@ -653,6 +687,7 @@ struct PublicProfile: Identifiable, Codable, Sendable {
     let location: String?
     let website: String?
     let is_service_provider: Bool?
+    let is_verified_provider: Bool?
     let created_at: String?
 
     // Computed Statistics (pre-calculated for performance)

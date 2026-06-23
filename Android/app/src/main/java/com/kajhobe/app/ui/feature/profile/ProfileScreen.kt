@@ -58,7 +58,9 @@ import coil3.compose.AsyncImage
 import androidx.compose.ui.res.stringResource
 import com.kajhobe.app.R
 import com.kajhobe.app.data.model.Profile
+import com.kajhobe.app.data.model.ProviderVerification
 import com.kajhobe.app.ui.components.PhoneticTextField
+import com.kajhobe.app.ui.components.VerifiedBadge
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import com.kajhobe.app.ui.theme.WarmOrange
 import org.koin.androidx.compose.koinViewModel
@@ -89,6 +91,18 @@ fun ProfileScreen(
                 TextButton(onClick = { showLogoutDialog = false; viewModel.signOut() }) { Text("Logout", color = Color.Red) }
             },
             dismissButton = { TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") } },
+        )
+    }
+
+    if (state.showVerificationDialog) {
+        ProviderVerificationDialog(
+            existing = state.verification,
+            accountPhone = viewModel.accountPhoneLocal(),
+            submitting = state.submittingVerification,
+            onDismiss = { viewModel.dismissVerification() },
+            onSubmit = { nid, front, back, certs, demos, phone ->
+                viewModel.submitVerification(nid, front, back, certs, demos, phone)
+            },
         )
     }
 
@@ -142,8 +156,9 @@ fun ProfileScreen(
                 editTeamHoursLabel = state.editTeamHoursLabel,
                 editPayoutBkash = state.editPayoutBkash,
                 payoutNumber = state.payoutNumber,
+                verification = state.verification,
                 onFieldChange = viewModel::updateEditField,
-                onToggleProvider = viewModel::toggleProvider,
+                onGetVerified = { viewModel.openVerification() },
                 onShowLogout = { showLogoutDialog = true },
                 modifier = Modifier.padding(innerPadding),
             )
@@ -178,8 +193,9 @@ private fun ProfileContent(
     editTeamHoursLabel: String,
     editPayoutBkash: String,
     payoutNumber: String,
+    verification: ProviderVerification?,
     onFieldChange: (EditField, String) -> Unit,
-    onToggleProvider: () -> Unit,
+    onGetVerified: () -> Unit,
     onShowLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -196,7 +212,7 @@ private fun ProfileContent(
         item {
             when (selectedTab) {
                 ProfileTab.ABOUT -> AboutSection(profile = profile, isEditing = isEditing, editBio = editBio, editWebsite = editWebsite, onBioChange = { onFieldChange(EditField.BIO, it) }, onWebsiteChange = { onFieldChange(EditField.WEBSITE, it) })
-                ProfileTab.DETAILS -> DetailsSection(profile = profile, isEditing = isEditing, editIsProvider = editIsProvider, editProfession = editProfession, editTagline = editTagline, editExperience = editExperience, editHourlyRate = editHourlyRate, editTeamRate = editTeamRate, editTeamHoursLabel = editTeamHoursLabel, editPayoutBkash = editPayoutBkash, payoutNumber = payoutNumber, onFieldChange = onFieldChange, onToggleProvider = onToggleProvider)
+                ProfileTab.DETAILS -> DetailsSection(profile = profile, isEditing = isEditing, editIsProvider = editIsProvider, editProfession = editProfession, editTagline = editTagline, editExperience = editExperience, editHourlyRate = editHourlyRate, editTeamRate = editTeamRate, editTeamHoursLabel = editTeamHoursLabel, editPayoutBkash = editPayoutBkash, payoutNumber = payoutNumber, verification = verification, onFieldChange = onFieldChange, onGetVerified = onGetVerified)
                 ProfileTab.ACCOUNT -> AccountSection(profile = profile, onShowLogout = onShowLogout)
             }
         }
@@ -271,7 +287,10 @@ private fun ProfileHeroSection(
                     modifier = Modifier.fillMaxWidth(),
                 )
             } else {
-                Text(name, color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(name, color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    if (profile.is_verified_provider == true) VerifiedBadge(compact = true)
+                }
             }
             Text(profile.email ?: "", color = Color.White.copy(alpha = 0.6f), style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(2.dp))
@@ -416,38 +435,45 @@ private fun DetailsSection(
     editTeamHoursLabel: String,
     editPayoutBkash: String,
     payoutNumber: String,
+    verification: ProviderVerification?,
     onFieldChange: (EditField, String) -> Unit,
-    onToggleProvider: () -> Unit,
+    onGetVerified: () -> Unit,
 ) {
-    val isProvider = if (isEditing) editIsProvider else (profile.is_service_provider ?: false)
+    val isVerified = profile.is_verified_provider == true
 
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionCard(title = "Account Type") {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Service Provider", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                    Text("Enable to apply for jobs and offer services", color = KajHobeTheme.colors.textSecondary, style = MaterialTheme.typography.labelSmall)
-                }
-                Spacer(Modifier.width(12.dp))
-                val toggleBg = if (isProvider) WarmOrange else Color.Gray.copy(alpha = 0.4f)
-                Box(
-                    modifier = Modifier.size(48.dp, 26.dp).clip(CircleShape).background(toggleBg).then(
-                        if (isEditing) Modifier else Modifier,
-                    ),
-                    contentAlignment = if (isProvider) Alignment.CenterEnd else Alignment.CenterStart,
-                ) {
-                    Box(modifier = Modifier.size(22.dp).clip(CircleShape).background(Color.White).padding(2.dp))
-                }
-                if (isEditing) {
-                    Spacer(Modifier.width(8.dp))
-                    TextButton(onClick = onToggleProvider, contentPadding = PaddingValues(horizontal = 8.dp)) {
-                        Text(if (isProvider) "Disable" else "Enable", style = MaterialTheme.typography.labelMedium)
+            when {
+                isVerified -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Service Provider", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                        Text("Verified by KajHobe", color = KajHobeTheme.colors.textSecondary, style = MaterialTheme.typography.labelSmall)
                     }
+                    VerifiedBadge()
+                }
+                verification?.status == "pending" -> Column {
+                    Text("Verification pending", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                    Text("Your application is under review. We'll notify you once it's approved.", color = KajHobeTheme.colors.textSecondary, style = MaterialTheme.typography.labelSmall)
+                }
+                verification?.status == "rejected" -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Verification rejected", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = Color.Red)
+                    verification.rejection_reason?.takeIf { it.isNotBlank() }?.let {
+                        Text(it, color = KajHobeTheme.colors.textSecondary, style = MaterialTheme.typography.labelSmall)
+                    }
+                    TextButton(onClick = onGetVerified, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("Reapply") }
+                }
+                else -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Become a Service Provider", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                        Text("Get verified to apply for jobs and offer services", color = KajHobeTheme.colors.textSecondary, style = MaterialTheme.typography.labelSmall)
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    TextButton(onClick = onGetVerified, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("Get Verified") }
                 }
             }
         }
 
-        if (isProvider) {
+        if (isVerified) {
             SectionCard(title = "Provider Details") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (isEditing) {

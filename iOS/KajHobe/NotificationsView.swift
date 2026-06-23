@@ -1651,7 +1651,7 @@ struct NotificationsView: View {
                         print("❌ No profile data found in response")
                         await MainActor.run {
                             self.isLoadingProfile = false
-                        }67
+                        }
                     }
                 } else {
                     print("❌ Failed to parse JSON response")

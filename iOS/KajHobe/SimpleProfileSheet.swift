@@ -41,6 +41,7 @@ struct SimplePublicProfile: Codable, Identifiable {
             location: location,
             website: website,
             is_service_provider: is_service_provider,
+            is_verified_provider: false,
             created_at: created_at,
             completed_jobs: completed_jobs,
             avg_job_value: avg_job_value,

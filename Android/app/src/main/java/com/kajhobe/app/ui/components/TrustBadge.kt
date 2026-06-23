@@ -74,3 +74,35 @@ private fun iconFor(level: TrustLevel): ImageVector = when (level) {
     TrustLevel.EXPERIENCED -> Icons.Filled.MilitaryTech
     TrustLevel.EXPERT -> Icons.Filled.WorkspacePremium
 }
+
+/**
+ * "Verified" badge — granted by manual admin approval (profiles.is_verified_provider).
+ * Distinct from the auto-computed [TrustBadge]; shown only for approved providers.
+ */
+@Composable
+fun VerifiedBadge(
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
+) {
+    val color = MaterialTheme.colorScheme.primary
+    Row(
+        modifier = modifier
+            .background(color, RoundedCornerShape(if (compact) 4.dp else 6.dp))
+            .padding(horizontal = if (compact) 4.dp else 7.dp, vertical = if (compact) 2.dp else 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Verified,
+            contentDescription = null,
+            tint = Color.White,
+        )
+        if (!compact) {
+            Text(
+                text = "Verified",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White,
+            )
+        }
+    }
+}

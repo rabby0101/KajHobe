@@ -165,3 +165,45 @@
 "deals_filter_all" = "সব";
 "deals_list_title" = "আমার ডিলসমূহ";
 "deals_list_empty" = "দেখানোর মতো কোনো ডিল নেই।";
+
+/* --- Signup / phone OTP --- */
+"phone" = "ফোন";
+"verify" = "যাচাই করুন";
+"signup_identity" = "যেভাবে সাইন আপ করবেন";
+"phone_hint_bd" = "01XXXXXXXXX";
+"password_min_hint" = "কমপক্ষে ৬ অক্ষর।";
+"check_email_confirm" = "অ্যাকাউন্ট নিশ্চিত করতে আপনার ইমেইল দেখুন।";
+"signup_failed" = "সাইন আপ ব্যর্থ: %@";
+"signin_failed" = "সাইন ইন ব্যর্থ: %@";
+"otp_sent_to" = "%@ নম্বরে ৬-সংখ্যার কোড পাঠানো হয়েছে";
+"otp_code" = "ভেরিফিকেশন কোড";
+"otp_failed" = "যাচাই ব্যর্থ: %@";
+
+/* --- Provider verification --- */
+"verified" = "ভেরিফায়েড";
+"verify_title" = "ভেরিফায়েড প্রোভাইডার হোন";
+"verify_intro" = "সেবা দিতে হলে আপনার এনআইডি, একটি ভেরিফায়েড ফোন নম্বর এবং (ঐচ্ছিক) সার্টিফিকেট ও কাজের ডেমো ভিডিও জমা দিন। আমাদের টিম প্রতিটি আবেদন ম্যানুয়ালি যাচাই করে।";
+"verify_account_type" = "অ্যাকাউন্টের ধরন";
+"verify_service_provider" = "সেবা প্রদানকারী";
+"verify_status_verified" = "কাজ হবে কর্তৃক ভেরিফায়েড";
+"verify_status_pending_title" = "ভেরিফিকেশন অপেক্ষমাণ";
+"verify_status_pending_body" = "আপনার আবেদন পর্যালোচনাধীন। অনুমোদিত হলে আমরা জানাবো।";
+"verify_status_rejected_title" = "ভেরিফিকেশন প্রত্যাখ্যাত";
+"verify_reapply" = "পুনরায় আবেদন";
+"verify_become_subtitle" = "কাজের জন্য আবেদন করতে ও সেবা দিতে ভেরিফায়েড হোন।";
+"verify_become_button" = "ভেরিফায়েড হোন";
+"verify_nid_section" = "জাতীয় পরিচয়পত্র (এনআইডি)";
+"verify_nid_number" = "এনআইডি নম্বর";
+"verify_nid_front" = "এনআইডির সামনের ছবি";
+"verify_nid_back" = "এনআইডির পেছনের ছবি";
+"verify_phone_section" = "ফোন যাচাই";
+"verify_send_otp" = "কোড পাঠান";
+"verify_certificates_section" = "সার্টিফিকেট (ঐচ্ছিক)";
+"verify_add_certificates" = "সার্টিফিকেট যোগ করুন";
+"verify_certificates_count" = "%d টি ফাইল নির্বাচিত";
+"verify_certificates_hint" = "আবেদন শক্তিশালী করতে ট্রেড সার্টিফিকেট বা প্রশিক্ষণের কাগজ আপলোড করুন।";
+"verify_demos_section" = "কাজের ডেমো (ঐচ্ছিক)";
+"verify_demos_hint" = "আপনার কাজ দেখায় এমন ইউটিউব, ফেসবুক বা ড্রাইভ লিংক দিন।";
+"verify_demo_url_placeholder" = "https://youtube.com/...";
+"verify_submit" = "পর্যালোচনার জন্য জমা দিন";
+"verify_submit_failed" = "জমা ব্যর্থ: %@";
