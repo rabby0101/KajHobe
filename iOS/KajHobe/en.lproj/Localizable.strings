@@ -206,3 +206,5 @@
 "verify_demo_url_placeholder" = "https://youtube.com/...";
 "verify_submit" = "Submit for review";
 "verify_submit_failed" = "Submission failed: %@";
+
+"continue_with" = "Or continue with";

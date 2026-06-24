@@ -27,23 +27,17 @@ struct ServiceProviderVerificationView: View {
     @State private var demoURLs: [String] = []
     @State private var demoInput = ""
 
-    // Phone verification
+    // Phone is optional contact info now (phone OTP postponed); verified only if
+    // it came from the account's signup phone.
     @State private var phone = ""
     @State private var phoneVerified = false
-    @State private var otpSent = false
-    @State private var otpCode = ""
-    @State private var phoneBusy = false
 
     @State private var isSubmitting = false
     @State private var errorMessage = ""
 
-    private var isPhoneValid: Bool {
-        phone.range(of: "^01[0-9]{9}$", options: .regularExpression) != nil
-    }
     private var canSubmit: Bool {
         !nidNumber.trimmingCharacters(in: .whitespaces).isEmpty
             && nidFrontData != nil
-            && isPhoneValid && phoneVerified
             && !isSubmitting
     }
 
@@ -63,7 +57,13 @@ struct ServiceProviderVerificationView: View {
                 }
 
                 Section("verify_phone_section".localized) {
-                    phoneVerifyRows
+                    TextField("phone_hint_bd".localized, text: $phone)
+                        .keyboardType(.numberPad)
+                        .disabled(phoneVerified)
+                    if phoneVerified {
+                        Label("verified".localized, systemImage: "checkmark.seal.fill")
+                            .font(.caption).foregroundStyle(.blue)
+                    }
                 }
 
                 Section {
@@ -114,33 +114,6 @@ struct ServiceProviderVerificationView: View {
         .onChange(of: nidFrontItem) { _, item in loadImage(item, into: $nidFrontData) }
         .onChange(of: nidBackItem) { _, item in loadImage(item, into: $nidBackData) }
         .onChange(of: certItems) { _, items in loadCertImages(items) }
-    }
-
-    // MARK: - Phone verification UI
-
-    @ViewBuilder
-    private var phoneVerifyRows: some View {
-        HStack {
-            TextField("phone_hint_bd".localized, text: $phone)
-                .keyboardType(.numberPad)
-                .disabled(phoneVerified)
-            if phoneVerified {
-                Label("verified".localized, systemImage: "checkmark.seal.fill")
-                    .labelStyle(.iconOnly).foregroundStyle(.blue)
-            }
-        }
-        if !phoneVerified {
-            if otpSent {
-                TextField("otp_code".localized, text: $otpCode)
-                    .keyboardType(.numberPad)
-                Button("verify".localized) { verifyPhoneOTP() }
-                    .disabled(otpCode.count < 4 || phoneBusy)
-            } else {
-                Button("verify_send_otp".localized) { sendPhoneOTP() }
-                    .disabled(!isPhoneValid || phoneBusy)
-            }
-            if phoneBusy { ProgressView() }
-        }
     }
 
     // MARK: - Demo links UI
@@ -210,42 +183,6 @@ struct ServiceProviderVerificationView: View {
                 if let data = try? await item.loadTransferable(type: Data.self) { loaded.append(data) }
             }
             await MainActor.run { certData = loaded }
-        }
-    }
-
-    private func sendPhoneOTP() {
-        phoneBusy = true
-        errorMessage = ""
-        Task {
-            do {
-                _ = try await supabase.auth.update(
-                    user: UserAttributes(phone: bdPhoneToSupabase(phone))
-                )
-                await MainActor.run { otpSent = true; phoneBusy = false }
-            } catch {
-                await MainActor.run {
-                    phoneBusy = false
-                    errorMessage = String(format: "otp_failed".localized, error.localizedDescription)
-                }
-            }
-        }
-    }
-
-    private func verifyPhoneOTP() {
-        phoneBusy = true
-        errorMessage = ""
-        Task {
-            do {
-                _ = try await supabase.auth.verifyOTP(
-                    phone: bdPhoneToSupabase(phone), token: otpCode, type: .phoneChange
-                )
-                await MainActor.run { phoneVerified = true; otpSent = false; phoneBusy = false }
-            } catch {
-                await MainActor.run {
-                    phoneBusy = false
-                    errorMessage = String(format: "otp_failed".localized, error.localizedDescription)
-                }
-            }
         }
     }
 

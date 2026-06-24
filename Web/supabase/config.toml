@@ -19,17 +19,18 @@ verify_jwt = true
 [functions.send-sms-otp]
 verify_jwt = false
 
-# --- Auth: phone signup + BD SMS OTP ---------------------------------------
-# Phone is the primary identity in the BD market. Supabase has no built-in BD
-# SMS provider, so OTP delivery is delegated to the send-sms-otp edge function.
+# --- Auth: phone signup + BD SMS OTP (POSTPONED) ---------------------------
+# Phone OTP is disabled for now (no BD SMS gateway yet). Auth is email/password +
+# social OAuth. To re-enable later: set enable_signup = true and the hook
+# enabled = true, then configure the BD gateway secrets for send-sms-otp.
 [auth.sms]
-enable_signup = true
-enable_confirmations = true
+enable_signup = false
+enable_confirmations = false
 
 [auth.sms.twilio]
 enabled = false
 
 # Route all outbound auth SMS through our edge function (the BD gateway relay).
 [auth.hook.send_sms]
-enabled = true
+enabled = false
 uri = "https://xatlqnbrvgukuqewsxux.supabase.co/functions/v1/send-sms-otp"

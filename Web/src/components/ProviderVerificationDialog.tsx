@@ -26,10 +26,6 @@ interface Props {
   onSubmitted: () => void;
 }
 
-const BD_PHONE = /^01[0-9]{9}$/;
-// Supabase stores phone as 8801…; our buckets/UI use 01… locally.
-const toSupabasePhone = (p: string) => (p.startsWith('0') ? '88' + p : p);
-
 export default function ProviderVerificationDialog({
   open, onOpenChange, userId, existing, accountPhone, onSubmitted,
 }: Props) {
@@ -41,48 +37,16 @@ export default function ProviderVerificationDialog({
   const [demoInput, setDemoInput] = useState('');
 
   const [phone, setPhone] = useState(accountPhone ?? existing?.phone ?? '');
-  const [phoneVerified, setPhoneVerified] = useState(
-    Boolean(accountPhone) || existing?.phone_verified === true,
-  );
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [phoneBusy, setPhoneBusy] = useState(false);
-
   const [submitting, setSubmitting] = useState(false);
 
-  const phoneValid = BD_PHONE.test(phone);
-  const canSubmit = nidNumber.trim() !== '' && !!nidFront && phoneValid && phoneVerified && !submitting;
+  // Phone is optional contact info now (phone OTP is postponed). Treated as
+  // verified only if it came from the account's signup phone.
+  const phoneVerified = Boolean(accountPhone) || existing?.phone_verified === true;
+  const canSubmit = nidNumber.trim() !== '' && !!nidFront && !submitting;
 
   const addDemo = () => {
     const t = demoInput.trim();
     if (t) { setDemoUrls((u) => [...u, t]); setDemoInput(''); }
-  };
-
-  const sendOtp = async () => {
-    setPhoneBusy(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ phone: toSupabasePhone(phone) });
-      if (error) throw error;
-      setOtpSent(true);
-      toast({ title: 'Code sent', description: `We sent a code to ${phone}.` });
-    } catch (e: any) {
-      toast({ title: 'Could not send code', description: e.message, variant: 'destructive' });
-    } finally { setPhoneBusy(false); }
-  };
-
-  const verifyOtp = async () => {
-    setPhoneBusy(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        phone: toSupabasePhone(phone), token: otp, type: 'phone_change',
-      });
-      if (error) throw error;
-      setPhoneVerified(true);
-      setOtpSent(false);
-      toast({ title: 'Phone verified' });
-    } catch (e: any) {
-      toast({ title: 'Verification failed', description: e.message, variant: 'destructive' });
-    } finally { setPhoneBusy(false); }
   };
 
   const uploadDoc = async (bucket: string, file: File, name: string) => {
@@ -157,32 +121,14 @@ export default function ProviderVerificationDialog({
             </div>
           </div>
 
-          {/* Phone */}
+          {/* Phone (optional contact) */}
           <div className="space-y-2">
-            <Label>Phone verification</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="01XXXXXXXXX"
-                disabled={phoneVerified}
-              />
-              {phoneVerified ? (
-                <span className="flex items-center gap-1 text-sm text-blue-600">
-                  <BadgeCheck className="h-4 w-4" /> Verified
-                </span>
-              ) : otpSent ? null : (
-                <Button type="button" variant="outline" onClick={sendOtp} disabled={!phoneValid || phoneBusy}>
-                  Send code
-                </Button>
-              )}
-            </div>
-            {!phoneVerified && otpSent && (
-              <div className="flex items-center gap-2">
-                <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit code" />
-                <Button type="button" onClick={verifyOtp} disabled={otp.length < 4 || phoneBusy}>Verify</Button>
-              </div>
-            )}
+            <Label>Phone (optional)</Label>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="01XXXXXXXXX"
+            />
           </div>
 
           {/* Certificates */}

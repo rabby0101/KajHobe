@@ -207,3 +207,5 @@
 "verify_demo_url_placeholder" = "https://youtube.com/...";
 "verify_submit" = "পর্যালোচনার জন্য জমা দিন";
 "verify_submit_failed" = "জমা ব্যর্থ: %@";
+
+"continue_with" = "অথবা চালিয়ে যান";

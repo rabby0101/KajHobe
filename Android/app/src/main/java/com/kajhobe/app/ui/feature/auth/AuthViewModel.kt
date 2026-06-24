@@ -74,6 +74,23 @@ class AuthViewModel(
         }
     }
 
+    fun signInWithProvider(choice: OAuthChoice) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, infoMessage = null) }
+        viewModelScope.launch {
+            runCatching {
+                when (choice) {
+                    OAuthChoice.GOOGLE -> authRepository.signInWithGoogle()
+                    OAuthChoice.APPLE -> authRepository.signInWithApple()
+                    OAuthChoice.FACEBOOK -> authRepository.signInWithFacebook()
+                }
+            }.fold(
+                // The external browser opens; on return sessionStatus drives navigation.
+                onSuccess = { _uiState.update { it.copy(isLoading = false) } },
+                onFailure = { e -> _uiState.update { it.copy(isLoading = false, errorMessage = friendlyAuthError(e)) } },
+            )
+        }
+    }
+
     private fun isValidEmail(email: String): Boolean =
         android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 
@@ -99,3 +116,5 @@ class AuthViewModel(
         }
     }
 }
+
+enum class OAuthChoice { GOOGLE, APPLE, FACEBOOK }

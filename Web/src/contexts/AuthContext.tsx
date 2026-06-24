@@ -11,7 +11,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: any }>;
-  signInWithGithub: () => Promise<{ error: any }>;
+  signInWithApple: () => Promise<{ error: any }>;
+  signInWithFacebook: () => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -87,9 +88,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const signInWithGithub = async () => {
+  const signInWithApple = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
+      provider: 'apple',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      }
+    });
+    return { error };
+  };
+
+  const signInWithFacebook = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
       options: {
         redirectTo: `${window.location.origin}/`,
       }
@@ -105,7 +116,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signOut,
     signInWithGoogle,
-    signInWithGithub,
+    signInWithApple,
+    signInWithFacebook,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

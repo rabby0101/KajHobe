@@ -6,18 +6,10 @@ struct AuthView: View {
     enum Mode: String, CaseIterable { case signIn, signUp }
 
     @State private var mode: Mode = .signIn
-
-    // Sign-in state
-    @State private var signInKind: SignUpView.IdentifierKind = .phone
     @State private var email = ""
-    @State private var phone = ""
     @State private var password = ""
     @State private var isLoading = false
     @State private var errorMessage = ""
-
-    // OTP sheet (driven by a phone signup)
-    @State private var otpPhone: String?
-    @State private var otpName = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,43 +29,20 @@ struct AuthView: View {
             .padding(.bottom, 8)
 
             switch mode {
-            case .signIn:
-                signInForm
-            case .signUp:
-                SignUpView { phone, name in
-                    otpName = name
-                    otpPhone = phone
-                }
+            case .signIn: signInForm
+            case .signUp: SignUpView()
             }
         }
-        .onOpenURL { _ in handleSignIn() }
-        .sheet(item: Binding(
-            get: { otpPhone.map { OtpPhone(value: $0) } },
-            set: { otpPhone = $0?.value }
-        )) { wrapped in
-            OtpVerifyView(phone: wrapped.value, fullName: otpName)
-        }
+        .onOpenURL { url in handleCallback(url) }
     }
 
     private var signInForm: some View {
         Form {
             Section {
-                Picker("signup_identity".localized, selection: $signInKind) {
-                    Text("phone".localized).tag(SignUpView.IdentifierKind.phone)
-                    Text("email".localized).tag(SignUpView.IdentifierKind.email)
-                }
-                .pickerStyle(.segmented)
-
-                if signInKind == .phone {
-                    TextField("phone_hint_bd".localized, text: $phone)
-                        .keyboardType(.numberPad)
-                        .textContentType(.telephoneNumber)
-                } else {
-                    TextField("email".localized, text: $email)
-                        .textContentType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
+                TextField("email".localized, text: $email)
+                    .textContentType(.emailAddress)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                 SecureField("password".localized, text: $password)
                     .textContentType(.password)
             }
@@ -81,6 +50,11 @@ struct AuthView: View {
                 Button("sign_in".localized) { signInTapped() }
                     .disabled(isLoading)
                 if isLoading { ProgressView() }
+            }
+            Section("continue_with".localized) {
+                Button { oauth(.google) } label: { Label("Google", systemImage: "globe") }
+                Button { oauth(.apple) } label: { Label("Apple", systemImage: "applelogo") }
+                Button { oauth(.facebook) } label: { Label("Facebook", systemImage: "person.2.fill") }
             }
             if !errorMessage.isEmpty {
                 Section { Text(errorMessage).foregroundStyle(.red) }
@@ -91,10 +65,9 @@ struct AuthView: View {
     private func signInTapped() {
         isLoading = true
         errorMessage = ""
-        let identifier: AuthIdentifier = signInKind == .phone ? .phone(phone) : .email(email)
         Task {
             do {
-                try await supabase.auth.signInKaj(identifier: identifier, password: password)
+                _ = try await supabase.auth.signIn(email: email, password: password)
                 await MainActor.run { isLoading = false }
             } catch {
                 await MainActor.run {
@@ -105,25 +78,38 @@ struct AuthView: View {
         }
     }
 
-    private func handleSignIn() {
+    /// Browser-redirect OAuth. The SDK presents a web auth session and completes
+    /// it via the `kajhobe://auth-callback` scheme.
+    private func oauth(_ provider: Provider) {
         isLoading = true
+        errorMessage = ""
         Task {
             do {
-                let url = URL(string: "kajhobe://auth-callback")!
-                try await supabase.auth.session(from: url)
-                await MainActor.run { self.isLoading = false }
+                try await supabase.auth.signInWithOAuth(
+                    provider: provider,
+                    redirectTo: URL(string: "kajhobe://auth-callback")
+                )
+                await MainActor.run { isLoading = false }
             } catch {
                 await MainActor.run {
-                    self.isLoading = false
-                    self.errorMessage = "Sign in failed: \(error.localizedDescription)"
+                    isLoading = false
+                    errorMessage = String(format: "signin_failed".localized, error.localizedDescription)
                 }
             }
         }
     }
-}
 
-/// Identifiable wrapper so a phone string can drive a `.sheet(item:)`.
-private struct OtpPhone: Identifiable {
-    let value: String
-    var id: String { value }
+    private func handleCallback(_ url: URL) {
+        Task {
+            do {
+                try await supabase.auth.session(from: url)
+                await MainActor.run { isLoading = false }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = "Sign in failed: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
 }

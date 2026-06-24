@@ -6,13 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Github, Mail, Eye, EyeOff } from 'lucide-react';
+import { Mail, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { user, signUp, signIn, signInWithGoogle, signInWithGithub } = useAuth();
+  const { user, signUp, signIn, signInWithGoogle, signInWithApple, signInWithFacebook } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -94,12 +94,25 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleGithubSignIn = async () => {
+  const handleAppleSignIn = async () => {
     setLoading(true);
-    const { error } = await signInWithGithub();
+    const { error } = await signInWithApple();
     if (error) {
       toast({
-        title: "GitHub sign in failed",
+        title: "Apple sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleFacebookSignIn = async () => {
+    setLoading(true);
+    const { error } = await signInWithFacebook();
+    if (error) {
+      toast({
+        title: "Facebook sign in failed",
         description: error.message,
         variant: "destructive",
       });
@@ -225,14 +238,16 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-3 gap-3">
               <Button variant="outline" onClick={handleGoogleSignIn} disabled={loading}>
                 <Mail className="h-4 w-4 mr-2" />
                 Google
               </Button>
-              <Button variant="outline" onClick={handleGithubSignIn} disabled={loading}>
-                <Github className="h-4 w-4 mr-2" />
-                GitHub
+              <Button variant="outline" onClick={handleAppleSignIn} disabled={loading}>
+                Apple
+              </Button>
+              <Button variant="outline" onClick={handleFacebookSignIn} disabled={loading}>
+                Facebook
               </Button>
             </div>
           </div>

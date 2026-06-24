@@ -82,8 +82,8 @@ fun ProviderVerificationDialog(
         certs = uris.mapNotNull { readBytes(it) }
     }
 
-    val phoneValid = Regex("^01[0-9]{9}$").matches(phone)
-    val canSubmit = nidNumber.isNotBlank() && nidFront != null && phoneValid && !submitting
+    // Phone is optional contact info now (phone OTP postponed).
+    val canSubmit = nidNumber.isNotBlank() && nidFront != null && !submitting
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surface) {

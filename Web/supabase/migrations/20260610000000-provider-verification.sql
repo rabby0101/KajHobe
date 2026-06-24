@@ -105,6 +105,7 @@ CREATE OR REPLACE FUNCTION public.refresh_public_profile(user_id uuid)
  RETURNS void
  LANGUAGE plpgsql
  SECURITY DEFINER
+ SET search_path = public
 AS $function$
 DECLARE
     profile_record RECORD;
@@ -217,6 +218,7 @@ CREATE OR REPLACE FUNCTION public.trigger_create_initial_public_profile()
  RETURNS trigger
  LANGUAGE plpgsql
  SECURITY DEFINER
+ SET search_path = public
 AS $function$
 BEGIN
     INSERT INTO public_profiles (
