@@ -320,7 +320,10 @@ class ProfileNetworking: BaseNetworking {
     /// (matches the per-user-folder Storage RLS). Returns the stored object path.
     func uploadProviderDoc(bucket: String, fileName: String, data: Data) async throws -> String {
         let user = try supabase.auth.requireCurrentUser()
-        let path = "\(user.id.uuidString)/\(fileName)"
+        // Storage RLS compares the folder to `auth.uid()::text`, which Postgres emits
+        // lowercase. Swift's uuidString is UPPERCASE, so lowercase it or every upload
+        // fails with "new row violates row-level security policy".
+        let path = "\(user.id.uuidString.lowercased())/\(fileName)"
         _ = try await supabase.storage
             .from(bucket)
             .upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))

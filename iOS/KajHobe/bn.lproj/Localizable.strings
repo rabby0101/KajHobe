@@ -196,7 +196,8 @@
 "verify_nid_number" = "এনআইডি নম্বর";
 "verify_nid_front" = "এনআইডির সামনের ছবি";
 "verify_nid_back" = "এনআইডির পেছনের ছবি";
-"verify_phone_section" = "ফোন যাচাই";
+"verify_phone_section" = "ফোন (ঐচ্ছিক)";
+"verify_phone_invalid" = "একটি সঠিক বাংলাদেশি মোবাইল নম্বর দিন (01XXXXXXXXX)।";
 "verify_send_otp" = "কোড পাঠান";
 "verify_certificates_section" = "সার্টিফিকেট (ঐচ্ছিক)";
 "verify_add_certificates" = "সার্টিফিকেট যোগ করুন";

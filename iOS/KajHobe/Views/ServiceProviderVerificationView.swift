@@ -187,6 +187,16 @@ struct ServiceProviderVerificationView: View {
     }
 
     private func submit() {
+        // Phone is optional, but if provided it must be a valid BD mobile number
+        // (matches the DB CHECK `^01[0-9]{9}$`). Validate up front for a clear
+        // message instead of a raw Postgres constraint error after the uploads.
+        let trimmedPhone = phone.trimmingCharacters(in: .whitespaces)
+        if !trimmedPhone.isEmpty,
+           trimmedPhone.range(of: "^01[0-9]{9}$", options: .regularExpression) == nil {
+            errorMessage = "verify_phone_invalid".localized
+            return
+        }
+
         isSubmitting = true
         errorMessage = ""
         Task {
@@ -212,14 +222,16 @@ struct ServiceProviderVerificationView: View {
                     certPaths.append(path)
                 }
 
+                // Phone is optional now. Send nil (not "") when blank so the DB's
+                // `phone IS NULL OR phone ~ '^01[0-9]{9}$'` CHECK isn't violated.
                 let payload = ProviderVerificationSubmit(
                     user_id: user.id.uuidString,
                     status: "pending",
                     nid_number: nidNumber.trimmingCharacters(in: .whitespaces),
                     nid_front_path: frontPath,
                     nid_back_path: backPath,
-                    phone: phone,
-                    phone_verified: phoneVerified,
+                    phone: trimmedPhone.isEmpty ? nil : trimmedPhone,
+                    phone_verified: phoneVerified && !trimmedPhone.isEmpty,
                     certificate_paths: certPaths,
                     demo_video_urls: demoURLs,
                     submitted_at: ISO8601DateFormatter().string(from: Date())

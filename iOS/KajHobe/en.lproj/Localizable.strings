@@ -195,7 +195,8 @@
 "verify_nid_number" = "NID number";
 "verify_nid_front" = "NID front photo";
 "verify_nid_back" = "NID back photo";
-"verify_phone_section" = "Phone verification";
+"verify_phone_section" = "Phone (optional)";
+"verify_phone_invalid" = "Enter a valid Bangladeshi mobile number (01XXXXXXXXX).";
 "verify_send_otp" = "Send code";
 "verify_certificates_section" = "Certificates (optional)";
 "verify_add_certificates" = "Add certificates";
