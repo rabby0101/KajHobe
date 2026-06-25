@@ -72,6 +72,7 @@ fun ProviderVerificationDialog(
     var demoUrls by remember { mutableStateOf(existing?.demo_video_urls ?: emptyList()) }
     var demoInput by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf(accountPhone ?: existing?.phone ?: "") }
+    var phoneError by remember { mutableStateOf(false) }
 
     fun readBytes(uri: Uri?): ByteArray? =
         uri?.let { runCatching { context.contentResolver.openInputStream(it)?.use { s -> s.readBytes() } }.getOrNull() }
@@ -126,10 +127,14 @@ fun ProviderVerificationDialog(
 
                 OutlinedTextField(
                     value = phone,
-                    onValueChange = { phone = it },
+                    onValueChange = { phone = it; phoneError = false },
                     label = { Text("Phone (01XXXXXXXXX)") },
                     enabled = accountPhone == null,
                     singleLine = true,
+                    isError = phoneError,
+                    supportingText = if (phoneError) {
+                        { Text("Enter a valid Bangladeshi mobile number (01XXXXXXXXX).") }
+                    } else null,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -168,7 +173,17 @@ fun ProviderVerificationDialog(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                     TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
                     Button(
-                        onClick = { onSubmit(nidNumber, nidFront, nidBack, certs, demoUrls, phone) },
+                        onClick = {
+                            // Phone is optional, but if provided it must be a valid BD mobile
+                            // number (matches the DB CHECK `^01[0-9]{9}$`). Validate up front for
+                            // a clear message instead of a raw Postgres constraint error after upload.
+                            val trimmed = phone.trim()
+                            if (trimmed.isNotEmpty() && !Regex("^01[0-9]{9}$").matches(trimmed)) {
+                                phoneError = true
+                            } else {
+                                onSubmit(nidNumber, nidFront, nidBack, certs, demoUrls, trimmed)
+                            }
+                        },
                         enabled = canSubmit,
                         modifier = Modifier.weight(1f),
                     ) { Text(if (submitting) "Submitting…" else "Submit") }
