@@ -16,6 +16,7 @@ import MessageList from '@/components/chat/MessageList';
 import OfferForm, { OfferData } from '@/components/chat/OfferForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMyDeals } from '@/hooks/useDeals';
+import { useSendDealOffer } from '@/hooks/useDealOffers';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -89,6 +90,7 @@ const Messages = () => {
   // Fetch messages for selected conversation
   const { data: messages = [], refetch: refetchMessages } = useConversationMessages(selectedConversation?.id || '');
   const sendMessage = useSendMessage();
+  const sendDealOffer = useSendDealOffer();
   const { data: deals } = useMyDeals();
 
   // Check if user is provider for current conversation
@@ -280,15 +282,17 @@ const Messages = () => {
     if (!selectedConversation || !user) return;
 
     try {
-      await sendMessage.mutateAsync({
-        conversation_id: selectedConversation.id,
-        content: `💼 Custom Offer: ৳${offerData.proposedCost} - ${offerData.serviceDescription}`,
-        message_type: 'offer',
-        negotiation_data: {
-          ...offerData,
-          type: 'offer',
-          status: 'pending'
-        }
+      // Send in the cross-platform `deal_offer` format (deal_offers row + linked
+      // message) so it renders on iOS/Android and supports Accept & Pay (escrow).
+      await sendDealOffer.mutateAsync({
+        conversationId: selectedConversation.id,
+        jobId: selectedConversation.job_id,
+        clientId: selectedConversation.client_id,
+        providerId: selectedConversation.provider_id,
+        amount: offerData.amount,
+        terms: offerData.terms,
+        timeline: offerData.timeline,
+        additionalMessage: offerData.additionalMessage,
       });
 
       setShowOfferForm(false);

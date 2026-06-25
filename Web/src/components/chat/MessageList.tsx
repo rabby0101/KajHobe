@@ -6,9 +6,11 @@ import { formatDistanceToNow } from 'date-fns';
 import ImageMessage from './ImageMessage';
 import NegotiationMessage from './NegotiationMessage';
 import OfferMessage from './OfferMessage';
+import DealOfferBubble from './DealOfferBubble';
 import JobPreview from './JobPreview';
 import DealSummary from './DealSummary';
 import OfferForm, { OfferData } from './OfferForm';
+import { useDealOfferStatuses, useRejectDealOffer } from '@/hooks/useDealOffers';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +47,15 @@ const MessageList: React.FC<MessageListProps> = ({
     open: boolean;
     message: Message | null;
   }>({ open: false, message: null });
+
+  // Live deal-offer statuses (the bKash webhook flips status out of band, so we
+  // must read it from the deal_offers table rather than the message payload).
+  const dealOfferIds = messages
+    .filter((m) => m.message_type === 'deal_offer')
+    .map((m) => (m.negotiation_data as Record<string, unknown> | undefined)?.deal_offer_id as string)
+    .filter(Boolean);
+  const { data: dealStatuses = {} } = useDealOfferStatuses(dealOfferIds);
+  const rejectDealOffer = useRejectDealOffer();
 
   const handleCounterOffer = (message: Message) => {
     setCounterOfferDialog({ open: true, message });
@@ -87,7 +98,24 @@ const MessageList: React.FC<MessageListProps> = ({
             );
           }
           
-          // Handle offer messages (new format)
+          // Handle deal offers (cross-platform format used by iOS/Android).
+          if (message.message_type === 'deal_offer') {
+            const dealOfferId = (message.negotiation_data as Record<string, unknown> | undefined)
+              ?.deal_offer_id as string | undefined;
+            const status = (dealOfferId && dealStatuses[dealOfferId]) || 'pending';
+            return (
+              <DealOfferBubble
+                key={message.id}
+                message={message}
+                isOwnMessage={isOwnMessage}
+                status={status}
+                onReject={(id) => rejectDealOffer.mutate(id)}
+                isRejecting={rejectDealOffer.isPending}
+              />
+            );
+          }
+
+          // Handle offer messages (legacy web format)
           if (message.negotiation_data && message.negotiation_data.serviceDescription) {
             return (
               <OfferMessage
@@ -160,7 +188,15 @@ const MessageList: React.FC<MessageListProps> = ({
             <OfferForm
               onSubmit={handleSendCounterOffer}
               onCancel={() => setCounterOfferDialog({ open: false, message: null })}
-              initialData={counterOfferDialog.message.negotiation_data}
+              initialData={(() => {
+                const nd = (counterOfferDialog.message.negotiation_data ?? {}) as Record<string, unknown>;
+                return {
+                  amount: (nd.amount as number) ?? (nd.proposedCost as number) ?? 0,
+                  terms: (nd.terms as string) ?? (nd.serviceDescription as string) ?? '',
+                  timeline: (nd.timeline as string) ?? '',
+                  additionalMessage: (nd.additional_message as string) ?? (nd.additionalNotes as string) ?? '',
+                };
+              })()}
               isCounterOffer={true}
             />
           )}

@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useCreateDeal } from '@/hooks/useJobActions';
+import { useSendDealOffer } from '@/hooks/useDealOffers';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { MessageCircle, User, Briefcase } from 'lucide-react';
@@ -41,6 +42,7 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
   const { data: messages = [], isLoading } = useMessages(conversationId);
   const sendMessage = useSendMessage();
   const createDeal = useCreateDeal();
+  const sendDealOffer = useSendDealOffer();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Get conversation details
@@ -134,27 +136,25 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
   };
 
   const handleSendOffer = async (offerData: OfferData) => {
+    if (!conversation) return;
     try {
-      const negotiationData = {
-        type: 'offer',
-        serviceDescription: offerData.serviceDescription,
-        proposedCost: offerData.proposedCost,
-        serviceDate: offerData.serviceDate,
-        serviceTime: offerData.serviceTime,
-        additionalNotes: offerData.additionalNotes,
-        status: 'pending'
-      };
+      // Cross-platform `deal_offer` format (deal_offers row + linked message) so the
+      // offer renders on iOS/Android and supports Accept & Pay. Only the provider may
+      // create an offer (deal_offers RLS requires auth.uid() = provider_id).
+      await sendDealOffer.mutateAsync({
+        conversationId,
+        jobId: conversation.job_id,
+        clientId: conversation.client_id,
+        providerId: conversation.provider_id,
+        amount: offerData.amount,
+        terms: offerData.terms,
+        timeline: offerData.timeline,
+        additionalMessage: offerData.additionalMessage,
+      });
 
-      await handleSendMessage(
-        `Sent an offer: ${offerData.serviceDescription} - ৳${offerData.proposedCost}`, 
-        'negotiation', 
-        offerData.attachmentUrl,
-        negotiationData
-      );
-      
       toast({
         title: "Offer Sent!",
-        description: "Your custom offer has been sent successfully.",
+        description: "Your offer has been sent successfully.",
       });
     } catch (error) {
       console.error('Failed to send offer:', error);
@@ -318,7 +318,8 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
               onSendMessage={handleSendMessage}
               onSendOffer={handleSendOffer}
               disabled={sendMessage.isPending}
-              showOfferButton={!dealData} // Hide offer button if deal exists
+              // Only the provider can send an offer, and only before a deal exists.
+              showOfferButton={!dealData && !!user && user.id === conversation?.provider_id}
               conversationId={conversationId}
             />
           </div>

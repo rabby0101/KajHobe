@@ -6,11 +6,20 @@ import { useEffect } from 'react';
 
 export interface Notification {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  // Newer addressing columns used by the mobile apps. `to_user_id` is the
+  // recipient; legacy rows used `user_id` instead.
+  to_user_id: string | null;
+  from_user_id: string | null;
   title: string;
   message: string;
   type: string;
   read: boolean;
+  notification_state: string | null;
+  read_at: string | null;
+  status: string | null;
+  job_id: string | null;
+  offer_data: Record<string, unknown> | null;
   related_job_id: string | null;
   related_proposal_id: string | null;
   created_at: string;
@@ -39,26 +48,14 @@ export const useNotifications = () => {
       try {
         if (!user) return [];
         
-        console.log('Fetching notifications for user:', user.id);
-        
-        // Debug: First check if any notifications exist at all
-        const { data: allNotifications, error: allError } = await supabase
-          .from('notifications')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
-        console.log('Total notifications in database:', allNotifications?.length || 0);
-        if (allNotifications && allNotifications.length > 0) {
-          console.log('Sample notification:', allNotifications[0]);
-          console.log('User IDs in notifications:', allNotifications.map(n => n.user_id));
-        }
-        
-        // Now fetch for specific user
+        // Notifications are addressed via either the legacy `user_id` column or the
+        // newer `to_user_id` column. Mobile (iOS/Android) writes only `to_user_id`,
+        // so match BOTH — same as the apps — or web users never see show-interest /
+        // deal-offer / completion notifications.
         const { data, error } = await supabase
           .from('notifications')
           .select('*')
-          .eq('user_id', user.id)
+          .or(`user_id.eq.${user.id},to_user_id.eq.${user.id}`)
           .order('created_at', { ascending: false })
           .limit(50);
         
@@ -68,10 +65,6 @@ export const useNotifications = () => {
           return [];
         }
         
-        console.log('Notifications fetched for user', user.id, ':', data?.length || 0, 'notifications');
-        if (data && data.length > 0) {
-          console.log('User notifications:', data);
-        }
         return (data || []) as GroupedNotification[];
       } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -97,7 +90,7 @@ export const useNotifications = () => {
         const { count, error } = await supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
+          .or(`user_id.eq.${user.id},to_user_id.eq.${user.id}`)
           .eq('notification_state', 'unread');
         
         if (error) {
@@ -164,7 +157,7 @@ export const useMarkConversationNotificationsAsRead = () => {
       const { error } = await supabase
         .from('notifications')
         .update({ read: true, notification_state: 'read', read_at: new Date().toISOString() })
-        .eq('user_id', user.id)
+        .or(`user_id.eq.${user.id},to_user_id.eq.${user.id}`)
         .eq('related_proposal_id', conversationId)
         .eq('notification_state', 'unread');
       
@@ -192,7 +185,7 @@ export const useMarkAllNotificationsAsRead = () => {
       const { error } = await supabase
         .from('notifications')
         .update({ read: true, notification_state: 'read', read_at: new Date().toISOString() })
-        .eq('user_id', user.id)
+        .or(`user_id.eq.${user.id},to_user_id.eq.${user.id}`)
         .eq('notification_state', 'unread');
 
       if (error) {
@@ -251,15 +244,24 @@ export const useEnhancedNotifications = () => {
 
   useEffect(() => {
     if (!user?.id) return;
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey: ['enhanced-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    };
+    // A postgres_changes filter only takes one condition, so subscribe to both
+    // addressing columns: legacy `user_id` and mobile `to_user_id`.
     const channel = supabase
       .channel(`notifications_${user.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['enhanced-notifications'] });
-          queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
-        }
+        invalidate
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `to_user_id=eq.${user.id}` },
+        invalidate
       )
       .subscribe();
     return () => {
@@ -276,7 +278,8 @@ export const useEnhancedNotifications = () => {
         .select(
           'id, title, message, type, notification_state, interaction_type, action_data, priority, avatar_url, from_user_id, related_job_id, created_at'
         )
-        .eq('user_id', user.id)
+        // Match both addressing columns (legacy user_id + mobile to_user_id).
+        .or(`user_id.eq.${user.id},to_user_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) {
