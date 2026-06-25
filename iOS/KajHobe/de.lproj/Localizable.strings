@@ -127,3 +127,40 @@
 "network_error" = "Netzwerkfehler";
 "try_again" = "Bitte versuchen Sie es erneut";
 "something_went_wrong" = "Etwas ist schief gelaufen";
+
+/* Reviews */
+"review_sheet_title" = "Bewerten Sie Ihre Erfahrung";
+"review_sheet_subtitle" = "Wie war die Zusammenarbeit mit %@?";
+"review_comment_label" = "Ihre Bewertung (optional)";
+"review_comment_placeholder" = "Schreiben Sie ein paar Worte dazu — Qualität, Kommunikation, Pünktlichkeit.";
+"review_submit" = "Bewertung absenden";
+"review_maybe_later" = "Vielleicht später";
+"review_thanks" = "Danke für Ihre Bewertung!";
+"review_error_already_reviewed" = "Sie haben diesen Auftrag bereits bewertet.";
+"review_error_job_not_completed" = "Bewertungen sind erst nach Abschluss des Auftrags möglich.";
+"review_error_generic" = "Bewertung konnte nicht gesendet werden. Bitte erneut versuchen.";
+"review_rating_accessibility_label" = "Bewertung";
+"review_rating_accessibility_value" = "%d von 5 Sternen";
+"leave_review" = "Bewertung abgeben";
+"review_submitted_badge" = "Bewertet";
+
+/* Dashboard Analytics & Reputation */
+"dashboard_analytics" = "Statistiken";
+"dashboard_money_flow" = "Geldfluss pro Monat";
+"dashboard_deal_status" = "Deal-Status";
+"dashboard_rating_trend" = "Bewertungstrend";
+"dashboard_chart_needs_history" = "Schließen Sie einige Deals ab, um Ihren Geldfluss zu sehen.";
+"dashboard_chart_no_deals" = "Noch keine Deals.";
+"dashboard_chart_needs_reviews" = "Ihr Bewertungstrend erscheint nach einigen Bewertungen.";
+"dashboard_reputation" = "Reputation";
+"dashboard_no_reviews_yet" = "Noch keine Bewertungen — sie erscheinen hier, sobald Kunden Ihre Arbeit bewerten.";
+"dashboard_latest_reviews" = "Neueste Bewertungen";
+"dashboard_view_all_reviews" = "Alle %d Bewertungen ansehen";
+"dashboard_trust_progress" = "Nächste Stufe: %@ (%d Aufträge, %.1f+ Bewertung)";
+"dashboard_trust_top_tier" = "Höchste Stufe erreicht — Sie sind Experte!";
+"dashboard_reviews_title" = "Bewertungen";
+"deals_filter_active" = "Aktiv";
+"deals_filter_completed" = "Abgeschlossen";
+"deals_filter_all" = "Alle";
+"deals_list_title" = "Meine Deals";
+"deals_list_empty" = "Keine Deals vorhanden.";

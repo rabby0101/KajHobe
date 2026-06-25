@@ -38,14 +38,18 @@ public enum DatabaseNotificationType: String, Sendable, CaseIterable {
 }
 
 // MARK: - Helper struct for encoding Any values
-struct AnyEncodable: Encodable, Sendable {
+nonisolated struct AnyEncodable: Encodable {
     let value: Any
-    
-    nonisolated init(_ value: Any) {
+
+    init(_ value: Any) {
         self.value = value
     }
-    
-    nonisolated func encode(to encoder: Encoder) throws {
+
+    init<T: Encodable>(_ value: T?) {
+        self.value = value as Any
+    }
+
+    func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         
         switch value {
@@ -429,6 +433,7 @@ enum EscrowState: String, Codable, Sendable, CaseIterable {
     case paid_out  = "paid_out"   // provider has received the money
     case refunded  = "refunded"   // returned to the buyer
     case failed    = "failed"     // a collect/payout attempt failed
+    case resolved  = "resolved"   // a dispute was settled by an admin (refund/payout split)
 
     /// Short human label for badges.
     var label: String {
@@ -439,6 +444,7 @@ enum EscrowState: String, Codable, Sendable, CaseIterable {
         case .paid_out: return "Paid out"
         case .refunded: return "Refunded"
         case .failed:   return "Payment failed"
+        case .resolved: return "Dispute resolved"
         }
     }
 
@@ -451,6 +457,7 @@ enum EscrowState: String, Codable, Sendable, CaseIterable {
         case .paid_out: return "checkmark.circle.fill"
         case .refunded: return "arrow.uturn.backward.circle.fill"
         case .failed:   return "xmark.octagon.fill"
+        case .resolved: return "checkmark.shield.fill"
         }
     }
 }
@@ -508,6 +515,7 @@ struct Profile: Identifiable, Codable, Sendable {
     var bio: String?
     var website: String?
     var is_service_provider: Bool?
+    var is_verified_provider: Bool?
     let role: String?
     let average_rating: Double?
     let ratings_count: Int?
@@ -534,6 +542,44 @@ struct Profile: Identifiable, Codable, Sendable {
     let device_token: String?
     let push_enabled: Bool?
     let last_push_sent_at: String?
+
+    // Stats (computed server-side)
+    let completed_jobs: Int?
+    let total_earnings: Double?
+    let total_spent: Double?
+}
+
+// MARK: - Provider verification
+/// One row in `provider_verifications`: a provider's application to be verified.
+/// Decoded for the signed-in user to drive the verification screen's state.
+struct ProviderVerification: Codable, Sendable {
+    let id: String?
+    let user_id: String?
+    let status: String            // pending | approved | rejected
+    let nid_number: String?
+    let nid_front_path: String?
+    let nid_back_path: String?
+    let phone: String?
+    let phone_verified: Bool?
+    let certificate_paths: [String]?
+    let demo_video_urls: [String]?
+    let rejection_reason: String?
+    let submitted_at: String?
+    let reviewed_at: String?
+}
+
+/// Insert/upsert payload for submitting (or resubmitting) a verification request.
+nonisolated struct ProviderVerificationSubmit: Codable, Sendable {
+    let user_id: String
+    let status: String            // always "pending" on submit
+    let nid_number: String?
+    let nid_front_path: String?
+    let nid_back_path: String?
+    let phone: String?
+    let phone_verified: Bool
+    let certificate_paths: [String]
+    let demo_video_urls: [String]
+    let submitted_at: String
 }
 
 struct ProfileInsert: Codable, Sendable {
@@ -568,27 +614,7 @@ struct SimpleProfile: Identifiable, Codable, Sendable {
     }
     
     var formattedLastSeen: String {
-        guard let lastSeenAt = last_seen_at else { return "Never" }
-        
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: lastSeenAt) else { return "Unknown" }
-        
-        let now = Date()
-        let interval = now.timeIntervalSince(date)
-        
-        if interval < 60 {
-            return "Just now"
-        } else if interval < 3600 {
-            let minutes = Int(interval / 60)
-            return "\(minutes) min ago"
-        } else if interval < 86400 {
-            let hours = Int(interval / 3600)
-            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
-        } else {
-            let days = Int(interval / 86400)
-            return "\(days) day\(days == 1 ? "" : "s") ago"
-        }
+        AppDateFormatter.presenceTimeAgo(last_seen_at)
     }
     
     var averageResponseTimeText: String {
@@ -661,6 +687,7 @@ struct PublicProfile: Identifiable, Codable, Sendable {
     let location: String?
     let website: String?
     let is_service_provider: Bool?
+    let is_verified_provider: Bool?
     let created_at: String?
 
     // Computed Statistics (pre-calculated for performance)
@@ -757,27 +784,7 @@ struct PublicProfile: Identifiable, Codable, Sendable {
     }
 
     var formattedLastSeen: String {
-        guard let lastSeenAt = last_seen_at else { return "Never" }
-
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: lastSeenAt) else { return "Unknown" }
-
-        let now = Date()
-        let interval = now.timeIntervalSince(date)
-
-        if interval < 60 {
-            return "Just now"
-        } else if interval < 3600 {
-            let minutes = Int(interval / 60)
-            return "\(minutes) min ago"
-        } else if interval < 86400 {
-            let hours = Int(interval / 3600)
-            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
-        } else {
-            let days = Int(interval / 86400)
-            return "\(days) day\(days == 1 ? "" : "s") ago"
-        }
+        AppDateFormatter.presenceTimeAgo(last_seen_at)
     }
 
     var responseTimeText: String {
@@ -805,12 +812,31 @@ struct PublicProfile: Identifiable, Codable, Sendable {
 
 /// Service highlight showing provider's expertise in specific categories
 struct ServiceHighlight: Identifiable, Codable, Sendable {
-    let id = UUID().uuidString
+    let id: String
     let category: String
     let job_count: Int
     let avg_rating: Double?
     let recent_completion: String?
     let avg_job_value: Double?
+
+    init(id: String = UUID().uuidString, category: String, job_count: Int, avg_rating: Double?, recent_completion: String?, avg_job_value: Double?) {
+        self.id = id
+        self.category = category
+        self.job_count = job_count
+        self.avg_rating = avg_rating
+        self.recent_completion = recent_completion
+        self.avg_job_value = avg_job_value
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = (try? c.decode(String.self, forKey: .id)) ?? UUID().uuidString
+        self.category = try c.decode(String.self, forKey: .category)
+        self.job_count = try c.decode(Int.self, forKey: .job_count)
+        self.avg_rating = try c.decodeIfPresent(Double.self, forKey: .avg_rating)
+        self.recent_completion = try c.decodeIfPresent(String.self, forKey: .recent_completion)
+        self.avg_job_value = try c.decodeIfPresent(Double.self, forKey: .avg_job_value)
+    }
 
     var formattedJobCount: String {
         return job_count == 1 ? "1 job" : "\(job_count) jobs"
@@ -822,23 +848,7 @@ struct ServiceHighlight: Identifiable, Codable, Sendable {
     }
 
     var formattedRecentCompletion: String {
-        guard let completion = recent_completion else { return "No recent work" }
-
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: completion) else { return "Unknown" }
-
-        let interval = Date().timeIntervalSince(date)
-        let days = Int(interval / 86400)
-
-        if days == 0 {
-            return "Today"
-        } else if days == 1 {
-            return "Yesterday"
-        } else if days < 30 {
-            return "\(days) days ago"
-        } else {
-            return "Over a month ago"
-        }
+        AppDateFormatter.recentWork(recent_completion)
     }
 }
 
@@ -896,7 +906,7 @@ struct Review: Identifiable, Codable, Sendable {
     let created_at: String?
 }
 
-struct ReviewInsert: Codable, Sendable {
+nonisolated struct ReviewInsert: Codable, Sendable {
     let job_id: String  // Changed from Int to String (uuid)
     let reviewer_id: String  // uuid
     let reviewed_id: String  // uuid
@@ -918,17 +928,7 @@ struct ProviderReview: Identifiable, Sendable {
 
     var formattedDate: String {
         guard let created_at else { return "" }
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        var date = formatter.date(from: created_at)
-        if date == nil {
-            formatter.formatOptions = [.withInternetDateTime]
-            date = formatter.date(from: created_at)
-        }
-        guard let date else { return "" }
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        return f.string(from: date)
+        return AppDateFormatter.mediumDate(created_at, fallback: "")
     }
 }
 
@@ -1088,7 +1088,7 @@ enum InteractionType: String, Codable, CaseIterable {
 
 // Notification action
 struct NotificationAction: Identifiable, Codable, Sendable {
-    let id = UUID().uuidString
+    let id: String
     let type: String // "accept", "reject", "view", etc.
     let label: String
     let style: String // "primary", "secondary", "destructive"
@@ -1097,12 +1097,23 @@ struct NotificationAction: Identifiable, Codable, Sendable {
     let title: String
     let systemIcon: String?
 
-    init(type: String, label: String, style: String, title: String? = nil, systemIcon: String? = nil) {
+    init(id: String = UUID().uuidString, type: String, label: String, style: String, title: String? = nil, systemIcon: String? = nil) {
+        self.id = id
         self.type = type
         self.label = label
         self.style = style
         self.title = title ?? label
         self.systemIcon = systemIcon
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = (try? c.decode(String.self, forKey: .id)) ?? UUID().uuidString
+        self.type = try c.decode(String.self, forKey: .type)
+        self.label = try c.decode(String.self, forKey: .label)
+        self.style = try c.decode(String.self, forKey: .style)
+        self.title = (try? c.decode(String.self, forKey: .title)) ?? ""
+        self.systemIcon = try c.decodeIfPresent(String.self, forKey: .systemIcon)
     }
 }
 
@@ -1160,10 +1171,7 @@ struct EnhancedNotification: Identifiable, Codable, Sendable {
     }
     
     var timeAgo: String {
-        guard let date = ISO8601DateFormatter().date(from: created_at) else {
-            return "Unknown time"
-        }
-        return RelativeDateTimeFormatter().localizedString(for: date, relativeTo: Date())
+        AppDateFormatter.localizedRelativeTime(created_at)
     }
     
     // MARK: - Custom Codable Implementation
@@ -1719,6 +1727,35 @@ struct DealWithCompletion: Identifiable, Codable, Sendable {
     var client_profile: SimpleProfile?
     var provider_profile: SimpleProfile?
     var pending_completion_requests: [CompletionRequest]?
+}
+
+extension DealWithCompletion {
+    /// Lift a plain `Deal` into the completion-aware shape used by
+    /// DealDetailView. Shared by the Dashboard, NotificationsView and AppRouter
+    /// so the field-by-field mapping lives in one place.
+    init(from deal: Deal) {
+        self.init(
+            id: deal.id,
+            job_id: deal.job_id,
+            client_id: deal.client_id,
+            provider_id: deal.provider_id,
+            agreed_amount: deal.agreed_amount,
+            agreed_terms: deal.agreed_terms,
+            timeline: deal.timeline,
+            status: deal.status,
+            completion_status: deal.completion_status ?? "in_progress",
+            client_completion_requested: deal.client_completion_requested ?? false,
+            provider_completion_requested: deal.provider_completion_requested ?? false,
+            client_completion_requested_at: deal.client_completion_requested_at,
+            provider_completion_requested_at: deal.provider_completion_requested_at,
+            created_at: deal.created_at,
+            completed_at: deal.completed_at,
+            job: deal.job,
+            client_profile: deal.client_profile,
+            provider_profile: deal.provider_profile,
+            pending_completion_requests: nil
+        )
+    }
 }
 
 // MARK: - Chat Models

@@ -13,7 +13,8 @@ import JobCard from '@/components/JobCard';
 import ChatDialog from '@/components/chat/ChatDialog';
 import { useGetOrCreateConversation } from '@/hooks/useChat';
 import { supabase } from '@/integrations/supabase/client';
-import { serviceCategories, ServiceCategory, getColorClasses } from '@/lib/categories';
+import { serviceCategories } from '@/lib/categories';
+import CategoryCard from '@/components/CategoryCard';
 
 const BrowseJobs = () => {
   const { data: jobs = [], isLoading, error, refetch } = useJobs();
@@ -25,7 +26,6 @@ const BrowseJobs = () => {
   }>({ open: false, job: null, conversation: null });
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showAllCategories, setShowAllCategories] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const getOrCreateConversation = useGetOrCreateConversation();
 
@@ -50,15 +50,17 @@ const BrowseJobs = () => {
     return matchesSearch && matchesCategory && (job.status === 'open' || job.status === 'active');
   });
 
-  // Get first 4 categories for display
-  const displayCategories = serviceCategories.slice(0, 4);
+  // Show every category (scrollable), matching the homepage.
+  const displayCategories = serviceCategories;
 
   // Get job count for a category
   const getJobCount = (categoryName: string) => {
-    return jobs.filter((job: any) => 
+    return jobs.filter((job: any) =>
       job.category.toLowerCase().includes(categoryName.toLowerCase())
     ).length;
   };
+
+  const allJobsCount = jobs.filter((job: any) => job.status === 'open' || job.status === 'active').length;
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -190,19 +192,15 @@ const BrowseJobs = () => {
 
         {/* Categories Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Service Categories</h2>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowAllCategories(true)}
-              className="text-blue-600"
-            >
-              Show All
-            </Button>
-          </div>
-          
+          <h2 className="text-2xl font-bold">Service Categories</h2>
+
           <div className="flex gap-4 overflow-x-auto pb-2">
+            <CategoryCard
+              category={{ id: 'all', name: 'All', bengaliName: 'সব কাজ', icon: '📋', color: 'blue' }}
+              jobCount={allJobsCount}
+              isSelected={selectedCategory === null}
+              onClick={() => setSelectedCategory(null)}
+            />
             {displayCategories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -243,7 +241,7 @@ const BrowseJobs = () => {
         {isRefreshing && (
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-full shadow-lg">
-              <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+              <RefreshCw className="h-4 w-4 animate-spin text-primary" />
               <span className="text-sm text-muted-foreground">Refreshing...</span>
             </div>
           </div>
@@ -288,120 +286,6 @@ const BrowseJobs = () => {
             }}
           />
         )}
-      </div>
-
-      {/* All Categories Modal */}
-      {showAllCategories && (
-        <AllCategoriesModal
-          categories={serviceCategories}
-          jobs={jobs}
-          selectedCategory={selectedCategory}
-          onCategorySelect={(category) => {
-            setSelectedCategory(selectedCategory === category ? null : category);
-            setShowAllCategories(false);
-          }}
-          onClose={() => setShowAllCategories(false)}
-        />
-      )}
-    </div>
-  );
-};
-
-// Category Card Component
-interface CategoryCardProps {
-  category: ServiceCategory;
-  jobCount: number;
-  isSelected: boolean;
-  onClick: () => void;
-}
-
-const CategoryCard: React.FC<CategoryCardProps> = ({ 
-  category, 
-  jobCount, 
-  isSelected, 
-  onClick 
-}) => {
-  const colorClasses = getColorClasses(category.color);
-  
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        flex-none p-4 rounded-xl border-2 transition-all duration-200 min-w-[120px] w-[120px] h-[140px]
-        ${isSelected 
-          ? `${colorClasses.bgLight} ${colorClasses.border}` 
-          : 'bg-muted/50 border-transparent hover:bg-muted'
-        }
-      `}
-    >
-      <div className="flex flex-col items-center space-y-2 h-full">
-        <div className="text-3xl">{category.icon}</div>
-        <div className="text-center flex-1">
-          <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-            {category.name}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-            {category.bengaliName}
-          </p>
-        </div>
-        <Badge 
-          variant="secondary" 
-          className={`text-xs ${isSelected ? colorClasses.text : ''}`}
-        >
-          {jobCount} jobs
-        </Badge>
-      </div>
-    </button>
-  );
-};
-
-// All Categories Modal Component
-interface AllCategoriesModalProps {
-  categories: ServiceCategory[];
-  jobs: any[];
-  selectedCategory: string | null;
-  onCategorySelect: (category: string) => void;
-  onClose: () => void;
-}
-
-const AllCategoriesModal: React.FC<AllCategoriesModalProps> = ({
-  categories,
-  jobs,
-  selectedCategory,
-  onCategorySelect,
-  onClose
-}) => {
-  const getJobCount = (categoryName: string) => {
-    return jobs.filter((job: any) => 
-      job.category.toLowerCase().includes(categoryName.toLowerCase())
-    ).length;
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-        <div className="p-6 border-b">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">All Categories</h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              ✕
-            </Button>
-          </div>
-        </div>
-        
-        <div className="p-6 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-4">
-            {categories.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                jobCount={getJobCount(category.name)}
-                isSelected={selectedCategory === category.name}
-                onClick={() => onCategorySelect(category.name)}
-              />
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -287,7 +287,7 @@ class MediaUploadManager: ObservableObject {
         imageGenerator.appliesPreferredTrackTransform = true
 
         let time = CMTime(seconds: 1.0, preferredTimescale: 600)
-        let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
+        let cgImage = try await imageGenerator.image(at: time).image
         let thumbnail = UIImage(cgImage: cgImage)
 
         guard let thumbnailData = thumbnail.jpegData(compressionQuality: 0.7) else {

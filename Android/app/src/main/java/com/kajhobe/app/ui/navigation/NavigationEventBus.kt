@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asSharedFlow
  * FCM taps and in-app actions emit these; the main scaffold collects them.
  */
 sealed interface NavEvent {
+    data object ToJobs : NavEvent
     data object ToMessages : NavEvent
     data object ToNotifications : NavEvent
     data object ToDashboard : NavEvent

@@ -19,6 +19,10 @@ extension AuthClient {
     }
 }
 
+// NOTE: Phone signup + SMS OTP are postponed until a BD SMS gateway is available.
+// Auth is email/password + social OAuth (browser redirect) for now. The
+// `send-sms-otp` edge function remains in the repo for when phone OTP is enabled.
+
 nonisolated let supabase = SupabaseClient(
     supabaseURL: URL(string: "https://xatlqnbrvgukuqewsxux.supabase.co")!,
     supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhdGxxbmJydmd1a3VxZXdzeHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MzgxMjgsImV4cCI6MjA2NTMxNDEyOH0.rBsGaNV-AcfqypS32p1BlL2B3cwGmWqC3bGabWuw1bo"

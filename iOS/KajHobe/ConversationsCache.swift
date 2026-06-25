@@ -16,7 +16,7 @@ final class ConversationsCache: @unchecked Sendable {
     static let shared = ConversationsCache()
 
     /// On-disk shape: the conversations plus the id of the user they belong to.
-    private struct Payload: Codable {
+    fileprivate struct Payload: Sendable {
         let userId: String
         let conversations: [ConversationWithDetails]
     }
@@ -87,5 +87,23 @@ final class ConversationsCache: @unchecked Sendable {
     private func writeMemory(_ payload: Payload) {
         lock.lock(); defer { lock.unlock() }
         memory = payload
+    }
+}
+
+extension ConversationsCache.Payload: Codable {
+    nonisolated init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.userId = try c.decode(String.self, forKey: .userId)
+        self.conversations = try c.decode([ConversationWithDetails].self, forKey: .conversations)
+    }
+
+    nonisolated func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(userId, forKey: .userId)
+        try c.encode(conversations, forKey: .conversations)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case userId, conversations
     }
 }

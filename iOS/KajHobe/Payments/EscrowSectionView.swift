@@ -98,14 +98,6 @@ struct EscrowSectionView: View {
                         .background(Color.green).foregroundColor(.white).cornerRadius(10)
                 }.disabled(isWorking)
             }
-
-            if escrow.state == .held || escrow.state == .released {
-                Button(action: { adminRefund(escrow) }) {
-                    Label("Refund to buyer", systemImage: "arrow.uturn.backward.circle")
-                        .frame(maxWidth: .infinity).padding()
-                        .background(Color.orange.opacity(0.15)).foregroundColor(.orange).cornerRadius(10)
-                }.disabled(isWorking)
-            }
         }
     }
 
@@ -129,6 +121,9 @@ struct EscrowSectionView: View {
             return "This payment was refunded to the buyer."
         case .failed:
             return "The last payment attempt failed."
+        case .resolved:
+            return isBuyer ? "A dispute on this deal was resolved by an admin."
+                           : "A dispute on this deal was resolved by an admin."
         }
     }
 
@@ -140,6 +135,7 @@ struct EscrowSectionView: View {
         case .paid_out: return .green
         case .refunded: return .gray
         case .failed:   return .red
+        case .resolved: return .indigo
         }
     }
 
@@ -171,16 +167,4 @@ struct EscrowSectionView: View {
         }
     }
 
-    private func adminRefund(_ escrow: EscrowTransaction) {
-        Task {
-            await MainActor.run { isWorking = true; errorMessage = nil }
-            do {
-                try await EscrowNetworking.shared.markRefunded(escrowId: escrow.id, note: "Manual refund")
-            } catch {
-                await MainActor.run { self.errorMessage = error.localizedDescription }
-            }
-            await reload()
-            await MainActor.run { isWorking = false }
-        }
-    }
 }

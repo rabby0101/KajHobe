@@ -11,22 +11,40 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useJobs } from "@/hooks/useJobs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { serviceCategories, ServiceCategory, getColorClasses } from "@/lib/categories";
+import { serviceCategories, ServiceCategory, categoryLabel } from "@/lib/categories";
+import CategoryCard from "@/components/CategoryCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { PhoneticInput } from "@/components/PhoneticInput";
 import { Search, RefreshCw, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
   const { data: jobs = [], isLoading: jobsLoading, refetch } = useJobs();
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showAllCategories, setShowAllCategories] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Current user's favourite categories + location (for the home sections).
+  const { data: profile } = useQuery({
+    queryKey: ['home-profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('favorite_categories, location')
+        .eq('id', user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   // Filter jobs based on search and category
   const filteredJobs = jobs.filter((job: any) => {
@@ -49,18 +67,52 @@ const Index = () => {
     return matchesSearch && matchesCategory && job.status === 'open';
   });
 
-  // Get recent jobs (first 6 open jobs)
-  const recentJobs = jobs.filter((job: any) => job.status === 'open').slice(0, 6);
+  const openJobs = jobs.filter((job: any) => job.status === 'open');
 
-  // Get first 4 categories for display
-  const displayCategories = serviceCategories.slice(0, 4);
+  // Recently posted: newest open jobs first (≤6) — matches iOS recentJobs.
+  const recentJobs = [...openJobs]
+    .sort((a: any, b: any) => (b.created_at || '').localeCompare(a.created_at || ''))
+    .slice(0, 6);
 
-  // Get job count for a category
+  // Jobs near you: open jobs in the user's location or Khulna (≤6).
+  const userLocation = profile?.location || 'Khulna';
+  const jobsNearYou = openJobs
+    .filter((job: any) => {
+      const loc = (job.location || '').toLowerCase();
+      return loc.includes(userLocation.toLowerCase()) || loc.includes('khulna');
+    })
+    .slice(0, 6);
+
+  // Featured: urgent OR budget ≥ 5000, urgent first then highest budget (≤6).
+  const featuredJobs = openJobs
+    .filter((job: any) => job.urgent === true || (job.budget ?? 0) >= 5000)
+    .sort((a: any, b: any) => {
+      if (a.urgent && !b.urgent) return -1;
+      if (!a.urgent && b.urgent) return 1;
+      return (b.budget ?? 0) - (a.budget ?? 0);
+    })
+    .slice(0, 6);
+
+  // Show every category (scrollable), matching iOS/Android.
+  const displayCategories = serviceCategories;
+
+  // Favourite categories from the profile (fallback: first 4 defaults) — iOS favoriteCategories.
+  const favoriteCategoryNames: string[] =
+    Array.isArray(profile?.favorite_categories) && profile!.favorite_categories!.length > 0
+      ? (profile!.favorite_categories as string[])
+      : serviceCategories.slice(0, 4).map((c) => c.name);
+  const favoriteCategories = favoriteCategoryNames
+    .map((name) => serviceCategories.find((c) => c.name === name))
+    .filter((c): c is ServiceCategory => !!c);
+
+  // Get open-job count for a category.
   const getJobCount = (categoryName: string) => {
-    return jobs.filter((job: any) => 
-      job.category.toLowerCase().includes(categoryName.toLowerCase())
+    return jobs.filter((job: any) =>
+      job.status === 'open' && job.category.toLowerCase().includes(categoryName.toLowerCase())
     ).length;
   };
+
+  const openJobsCount = jobs.filter((job: any) => job.status === 'open').length;
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -115,30 +167,27 @@ const Index = () => {
         
         {/* Search Section */}
         <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search jobs..."
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+          <PhoneticInput
+            placeholder={t('home.searchPlaceholder')}
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={setSearchText}
             className="pl-10 h-12 bg-muted/50"
           />
         </div>
 
         {/* Categories Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Service Categories</h2>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowAllCategories(true)}
-              className="text-blue-600"
-            >
-              Show All
-            </Button>
-          </div>
-          
+          <h2 className="text-2xl font-bold">{t('home.serviceCategories')}</h2>
+
           <div className="flex gap-4 overflow-x-auto pb-2">
+            {/* "All" resets the filter (parity with the iOS "All" chip). */}
+            <CategoryCard
+              category={{ id: 'all', name: 'All', bengaliName: 'সব কাজ', icon: '📋', color: 'blue' }}
+              jobCount={openJobsCount}
+              isSelected={selectedCategory === null}
+              onClick={() => setSelectedCategory(null)}
+            />
             {displayCategories.map((category) => (
               <CategoryCard
                 key={category.id}
@@ -153,35 +202,69 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Recent Jobs or Search Results */}
+        {/* Home sections (matching iOS) or Search Results */}
         {!searchText && !selectedCategory ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Recently Posted Jobs</h2>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/jobs')}
-                className="text-blue-600"
-              >
-                View All
-              </Button>
-            </div>
-            
-            <div className="flex gap-6 overflow-x-auto pb-2">
-              {recentJobs.map((job: any) => (
-                <div key={job.id} className="flex-none w-80">
-                  <JobCard job={job} onOpenChat={handleOpenChat} />
+          <div className="space-y-8">
+            {/* Your Favourite Categories */}
+            {favoriteCategories.length > 0 && (
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-2xl font-bold">{t('home.favouriteCategories')}</h2>
+                  <p className="text-sm text-muted-foreground">{t('home.favouriteCategoriesDesc')}</p>
                 </div>
-              ))}
-            </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {favoriteCategories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.name)}
+                      className="flex flex-col items-center gap-2 rounded-xl bg-muted/50 p-4 transition-colors hover:bg-muted"
+                    >
+                      <span className="text-2xl">{category.icon}</span>
+                      <span className="text-center text-sm font-medium leading-tight line-clamp-2">{categoryLabel(category, language)}</span>
+                      <span className="text-xs text-muted-foreground">{getJobCount(category.name)} {t('common.jobsCount')}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Jobs Near You */}
+            {jobsNearYou.length > 0 && (
+              <JobCarousel
+                title={t('home.jobsNearYou')}
+                subtitle={t('home.jobsNearYouDesc')}
+                jobs={jobsNearYou}
+                onViewAll={() => navigate('/jobs')}
+                onOpenChat={handleOpenChat}
+              />
+            )}
+
+            {/* Featured Jobs */}
+            {featuredJobs.length > 0 && (
+              <JobCarousel
+                title={t('home.featuredJobs')}
+                subtitle={t('home.featuredJobsDesc')}
+                jobs={featuredJobs}
+                onViewAll={() => navigate('/jobs')}
+                onOpenChat={handleOpenChat}
+              />
+            )}
+
+            {/* Recently Posted Jobs */}
+            <JobCarousel
+              title={t('home.recentJobs')}
+              subtitle={t('home.recentJobsDesc')}
+              jobs={recentJobs}
+              onViewAll={() => navigate('/jobs')}
+              onOpenChat={handleOpenChat}
+            />
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Search Results</h2>
+              <h2 className="text-2xl font-bold">{t('home.searchResults')}</h2>
               <span className="text-muted-foreground">
-                {filteredJobs.length} jobs
+                {filteredJobs.length} {t('common.jobsCount')}
               </span>
             </div>
             
@@ -232,120 +315,40 @@ const Index = () => {
         </>
       )}
 
-      {/* All Categories Modal */}
-      {showAllCategories && (
-        <AllCategoriesModal
-          categories={serviceCategories}
-          jobs={jobs}
-          selectedCategory={selectedCategory}
-          onCategorySelect={(category) => {
-            setSelectedCategory(selectedCategory === category ? null : category);
-            setShowAllCategories(false);
-          }}
-          onClose={() => setShowAllCategories(false)}
-        />
-      )}
     </div>
   );
 };
 
-// Category Card Component
-interface CategoryCardProps {
-  category: ServiceCategory;
-  jobCount: number;
-  isSelected: boolean;
-  onClick: () => void;
-}
-
-const CategoryCard: React.FC<CategoryCardProps> = ({ 
-  category, 
-  jobCount, 
-  isSelected, 
-  onClick 
-}) => {
-  const colorClasses = getColorClasses(category.color);
-  
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        flex-none p-4 rounded-xl border-2 transition-all duration-200 min-w-[120px] w-[120px] h-[140px]
-        ${isSelected 
-          ? `${colorClasses.bgLight} ${colorClasses.border}` 
-          : 'bg-muted/50 border-transparent hover:bg-muted'
-        }
-      `}
-    >
-      <div className="flex flex-col items-center space-y-2 h-full">
-        <div className="text-3xl">{category.icon}</div>
-        <div className="text-center flex-1">
-          <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-            {category.name}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-            {category.bengaliName}
-          </p>
-        </div>
-        <Badge 
-          variant="secondary" 
-          className={`text-xs ${isSelected ? colorClasses.text : ''}`}
-        >
-          {jobCount} jobs
-        </Badge>
-      </div>
-    </button>
-  );
-};
-
-// All Categories Modal Component
-interface AllCategoriesModalProps {
-  categories: ServiceCategory[];
+// Horizontal job carousel used by the home sections (Jobs Near You, Featured, Recent).
+interface JobCarouselProps {
+  title: string;
+  subtitle?: string;
   jobs: any[];
-  selectedCategory: string | null;
-  onCategorySelect: (category: string) => void;
-  onClose: () => void;
+  onViewAll: () => void;
+  onOpenChat: (job: any) => void;
 }
 
-const AllCategoriesModal: React.FC<AllCategoriesModalProps> = ({
-  categories,
-  jobs,
-  selectedCategory,
-  onCategorySelect,
-  onClose
-}) => {
-  const getJobCount = (categoryName: string) => {
-    return jobs.filter((job: any) => 
-      job.category.toLowerCase().includes(categoryName.toLowerCase())
-    ).length;
-  };
-
+const JobCarousel: React.FC<JobCarouselProps> = ({ title, subtitle, jobs, onViewAll, onOpenChat }) => {
+  const { t } = useLanguage();
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-        <div className="p-6 border-b">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">All Categories</h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              ✕
-            </Button>
-          </div>
-        </div>
-        
-        <div className="p-6 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-4">
-            {categories.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                jobCount={getJobCount(category.name)}
-                isSelected={selectedCategory === category.name}
-                onClick={() => onCategorySelect(category.name)}
-              />
-            ))}
-          </div>
-        </div>
+  <div className="space-y-4">
+    <div className="flex items-end justify-between">
+      <div>
+        <h2 className="text-2xl font-bold">{title}</h2>
+        {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
+      <Button variant="ghost" size="sm" onClick={onViewAll} className="text-primary">
+        {t('home.viewAll')}
+      </Button>
     </div>
+    <div className="flex gap-6 overflow-x-auto pb-2">
+      {jobs.map((job: any) => (
+        <div key={job.id} className="flex-none w-80">
+          <JobCard job={job} onOpenChat={onOpenChat} />
+        </div>
+      ))}
+    </div>
+  </div>
   );
 };
 

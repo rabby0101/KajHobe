@@ -20,7 +20,8 @@ enum class EscrowState {
     released,
     paid_out,
     refunded,
-    failed;
+    failed,
+    resolved;  // a dispute was settled by an admin (refund/payout split)
 
     /** Short human label for badges (mirrors iOS `EscrowState.label`). */
     val label: String
@@ -31,6 +32,7 @@ enum class EscrowState {
             paid_out -> "Paid out"
             refunded -> "Refunded"
             failed -> "Payment failed"
+            resolved -> "Dispute resolved"
         }
 }
 
@@ -53,12 +55,16 @@ data class EscrowTransaction(
     val collection_payment_id: String? = null,
     val collection_trx_id: String? = null,
     val payout_trx_id: String? = null,
+    val refund_trx_id: String? = null,
+    val refund_amount: Int? = null,
+    val payout_amount: Int? = null,
     val provider_msisdn: String? = null,
     val deal_offer_id: String? = null,
     val held_at: String? = null,
     val released_at: String? = null,
     val paid_out_at: String? = null,
     val refunded_at: String? = null,
+    val resolved_at: String? = null,
     val paid_out_by: String? = null,
     val notes: String? = null,
     val created_at: String? = null,

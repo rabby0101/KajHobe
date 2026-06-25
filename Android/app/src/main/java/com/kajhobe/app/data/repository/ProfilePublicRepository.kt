@@ -5,6 +5,7 @@ import com.kajhobe.app.data.model.PublicProfile
 import com.kajhobe.app.data.model.PublicProfileSummary
 import com.kajhobe.app.data.model.ServiceHighlight
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.serialization.Serializable
@@ -102,6 +103,52 @@ open class ProfilePublicRepository(client: SupabaseClient) : BaseRepository(clie
         }
     }
 
+    /**
+     * Submit a review for [reviewedId] on [jobId] — iOS `PublicProfileNetworking.submitReview`.
+     * The DB enforces UNIQUE(job_id, reviewer_id, reviewed_id) and an RLS policy that only
+     * allows inserts while the job's status is 'completed'; both are mapped to typed errors
+     * so the sheet can show a friendly message.
+     */
+    open suspend fun submitReview(jobId: String, reviewedId: String, rating: Int, comment: String?) {
+        val uid = currentUserId ?: throw IllegalStateException("Not signed in")
+        try {
+            postgrest.from("reviews").insert(
+                ReviewInsert(
+                    job_id = jobId,
+                    reviewer_id = uid,
+                    reviewed_id = reviewedId.lowercase(),
+                    rating = rating.coerceIn(1, 5),
+                    comment = comment?.trim()?.takeIf { it.isNotBlank() },
+                ),
+            )
+        } catch (e: PostgrestRestException) {
+            val msg = e.message.orEmpty()
+            when {
+                msg.contains("duplicate key value") -> throw AlreadyReviewedException(e)
+                msg.contains("row-level security") -> throw JobNotCompletedException(e)
+                else -> throw e
+            }
+        }
+    }
+
+    /** Whether the current user already reviewed [reviewedId] for [jobId]. */
+    open suspend fun hasReviewed(jobId: String, reviewedId: String): Boolean {
+        val uid = currentUserId ?: return false
+        return runCatching {
+            postgrest.from("reviews")
+                .select(Columns.list("id")) {
+                    filter {
+                        eq("job_id", jobId)
+                        eq("reviewer_id", uid)
+                        eq("reviewed_id", reviewedId.lowercase())
+                    }
+                    limit(1)
+                }
+                .decodeList<ReviewIdRow>()
+                .isNotEmpty()
+        }.getOrDefault(false)
+    }
+
     @Serializable
     private data class ReviewRow(
         val id: String,
@@ -110,4 +157,24 @@ open class ProfilePublicRepository(client: SupabaseClient) : BaseRepository(clie
         val created_at: String? = null,
         val reviewer_id: String? = null,
     )
+
+    @Serializable
+    private data class ReviewIdRow(val id: String)
+
+    @Serializable
+    private data class ReviewInsert(
+        val job_id: String,
+        val reviewer_id: String,
+        val reviewed_id: String,
+        val rating: Int,
+        val comment: String? = null,
+    )
 }
+
+/** The (job, reviewer, reviewed) triple already has a review — UNIQUE violation 23505. */
+class AlreadyReviewedException(cause: Throwable) :
+    Exception("You've already reviewed this person for this job.", cause)
+
+/** RLS refused the insert — the job isn't marked completed (yet). */
+class JobNotCompletedException(cause: Throwable) :
+    Exception("Reviews can be left once the job is completed.", cause)

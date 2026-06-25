@@ -39,4 +39,10 @@ data class HardcodedServiceCategory(
         fun categoryNames(): List<String> = categories.map { it.name }
         fun byName(name: String): HardcodedServiceCategory? = categories.firstOrNull { it.name == name }
     }
+
+    /**
+     * Label to display for the active language. Jobs are always stored/looked up
+     * by the English [name]; this only changes what the user sees.
+     */
+    fun displayName(language: String): String = if (language == "bn") bengaliName else name
 }

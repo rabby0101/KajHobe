@@ -1403,7 +1403,7 @@ class NotificationsNetworking: BaseNetworking {
         let insertions = channel.postgresChange(
             InsertAction.self,
             table: "notifications",
-            filter: "to_user_id=eq.\(user.id.uuidString)"
+            filter: .eq("to_user_id", value: user.id.uuidString)
         )
         
         // Start the channel

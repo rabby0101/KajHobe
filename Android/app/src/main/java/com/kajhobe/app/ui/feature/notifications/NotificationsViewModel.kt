@@ -130,35 +130,76 @@ class NotificationsViewModel(
     fun clearAll() = localState.clear(_uiState.value.feedItems.map { it.rawId })
 
     /**
-     * Tap a business notification: mark read, and if it carries a jobId and is one of the
-     * types that should open a deal, resolve the deal for its job and emit a navigate event
-     * to Deal Details (mirrors iOS `handleBusinessNotificationTap` + `openDeal(forJobId:)`).
-     *
-     * Types routed to Deal Details: `deal_created`, `completion_request`, `completion_requested`.
-     * The approval surface for completion requests moved from the Dashboard to Deal Details
-     * (see iOS commit that moved deal-completion approval to Notifications → Deal Details).
+     * Tap a business notification: mark read (device-local + server-synced) and navigate to
+     * the event it describes — Android port of iOS `AppRouter.handleNotificationTap`.
+     * Every known type routes somewhere; unknown server types fall back to keyword
+     * heuristics and, at worst, just mark read. Navigation never blocks on the server sync.
      */
     fun onBusinessTap(notification: EnhancedNotification) {
         localState.markRead(notification.id)
-        val jobId = notification.job_id ?: return
-        when (notification.type) {
-            "deal_created",
-            "completion_request",
-            "completion_requested" -> openDealForJob(jobId)
+        viewModelScope.launch { repository.markNotificationRead(notification.id) }
+
+        val type = notification.type.lowercase()
+        val jobId = notification.job_id
+        when (type) {
+            // Deal lifecycle → Deal Details (completed deals resolve via the fetchMyDeals
+            // fallback; previously deal_completed taps dead-ended).
+            "deal_created", "deal_completed",
+            "completion_request", "completion_requested",
+            "completion_approved", "completion_rejected",
+            "offer_received", "deal_offer_received",
+            "deal_offer_accepted", "deal_offer_rejected", "deal_offer_responded",
+            -> openDealForJob(jobId)
+
+            // Chat lives in the Messages tab.
+            "message_received", "new_message", "interest_accepted",
+            -> navBus.emit(NavEvent.ToMessages)
+
+            // Someone is interested / viewed you → their profile.
+            "interest_request", "interest_received", "show_interest", "profile_view", "job_application",
+            -> notification.from_user_id?.let { navBus.emit(NavEvent.ToProfile(it)) }
+
+            // Your interest was declined → browse other jobs.
+            "interest_rejected" -> navBus.emit(NavEvent.ToJobs)
+
+            // Unknown future server types: route by keyword, never crash.
+            else -> when {
+                type.contains("deal") || type.contains("completion") ||
+                    type.contains("offer") || type.contains("payment") || type.contains("escrow") ->
+                    openDealForJob(jobId)
+
+                type.contains("message") || type.contains("chat") -> navBus.emit(NavEvent.ToMessages)
+
+                type.contains("interest") || type.contains("profile") ->
+                    notification.from_user_id?.let { navBus.emit(NavEvent.ToProfile(it)) }
+
+                else -> Unit // informational only — mark-read was still synced
+            }
         }
     }
 
     /**
-     * Resolve the active deal for [jobId] and emit its id so MainScaffold can navigate to
-     * Deal Details. Mirrors iOS `openDeal(forJobId:)` (reuses fetchActiveDeals, which joins
-     * job + profiles — same shape the Dashboard's active-deal tap uses).
+     * Resolve the deal for [jobId] and emit its id so MainScaffold can navigate to Deal
+     * Details. Tries active deals first (cheapest, same shape the Dashboard uses), then all
+     * deals so completed-deal notifications still resolve; falls back to the Dashboard tab.
      */
-    private fun openDealForJob(jobId: String) {
+    private fun openDealForJob(jobId: String?) {
+        if (jobId == null) {
+            navBus.emit(NavEvent.ToDashboard)
+            return
+        }
         viewModelScope.launch {
             val deal = runCatching { dealsRepository.fetchActiveDeals() }
                 .getOrDefault(emptyList())
                 .firstOrNull { it.job_id == jobId }
-            deal?.let { _navigateToDeal.emit(it.id) }
+                ?: runCatching { dealsRepository.fetchMyDeals() }
+                    .getOrDefault(emptyList())
+                    .firstOrNull { it.job_id == jobId }
+            if (deal != null) {
+                _navigateToDeal.emit(deal.id)
+            } else {
+                navBus.emit(NavEvent.ToDashboard)
+            }
         }
     }
 

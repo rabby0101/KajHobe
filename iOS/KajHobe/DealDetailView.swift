@@ -12,12 +12,27 @@ struct DealDetailView: View {
     @State private var errorMessage = ""
     @State private var showingCompletionRequest = false
     @State private var showingCompletionResponse = false
-    
+    @State private var showingDisputeSheet = false
+    @State private var disputeReason = ""
+    @State private var showingReviewSheet = false
+    // nil = not yet checked; drives whether "Leave a Review" or "Reviewed" shows.
+    @State private var hasReviewedCounterparty: Bool? = nil
+
     init(deal: DealWithCompletion) {
         self._deal = State(initialValue: deal)
     }
-    
+
     private let networking = Networking.shared
+    private let reviewNetworking = PublicProfileNetworking()
+
+    /// The other party of the deal from the current user's perspective.
+    private var counterpartyId: String {
+        isUserClient ? deal.provider_id : deal.client_id
+    }
+
+    private var counterpartyProfile: SimpleProfile? {
+        isUserClient ? deal.provider_profile : deal.client_profile
+    }
     
     var body: some View {
         NavigationView {
@@ -77,6 +92,7 @@ struct DealDetailView: View {
         .onAppear {
             Task {
                 await loadUserContext()
+                await refreshReviewStatus()
             }
         }
         .alert("Error", isPresented: $showingError) {
@@ -96,6 +112,21 @@ struct DealDetailView: View {
         .sheet(isPresented: $showingCompletionResponse) {
             // Handle completion response if needed
             Text("Completion Response")
+        }
+        .sheet(isPresented: $showingDisputeSheet) {
+            DisputeReasonView(reason: $disputeReason, isProcessing: isProcessing) {
+                Task { await handleOpenDispute() }
+            }
+        }
+        .sheet(isPresented: $showingReviewSheet) {
+            ReviewSheet(
+                jobId: deal.job_id,
+                reviewedUserId: counterpartyId,
+                reviewedUserName: counterpartyProfile?.full_name ?? "Unknown User",
+                reviewedUserAvatar: counterpartyProfile?.avatar_url
+            ) {
+                hasReviewedCounterparty = true
+            }
         }
     }
     
@@ -392,8 +423,87 @@ struct DealDetailView: View {
                     .cornerRadius(10)
                 }
                 .disabled(true)
+
+                if hasReviewedCounterparty == true {
+                    HStack {
+                        Image(systemName: "star.fill")
+                        Text("review_submitted_badge".localized)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.yellow.opacity(0.15))
+                    .foregroundColor(.orange)
+                    .cornerRadius(10)
+                } else if hasReviewedCounterparty == false {
+                    Button(action: { showingReviewSheet = true }) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                            Text("leave_review".localized)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.yellow)
+                        .foregroundColor(.black)
+                        .cornerRadius(10)
+                    }
+                }
             }
-            
+
+            // Under dispute — frozen until an admin resolves it.
+            if deal.completion_status == "disputed" {
+                VStack(spacing: 6) {
+                    HStack {
+                        Image(systemName: "exclamationmark.shield.fill")
+                        Text("Under Dispute")
+                    }
+                    Text("An admin is reviewing this deal. The payment stays in escrow until it's resolved.")
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .opacity(0.9)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.red.opacity(0.85))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+
+            // Dispute settled by an admin.
+            if deal.completion_status == "resolved" {
+                VStack(spacing: 6) {
+                    HStack {
+                        Image(systemName: "checkmark.shield.fill")
+                        Text("Dispute Resolved")
+                    }
+                    Text("An admin settled this deal. See the payment section for how it was split.")
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .opacity(0.9)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.indigo.opacity(0.85))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+
+            // Open a dispute — available on an active deal that isn't already
+            // disputed/resolved/completed. The DB RPC enforces escrow is held.
+            if deal.completion_status == "in_progress" || deal.completion_status == "pending_approval" {
+                Button(action: { showingDisputeSheet = true }) {
+                    HStack {
+                        Image(systemName: "exclamationmark.bubble.fill")
+                        Text("Report a Problem / Open Dispute")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .foregroundColor(.red)
+                    .cornerRadius(10)
+                }
+                .disabled(isProcessing)
+            }
+
             // Message button
             Button(action: {
                 withAnimation(AnimationSystem.Presets.bouncy) {
@@ -454,6 +564,8 @@ struct DealDetailView: View {
             return .blue
         case "disputed":
             return .red
+        case "resolved":
+            return .indigo
         default:
             return .gray
         }
@@ -482,14 +594,23 @@ struct DealDetailView: View {
             if let request = completionRequests.first(where: { $0.deal_id == deal.id }) {
                 // Respond to the completion request
                 try await networking.respondToCompletionRequest(
-                    requestId: request.id, 
+                    requestId: request.id,
                     approve: approved,
                     message: approved ? "Approved" : "Please make the requested changes"
                 )
-                
+
                 // Refresh deal data to reflect the changes
                 await refreshDealData()
-                
+
+                // The deal just completed — prompt for a review unless one
+                // already exists (the DB unique constraint is the backstop).
+                if approved {
+                    await refreshReviewStatus()
+                    if hasReviewedCounterparty != true {
+                        showingReviewSheet = true
+                    }
+                }
+
             } else {
                 errorMessage = "No pending completion request found"
                 showingError = true
@@ -501,7 +622,46 @@ struct DealDetailView: View {
         
         isProcessing = false
     }
-    
+
+    /// Check whether the current user already reviewed the counterparty, so the
+    /// completed-deal UI can show "Leave a Review" vs "Reviewed". Only relevant
+    /// once the deal is completed.
+    private func refreshReviewStatus() async {
+        guard deal.completion_status == "completed" else { return }
+        do {
+            hasReviewedCounterparty = try await reviewNetworking.hasReviewed(
+                jobId: deal.job_id,
+                reviewedId: counterpartyId
+            )
+        } catch {
+            // Leave as nil (unknown) — the button stays hidden rather than
+            // risking a duplicate-review error surface.
+            print("Failed to check review status: \(error)")
+        }
+    }
+
+    private func handleOpenDispute() async {
+        isProcessing = true
+        defer { isProcessing = false }
+        do {
+            try await networking.openDispute(
+                dealId: deal.id,
+                reason: disputeReason.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+            await MainActor.run {
+                showingDisputeSheet = false
+                disputeReason = ""
+            }
+            await refreshDealData()
+        } catch {
+            await MainActor.run {
+                showingDisputeSheet = false
+                errorMessage = "Couldn't open the dispute: \(error.localizedDescription)"
+                showingError = true
+            }
+        }
+    }
+
     private func refreshDealData() async {
         do {
             // Fetch updated deal information
@@ -551,15 +711,7 @@ struct DealDetailView: View {
     }
     
     private func formatDate(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else {
-            return dateString
-        }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .medium
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        AppDateFormatter.mediumDateShortTime(dateString)
     }
 }
 
@@ -722,17 +874,75 @@ struct DealProgressTimeline: View {
     }
     
     private func formatDate(_ dateString: String?) -> String {
-        guard let dateString = dateString else { return "" }
-        
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else {
-            return dateString
+        AppDateFormatter.shortDateShortTime(dateString, fallback: dateString ?? "")
+    }
+}
+
+// MARK: - Dispute Reason Sheet
+
+struct DisputeReasonView: View {
+    @Binding var reason: String
+    let isProcessing: Bool
+    let onSubmit: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 10) {
+                    Image(systemName: "exclamationmark.shield.fill")
+                        .foregroundColor(.red)
+                        .font(.title2)
+                    Text("Open a dispute")
+                        .font(.title3).fontWeight(.semibold)
+                }
+
+                Text("If something went wrong and you can't agree on completion, opening a dispute freezes the deal. The payment stays safely in escrow while an admin reviews it and decides how to split it.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Text("What's the problem?")
+                    .font(.subheadline).fontWeight(.medium)
+
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $reason)
+                        .frame(minHeight: 120)
+                        .padding(8)
+                        .background(Color(.secondarySystemGroupedBackground))
+                        .cornerRadius(10)
+                    if reason.isEmpty {
+                        Text("Describe what happened…")
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 13)
+                            .padding(.vertical, 16)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+                Button(action: onSubmit) {
+                    HStack {
+                        if isProcessing { ProgressView().tint(.white) }
+                        Text(isProcessing ? "Opening…" : "Open Dispute")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .disabled(isProcessing)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Dispute")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { dismiss() }.disabled(isProcessing)
+                }
+            }
         }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .short
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
     }
 }
 

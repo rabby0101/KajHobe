@@ -469,7 +469,7 @@ struct JobDetailView: View {
             guard let currentUserProfile = currentUserProfile else { return }
             
             // Fetch conversations for current user and find one for this job
-            let conversations = try await Networking.shared.fetchConversations(userId: currentUserProfile.id)
+            _ = try await Networking.shared.fetchConversations(userId: currentUserProfile.id)
             
             // Since fetchConversations returns [Any], we need to safely handle the type casting
             // For now, messaging is disabled, so we set existingConversation to nil
@@ -562,17 +562,7 @@ struct JobDetailView: View {
     
     
     private func formatDate(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        if let date = formatter.date(from: dateString) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .medium
-            displayFormatter.timeStyle = .none
-            return displayFormatter.string(from: date)
-        }
-        
-        return dateString
+        AppDateFormatter.mediumDate(dateString)
     }
 }
 

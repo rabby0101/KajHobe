@@ -218,4 +218,19 @@ class NotificationsRepository(client: SupabaseClient) : BaseRepository(client) {
     /** Count of pending interest requests — drives the tab badge. */
     suspend fun pendingInterestCount(): Int =
         runCatching { fetchEnrichedJobInterests().size }.getOrDefault(0)
+
+    /**
+     * Sync read state to the server (`notifications.notification_state` → 'read') so other
+     * devices/sessions agree — iOS `markBusinessNotificationAsRead` parity. RLS allows the
+     * recipient (`to_user_id = auth.uid()`) to update their rows. Fire-and-forget: callers
+     * must never block navigation on this.
+     */
+    suspend fun markNotificationRead(notificationId: String) {
+        runCatching {
+            postgrest.from("notifications").update({
+                set("notification_state", "read")
+                set("read_at", Instant.now().toString())
+            }) { filter { eq("id", notificationId) } }
+        }
+    }
 }

@@ -27,15 +27,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kajhobe.app.R
+import com.kajhobe.app.data.local.LanguageManager
 import com.kajhobe.app.data.model.HardcodedServiceCategory
 import com.kajhobe.app.data.model.KhulnaLocations
 import com.kajhobe.app.ui.components.MediaPicker
-import com.kajhobe.app.ui.components.PremiumInputField
+import com.kajhobe.app.ui.components.PhoneticTextField
 import com.kajhobe.app.ui.components.PrimaryButton
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import org.koin.androidx.compose.koinViewModel
@@ -46,6 +49,7 @@ fun PostJobScreen(
     viewModel: PostJobViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val language by LanguageManager.language.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.didPost) {
         if (state.didPost) {
@@ -61,24 +65,30 @@ fun PostJobScreen(
             .padding(KajHobeTheme.spacing.lg),
         verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
     ) {
-        Text("Post a Job", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(
+            stringResource(R.string.post_job_heading),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+        )
 
-        PremiumInputField(
+        PhoneticTextField(
             value = state.title,
             onValueChange = viewModel::onTitleChange,
-            label = "Title",
-            placeholder = "Enter a clear, descriptive title",
+            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.post_job_title_label),
+            placeholder = stringResource(R.string.post_job_title_placeholder),
         )
-        PremiumInputField(
+        PhoneticTextField(
             value = state.description,
             onValueChange = viewModel::onDescriptionChange,
-            label = "Description",
+            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.post_job_description_label),
             singleLine = false,
         )
 
         LabeledDropdown(
-            label = "Category",
-            options = HardcodedServiceCategory.categories.map { "${it.icon} ${it.name}" },
+            label = stringResource(R.string.post_job_category_label),
+            options = HardcodedServiceCategory.categories.map { "${it.icon} ${it.displayName(language)}" },
             selectedIndex = HardcodedServiceCategory.categories.indexOfFirst { it.name == state.category }.coerceAtLeast(0),
             onSelect = { idx -> viewModel.onCategoryChange(HardcodedServiceCategory.categories[idx].name) },
         )
@@ -89,8 +99,16 @@ fun PostJobScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Photos & Videos", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Text("Optional", style = MaterialTheme.typography.bodySmall, color = KajHobeTheme.colors.textSecondary)
+            Text(
+                stringResource(R.string.post_job_photos_videos),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                stringResource(R.string.post_job_optional),
+                style = MaterialTheme.typography.bodySmall,
+                color = KajHobeTheme.colors.textSecondary,
+            )
         }
         MediaPicker(
             selected = state.selectedMedia,
@@ -100,7 +118,7 @@ fun PostJobScreen(
         )
 
         LabeledDropdown(
-            label = "Location",
+            label = stringResource(R.string.post_job_location_label),
             options = KhulnaLocations.all,
             selectedIndex = KhulnaLocations.all.indexOf(state.location).coerceAtLeast(0),
             onSelect = { idx -> viewModel.onLocationChange(KhulnaLocations.all[idx]) },
@@ -109,7 +127,7 @@ fun PostJobScreen(
         OutlinedTextField(
             value = state.budget,
             onValueChange = viewModel::onBudgetChange,
-            label = { Text("Budget (৳)") },
+            label = { Text(stringResource(R.string.post_job_budget_label)) },
             placeholder = { Text("0") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -123,9 +141,9 @@ fun PostJobScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column {
-                Text("Mark as urgent", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.post_job_mark_urgent), style = MaterialTheme.typography.titleSmall)
                 Text(
-                    "Urgent jobs are highlighted to providers",
+                    stringResource(R.string.post_job_urgent_subtitle),
                     style = MaterialTheme.typography.bodySmall,
                     color = KajHobeTheme.colors.textSecondary,
                 )
@@ -140,9 +158,9 @@ fun PostJobScreen(
         Spacer(Modifier.height(KajHobeTheme.spacing.sm))
         PrimaryButton(
             text = when {
-                state.isUploadingMedia -> "Uploading media…"
-                state.isSubmitting -> "Posting…"
-                else -> "Post Job"
+                state.isUploadingMedia -> stringResource(R.string.post_job_uploading_media)
+                state.isSubmitting -> stringResource(R.string.post_job_posting)
+                else -> stringResource(R.string.post_job_submit)
             },
             onClick = viewModel::submit,
             enabled = state.isValid && !state.isSubmitting,

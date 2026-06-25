@@ -2,6 +2,9 @@ package com.kajhobe.app.data.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.Apple
+import io.github.jan.supabase.auth.providers.Facebook
+import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
@@ -39,6 +42,13 @@ class AuthRepository(
     suspend fun signOut() {
         auth.signOut()
     }
+
+    // Social login (browser-redirect OAuth). Launches an external browser / Custom
+    // Tab; on return the Auth plugin completes the session via the kajhobe://
+    // auth-callback deep link, and sessionStatus drives navigation.
+    suspend fun signInWithGoogle() = auth.signInWith(Google)
+    suspend fun signInWithApple() = auth.signInWith(Apple)
+    suspend fun signInWithFacebook() = auth.signInWith(Facebook)
 
     /** Creates/loads the profiles row for the signed-in user (iOS ProfileNetworking.ensureUserProfile). */
     suspend fun ensureUserProfile(fullName: String? = null) {

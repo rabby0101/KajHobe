@@ -102,7 +102,9 @@ class PublicProfileNetworking: BaseNetworking {
 
         do {
             // Execute raw SQL query for complex aggregation
-            let response = try await supabase.rpc("execute_sql", params: ["query": query])
+            _ = try await supabase
+                .rpc("execute_sql", params: AnyEncodable(["query": query]))
+                .execute()
 
             // Parse the response and create ServiceHighlight objects
             var highlights: [ServiceHighlight] = []
@@ -182,6 +184,69 @@ class PublicProfileNetworking: BaseNetworking {
         return reviews
     }
 
+    // MARK: - Review Submission
+
+    /// Submit a 1–5 star review for the counterparty of a completed job.
+    /// The `reviews` table has UNIQUE(job_id, reviewer_id, reviewed_id) and an RLS
+    /// policy that only allows inserts while the job's status is 'completed'.
+    func submitReview(jobId: String, reviewedId: String, rating: Int, comment: String?) async throws -> Review {
+        let user = try supabase.auth.requireCurrentUser()
+
+        let trimmedComment = comment?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let payload = ReviewInsert(
+            job_id: jobId,
+            reviewer_id: user.id.uuidString,
+            reviewed_id: reviewedId,
+            rating: min(max(rating, 1), 5),
+            comment: (trimmedComment?.isEmpty ?? true) ? nil : trimmedComment
+        )
+
+        do {
+            let response = try await supabase
+                .from("reviews")
+                .insert(payload)
+                .select()
+                .single()
+                .execute()
+
+            let review = try JSONDecoder().decode(Review.self, from: response.data)
+            print("✅ PublicProfileNetworking - Review submitted for job \(jobId)")
+            return review
+        } catch {
+            if let postgrestError = error as? PostgrestError {
+                if postgrestError.code == "23505" {
+                    print("⚠️ PublicProfileNetworking - Duplicate review for job \(jobId)")
+                    throw ReviewError.alreadyReviewed
+                }
+                if postgrestError.code == "42501" {
+                    print("⚠️ PublicProfileNetworking - RLS rejected review insert (job not completed?)")
+                    throw ReviewError.jobNotCompleted
+                }
+            }
+            print("❌ PublicProfileNetworking - Failed to submit review: \(error)")
+            throw error
+        }
+    }
+
+    /// Whether the current user already reviewed `reviewedId` for this job.
+    /// Used to suppress the post-completion prompt and the "Leave review" button.
+    func hasReviewed(jobId: String, reviewedId: String) async throws -> Bool {
+        let user = try supabase.auth.requireCurrentUser()
+
+        struct IdRow: Codable { let id: String }
+        let response = try await supabase
+            .from("reviews")
+            .select("id")
+            .eq("job_id", value: jobId)
+            .eq("reviewer_id", value: user.id.uuidString)
+            .eq("reviewed_id", value: reviewedId)
+            .limit(1)
+            .execute()
+
+        let rows = try JSONDecoder().decode([IdRow].self, from: response.data)
+        return !rows.isEmpty
+    }
+
     // MARK: - Discovery & Search
 
     /// Find top-rated service providers in a specific category
@@ -254,12 +319,12 @@ class PublicProfileNetworking: BaseNetworking {
         let updates = channel.postgresChange(
             AnyAction.self,
             table: "public_profiles",
-            filter: "id=eq.\(providerId)"
+            filter: .eq("id", value: providerId)
         )
 
         await channel.subscribe()
 
-        for await update in updates {
+        for await _ in updates {
             do {
                 print("📡 PublicProfileNetworking - Received public profile update for \(providerId)")
 
@@ -286,6 +351,20 @@ class PublicProfileNetworking: BaseNetworking {
 
 // MARK: - Error Extensions
 extension PublicProfileNetworking {
+    enum ReviewError: LocalizedError {
+        case alreadyReviewed
+        case jobNotCompleted
+
+        var errorDescription: String? {
+            switch self {
+            case .alreadyReviewed:
+                return "review_error_already_reviewed".localized
+            case .jobNotCompleted:
+                return "review_error_job_not_completed".localized
+            }
+        }
+    }
+
     enum PublicProfileError: LocalizedError {
         case providerNotFound
         case invalidProfileData

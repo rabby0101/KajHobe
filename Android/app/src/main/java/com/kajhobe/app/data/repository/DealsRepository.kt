@@ -4,12 +4,15 @@ import com.kajhobe.app.data.model.CompletionRequest
 import com.kajhobe.app.data.model.CompletionRequestInsert
 import com.kajhobe.app.data.model.DashboardData
 import com.kajhobe.app.data.model.Deal
+import com.kajhobe.app.data.model.EscrowState
+import com.kajhobe.app.data.model.EscrowTransaction
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.rpc
 import java.time.Instant
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -158,6 +161,46 @@ class DealsRepository(client: SupabaseClient) : BaseRepository(client) {
         val uid = currentUserId ?: return
         val status = if (approve) "approved" else "rejected"
         val now = Instant.now().toString()
+
+        // A1 + A3/A4 guard (approve only): refuse BEFORE any write if the deal is
+        // disputed or its escrow isn't funded. Fail fast (no partial state) and fail
+        // closed, with a clear message. (Previously the deal-completed write was wrapped
+        // in runCatching and swallowed the DB guard's error silently — that's gone now.)
+        if (approve) {
+            val guardDealId = runCatching {
+                postgrest.from("completion_requests")
+                    .select { filter { eq("id", requestId) } }
+                    .decodeSingle<CompletionRequest>()
+                    .deal_id
+            }.getOrNull()
+                ?: throw DealActionException("Couldn't load this completion request. Please try again.")
+
+            val cs = runCatching {
+                postgrest.from("deals")
+                    .select(Columns.raw("completion_status")) { filter { eq("id", guardDealId) } }
+                    .decodeSingle<DealCompletionStatusRow>()
+                    .completion_status
+            }.getOrNull()
+            if (cs == "disputed") {
+                throw DealActionException(
+                    "This deal is under dispute. It can't be marked complete until an admin resolves the dispute.",
+                )
+            }
+
+            val escrowState = runCatching {
+                postgrest.from("escrow_transactions")
+                    .select { filter { eq("deal_id", guardDealId) }; limit(1) }
+                    .decodeList<EscrowTransaction>()
+                    .firstOrNull()?.state
+            }.getOrNull()
+            if (escrowState !in setOf(EscrowState.held, EscrowState.released, EscrowState.paid_out)) {
+                throw DealActionException(
+                    "This deal can't be marked complete yet because the payment hasn't been collected into " +
+                        "escrow. Make sure the client has paid for the deal, then try again.",
+                )
+            }
+        }
+
         postgrest.from("completion_requests").update({
             set("status", status)
             set("responded_by", uid)
@@ -176,12 +219,12 @@ class DealsRepository(client: SupabaseClient) : BaseRepository(client) {
         }.getOrNull() ?: return
 
         if (approve) {
-            runCatching {
-                postgrest.from("deals").update({
-                    set("status", "completed")
-                    set("completed_at", now)
-                }) { filter { eq("id", dealId) } }
-            }
+            // No runCatching: let a DB error (e.g. the completion guard) surface to the
+            // caller instead of silently leaving the request 'approved' but deal active.
+            postgrest.from("deals").update({
+                set("status", "completed")
+                set("completed_at", now)
+            }) { filter { eq("id", dealId) } }
         } else {
             runCatching {
                 // The DB trigger `update_deal_completion_status` already resets
@@ -206,7 +249,27 @@ class DealsRepository(client: SupabaseClient) : BaseRepository(client) {
             }
         }
     }
+
+    /**
+     * Open a dispute on an active, funded deal (A1). Mirrors iOS
+     * `DealsNetworking.openDispute`. The `deal_open_dispute` RPC validates the caller
+     * is a participant, the deal is active, and its escrow is held; it freezes the
+     * deal (`completion_status='disputed'`) and notifies the other party.
+     */
+    suspend fun openDispute(dealId: String, reason: String?) {
+        postgrest.rpc(
+            "deal_open_dispute",
+            buildJsonObject {
+                put("p_deal_id", dealId)
+                put("p_reason", reason ?: "")
+            },
+        )
+    }
 }
+
+/** Minimal projection for reading a deal's completion_status during the completion guard. */
+@Serializable
+private data class DealCompletionStatusRow(val completion_status: String? = null)
 
 /**
  * Thrown when the user tries to file a completion request for a deal that
@@ -217,3 +280,6 @@ class CompletionRequestAlreadyPendingException(
     val dealId: String,
     cause: Throwable,
 ) : Exception("A completion request is already pending for this deal", cause)
+
+/** Thrown when a deal action (e.g. completing a disputed/unfunded deal) is refused. */
+class DealActionException(message: String) : Exception(message)

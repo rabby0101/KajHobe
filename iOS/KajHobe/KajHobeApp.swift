@@ -134,9 +134,13 @@ struct AppEntryView: View {
                             await MessageBadgeManager.shared.stop()
                         }
 
-                        // Drop the cached conversation list so a different account can't
-                        // surface the previous user's chats from disk.
+                        // Drop all user-scoped caches so a different account can't
+                        // surface the previous user's data from disk.
                         ConversationsCache.shared.clear()
+                        DashboardCache.shared.clear()
+                        NotificationsCache.shared.clear()
+                        ProfileCache.shared.clear()
+                        ChatMessagesCache.clearAll()
                     default:
                         // .tokenRefreshed / .userUpdated / etc. — no heavy fan-out re-run.
                         break

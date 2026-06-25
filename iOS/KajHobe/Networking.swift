@@ -107,7 +107,11 @@ class Networking: ObservableObject {
     func respondToCompletionRequest(requestId: String, approve: Bool, message: String?) async throws {
         try await dealsNetworking.respondToCompletionRequest(requestId: requestId, approve: approve, message: message)
     }
-    
+
+    func openDispute(dealId: String, reason: String?) async throws {
+        try await dealsNetworking.openDispute(dealId: dealId, reason: reason)
+    }
+
     func fetchDashboardData(forceRefresh: Bool = false) async throws -> DashboardData {
         return try await dealsNetworking.fetchDashboardData(forceRefresh: forceRefresh)
     }

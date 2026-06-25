@@ -62,7 +62,13 @@
       "Bash(npm start *)",
       "Bash(curl -s -o /dev/null -w \"GET /            -> HTTP %{http_code}\\\\n\" http://localhost:4000/)",
       "Bash(curl -s -w \"\\\\nGET /api/payouts -> HTTP %{http_code}\\\\n\" http://localhost:4000/api/payouts)",
-      "Bash(curl -s -o /dev/null -w \"GET / -> HTTP %{http_code}\\\\n\" http://localhost:4000/)"
+      "Bash(curl -s -o /dev/null -w \"GET / -> HTTP %{http_code}\\\\n\" http://localhost:4000/)",
+      "Bash(mkdir -p /Users/skfazlarabby/Documents/GitHub/KajHobe/iOS/docs && echo \"created\")",
+      "Bash(git reset *)",
+      "Bash(cat /Users/skfazlarabby/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/subagent-driven-development/implementer-prompt.md /Users/skfazlarabby/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/subagent-driven-development/spec-reviewer-prompt.md /Users/skfazlarabby/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/subagent-driven-development/code-quality-reviewer-prompt.md)",
+      "Bash(swiftc --version)",
+      "Bash(xcrun --sdk iphonesimulator26.5 --show-sdk-path)",
+      "Bash(find /Volumes/Experiment/GitHub/KajHobe -type f \\\\\\( -name \"*.sql\" -o -name \"*.md\" \\\\\\) | xargs grep -l \"reviews\" -i 2>/dev/null | head -5)"
     ]
   },
   "outputStyle": "Explanatory"

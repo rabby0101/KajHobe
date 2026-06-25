@@ -127,3 +127,85 @@
 "network_error" = "Network error";
 "try_again" = "Please try again";
 "something_went_wrong" = "Something went wrong";
+
+/* Reviews */
+"review_sheet_title" = "Rate Your Experience";
+"review_sheet_subtitle" = "How was working with %@?";
+"review_comment_label" = "Your Review (optional)";
+"review_comment_placeholder" = "Share a few words about how it went — quality, communication, timeliness.";
+"review_submit" = "Submit Review";
+"review_maybe_later" = "Maybe Later";
+"review_thanks" = "Thanks for your review!";
+"review_error_already_reviewed" = "You've already reviewed this job.";
+"review_error_job_not_completed" = "Reviews can only be left after the job is completed.";
+"review_error_generic" = "Couldn't submit your review. Please try again.";
+"review_rating_accessibility_label" = "Rating";
+"review_rating_accessibility_value" = "%d of 5 stars";
+"leave_review" = "Leave a Review";
+"review_submitted_badge" = "Reviewed";
+
+/* Dashboard Analytics & Reputation */
+"dashboard_analytics" = "Analytics";
+"dashboard_money_flow" = "Money Flow by Month";
+"dashboard_deal_status" = "Deal Status";
+"dashboard_rating_trend" = "Rating Trend";
+"dashboard_chart_needs_history" = "Complete a few deals to see your money flow over time.";
+"dashboard_chart_no_deals" = "No deals yet.";
+"dashboard_chart_needs_reviews" = "Your rating trend appears after a couple of reviews.";
+"dashboard_reputation" = "Reputation";
+"dashboard_no_reviews_yet" = "No reviews yet — they'll appear here once clients rate your work.";
+"dashboard_latest_reviews" = "Latest Reviews";
+"dashboard_view_all_reviews" = "View all %d reviews";
+"dashboard_trust_progress" = "Next level: %@ (%d jobs, %.1f+ rating)";
+"dashboard_trust_top_tier" = "Top tier reached — you're an Expert!";
+"dashboard_reviews_title" = "Reviews";
+"deals_filter_active" = "Active";
+"deals_filter_completed" = "Completed";
+"deals_filter_all" = "All";
+"deals_list_title" = "My Deals";
+"deals_list_empty" = "No deals to show.";
+
+/* --- Signup / phone OTP --- */
+"phone" = "Phone";
+"verify" = "Verify";
+"signup_identity" = "Sign up with";
+"phone_hint_bd" = "01XXXXXXXXX";
+"password_min_hint" = "At least 6 characters.";
+"check_email_confirm" = "Check your email to confirm your account.";
+"signup_failed" = "Sign up failed: %@";
+"signin_failed" = "Sign in failed: %@";
+"otp_sent_to" = "We sent a 6-digit code to %@";
+"otp_code" = "Verification code";
+"otp_failed" = "Verification failed: %@";
+
+/* --- Provider verification --- */
+"verified" = "Verified";
+"verify_title" = "Become a Verified Provider";
+"verify_intro" = "To offer services, submit your NID, a verified phone number, and (optionally) certificates and work-demo videos. Our team reviews every application manually.";
+"verify_account_type" = "Account Type";
+"verify_service_provider" = "Service Provider";
+"verify_status_verified" = "Verified by KajHobe";
+"verify_status_pending_title" = "Verification pending";
+"verify_status_pending_body" = "Your application is under review. We'll notify you once it's approved.";
+"verify_status_rejected_title" = "Verification rejected";
+"verify_reapply" = "Reapply";
+"verify_become_subtitle" = "Get verified to apply for jobs and offer services.";
+"verify_become_button" = "Get Verified";
+"verify_nid_section" = "National ID (NID)";
+"verify_nid_number" = "NID number";
+"verify_nid_front" = "NID front photo";
+"verify_nid_back" = "NID back photo";
+"verify_phone_section" = "Phone (optional)";
+"verify_phone_invalid" = "Enter a valid Bangladeshi mobile number (01XXXXXXXXX).";
+"verify_send_otp" = "Send code";
+"verify_certificates_section" = "Certificates (optional)";
+"verify_add_certificates" = "Add certificates";
+"verify_certificates_count" = "%d file(s) selected";
+"verify_certificates_hint" = "Upload trade certificates or training documents to strengthen your application.";
+"verify_demos_section" = "Work demos (optional)";
+"verify_demos_hint" = "Paste YouTube, Facebook, or Drive links showing your work.";
+"verify_demo_url_placeholder" = "https://youtube.com/...";
+"verify_submit" = "Submit for review";
+"verify_submit_failed" = "Submission failed: %@";
+
+"continue_with" = "Or continue with";

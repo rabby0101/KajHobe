@@ -153,6 +153,10 @@ struct StackedNotificationCard: View {
             return "hands.sparkles"
         case "completion_request":
             return "checkmark.circle"
+        case "dispute_opened":
+            return "exclamationmark.shield"
+        case "dispute_resolved":
+            return "checkmark.shield"
         default:
             return "bell"
         }

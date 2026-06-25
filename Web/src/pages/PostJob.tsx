@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { PhoneticInput, PhoneticTextarea } from '@/components/PhoneticInput';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,11 +12,13 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateJob } from '@/hooks/useJobs';
 import Header from '@/components/Header';
-import { serviceCategories, getCategoryNames } from '@/lib/categories';
+import { serviceCategories, categoryLabel } from '@/lib/categories';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const PostJob = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { language, t } = useLanguage();
   const createJobMutation = useCreateJob();
   
   const [formData, setFormData] = useState({
@@ -79,26 +81,26 @@ const PostJob = () => {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">Post a New Job</CardTitle>
+              <CardTitle className="text-2xl font-bold">{t('post.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Job Title *</Label>
-                  <Input
+                  <Label htmlFor="title">{t('post.jobTitle')} *</Label>
+                  <PhoneticInput
                     id="title"
-                    placeholder="e.g., Need Electrician for Ceiling Fan Installation"
+                    placeholder={t('post.jobTitlePlaceholder')}
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, title: value })}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
+                  <Label htmlFor="category">{t('post.category')} *</Label>
                   <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder={t('post.selectCategory')} />
                     </SelectTrigger>
                     <SelectContent>
                       {serviceCategories.map((category) => (
@@ -106,8 +108,10 @@ const PostJob = () => {
                           <div className="flex items-center gap-2">
                             <span>{category.icon}</span>
                             <div>
-                              <div>{category.name}</div>
-                              <div className="text-xs text-muted-foreground">{category.bengaliName}</div>
+                              <div>{categoryLabel(category, language)}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {language === 'bn' ? category.name : category.bengaliName}
+                              </div>
                             </div>
                           </div>
                         </SelectItem>
@@ -117,19 +121,19 @@ const PostJob = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
+                  <Label htmlFor="description">{t('post.description')} *</Label>
+                  <PhoneticTextarea
                     id="description"
-                    placeholder="Describe what you need done, when you need it, and any specific requirements..."
+                    placeholder={t('post.descriptionPlaceholder')}
                     rows={4}
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, description: value })}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="budget">Budget (৳) *</Label>
+                  <Label htmlFor="budget">{t('post.budget')} *</Label>
                   <Input
                     id="budget"
                     type="number"
@@ -141,31 +145,31 @@ const PostJob = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location *</Label>
-                  <Input
+                  <Label htmlFor="location">{t('post.location')} *</Label>
+                  <PhoneticInput
                     id="location"
-                    placeholder="e.g., Sonadanga, Khulna"
+                    placeholder={t('post.locationPlaceholder')}
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, location: value })}
                     required
                   />
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="urgent" 
+                  <Checkbox
+                    id="urgent"
                     checked={formData.urgent}
                     onCheckedChange={(checked) => setFormData({ ...formData, urgent: checked as boolean })}
                   />
-                  <Label htmlFor="urgent">This is urgent</Label>
+                  <Label htmlFor="urgent">{t('post.urgent')}</Label>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={createJobMutation.isPending}
                 >
-                  {createJobMutation.isPending ? "Posting..." : "Post Job"}
+                  {createJobMutation.isPending ? t('post.submitting') : t('post.submit')}
                 </Button>
               </form>
             </CardContent>

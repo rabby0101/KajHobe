@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
-import { Conversation } from '@/hooks/useConversations';
+import { Conversation, isConversationArchivedFor, useArchiveConversation } from '@/hooks/useConversations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Search, MessageSquare, RefreshCw, Send, Phone, Video, Info, ArrowLeft, DollarSign } from 'lucide-react';
+import { Search, MessageSquare, RefreshCw, Send, Phone, Video, Info, ArrowLeft, DollarSign, Archive, ArchiveRestore } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +28,15 @@ const Messages = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [isProvider, setIsProvider] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const archiveConversation = useArchiveConversation();
+
+  const toggleArchive = (e: React.MouseEvent, conversation: Conversation) => {
+    e.stopPropagation();
+    const archived = isConversationArchivedFor(conversation, user?.id);
+    archiveConversation.mutate({ conversation, archived: !archived });
+    if (selectedConversation?.id === conversation.id) setSelectedConversation(null);
+  };
 
   // Check if mobile
   useEffect(() => {
@@ -252,8 +261,10 @@ const Messages = () => {
     }
   };
 
-  // Filter conversations based on search
+  // Split by the current user's archive flag, then filter by search.
+  const archivedCount = conversations.filter(c => isConversationArchivedFor(c, user?.id)).length;
   const filteredConversations = conversations.filter(conversation => {
+    if (isConversationArchivedFor(conversation, user?.id) !== showArchived) return false;
     if (!searchText) return true;
     const otherParticipant = getOtherParticipant(conversation);
     const jobTitle = conversation.jobs?.title || '';
@@ -494,16 +505,27 @@ const Messages = () => {
                   </Badge>
                 )}
               </div>
-              <Button 
-                onClick={handleRefresh} 
-                disabled={isRefreshing}
-                size="sm"
-                variant="ghost"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  onClick={() => setShowArchived(v => !v)}
+                  size="sm"
+                  variant={showArchived ? 'secondary' : 'ghost'}
+                  title={showArchived ? 'Show active' : 'Show archived'}
+                >
+                  <Archive className="h-4 w-4 mr-1" />
+                  {showArchived ? 'Active' : `Archived${archivedCount ? ` (${archivedCount})` : ''}`}
+                </Button>
+                <Button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </div>
-            
+
             {/* Search */}
             <div className="p-4 border-b bg-card">
               <div className="relative">
@@ -527,8 +549,12 @@ const Messages = () => {
               ) : filteredConversations.length === 0 ? (
                 <div className="text-center py-12">
                   <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No conversations yet</p>
-                  <p className="text-sm text-muted-foreground">Start a conversation from a job proposal!</p>
+                  <p className="text-muted-foreground">
+                    {showArchived ? 'No archived conversations' : 'No conversations yet'}
+                  </p>
+                  {!showArchived && (
+                    <p className="text-sm text-muted-foreground">Start a conversation from a job proposal!</p>
+                  )}
                 </div>
               ) : (
                 filteredConversations.map((conversation) => {
@@ -536,7 +562,7 @@ const Messages = () => {
                   return (
                     <div
                       key={conversation.id}
-                      className="flex items-center space-x-3 p-4 hover:bg-muted/50 cursor-pointer border-b"
+                      className="group flex items-center space-x-3 p-4 hover:bg-muted/50 cursor-pointer border-b"
                       onClick={() => setSelectedConversation(conversation)}
                     >
                       <Avatar className="h-12 w-12">
@@ -561,6 +587,15 @@ const Messages = () => {
                           </div>
                         </div>
                       </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 shrink-0"
+                        title={showArchived ? 'Restore' : 'Archive'}
+                        onClick={(e) => toggleArchive(e, conversation)}
+                      >
+                        {showArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                      </Button>
                     </div>
                   );
                 })
@@ -591,16 +626,27 @@ const Messages = () => {
                 </Badge>
               )}
             </div>
-            <Button 
-              onClick={handleRefresh} 
-              disabled={isRefreshing}
-              size="sm"
-              variant="ghost"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                onClick={() => setShowArchived(v => !v)}
+                size="sm"
+                variant={showArchived ? 'secondary' : 'ghost'}
+                title={showArchived ? 'Show active' : 'Show archived'}
+              >
+                <Archive className="h-4 w-4 mr-1" />
+                {showArchived ? 'Active' : `Archived${archivedCount ? ` (${archivedCount})` : ''}`}
+              </Button>
+              <Button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                size="sm"
+                variant="ghost"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
-          
+
           {/* Search */}
           <div className="p-4 border-b">
             <div className="relative">
@@ -624,18 +670,22 @@ const Messages = () => {
             ) : filteredConversations.length === 0 ? (
               <div className="text-center py-12">
                 <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No conversations yet</p>
-                <p className="text-sm text-muted-foreground">Start a conversation from a job proposal!</p>
+                <p className="text-muted-foreground">
+                  {showArchived ? 'No archived conversations' : 'No conversations yet'}
+                </p>
+                {!showArchived && (
+                  <p className="text-sm text-muted-foreground">Start a conversation from a job proposal!</p>
+                )}
               </div>
             ) : (
               filteredConversations.map((conversation) => {
                 const otherParticipant = getOtherParticipant(conversation);
                 const isSelected = conversation.id === selectedConversation?.id;
-                
+
                 return (
                   <div
                     key={conversation.id}
-                    className={`flex items-center space-x-3 p-4 hover:bg-muted/50 cursor-pointer border-b ${
+                    className={`group flex items-center space-x-3 p-4 hover:bg-muted/50 cursor-pointer border-b ${
                       isSelected ? 'bg-muted' : ''
                     }`}
                     onClick={() => setSelectedConversation(conversation)}
@@ -662,6 +712,15 @@ const Messages = () => {
                         </div>
                       </div>
                     </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title={showArchived ? 'Restore' : 'Archive'}
+                      onClick={(e) => toggleArchive(e, conversation)}
+                    >
+                      {showArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                    </Button>
                   </div>
                 );
               })

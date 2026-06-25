@@ -395,25 +395,7 @@ struct DraggableJobCard: View {
     }
     
     private func formatDate(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = formatter.date(from: dateString) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .none
-            displayFormatter.timeStyle = .none
-            displayFormatter.doesRelativeDateFormatting = true
-            
-            let calendar = Calendar.current
-            if calendar.isDateInToday(date) {
-                return "Today"
-            } else if calendar.isDateInYesterday(date) {
-                return "Yesterday"
-            } else {
-                displayFormatter.dateStyle = .short
-                return displayFormatter.string(from: date)
-            }
-        }
-        return "Recently"
+        AppDateFormatter.jobPostedDate(dateString)
     }
 }
 

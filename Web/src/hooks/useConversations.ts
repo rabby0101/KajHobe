@@ -13,11 +13,20 @@ export interface Conversation {
   status: string;
   created_at: string;
   updated_at: string;
+  client_archived?: boolean;
+  provider_archived?: boolean;
   jobs?: any;
   client_profile?: any;
   provider_profile?: any;
   last_message?: any;
 }
+
+/**
+ * Whether a conversation is archived *for this user*. Archiving is one-sided —
+ * each participant only flips their own column (parity with iOS).
+ */
+export const isConversationArchivedFor = (c: Conversation, userId: string | undefined): boolean =>
+  !!userId && (c.client_id === userId ? !!c.client_archived : !!c.provider_archived);
 
 export interface Message {
   id: string;
@@ -64,6 +73,32 @@ export const useConversations = () => {
     staleTime: 15000, // 15 seconds
     refetchInterval: 15000, // Refetch every 15 seconds for faster updates
     refetchOnWindowFocus: true,
+  });
+};
+
+/** Archive or un-archive a conversation for the current user only. */
+export const useArchiveConversation = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ conversation, archived }: { conversation: Conversation; archived: boolean }) => {
+      if (!user) throw new Error('Must be logged in');
+      const column = conversation.client_id === user.id ? 'client_archived' : 'provider_archived';
+      const { error } = await supabase
+        .from('conversations')
+        .update({ [column]: archived })
+        .eq('id', conversation.id);
+      if (error) throw error;
+      return archived;
+    },
+    onSuccess: (archived) => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast({ title: archived ? 'Conversation archived' : 'Conversation restored' });
+    },
+    onError: () => {
+      toast({ title: 'Error', description: 'Could not update the conversation.', variant: 'destructive' });
+    },
   });
 };
 

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -71,6 +72,7 @@ fun ConversationsScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text("Messages", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) },
@@ -90,10 +92,6 @@ fun ConversationsScreen(
             when {
                 state.isLoading -> PremiumLoadingView(message = "Loading chats…")
                 state.conversations.isEmpty() -> EmptyChats()
-                visible.isEmpty() -> NoResultsView(
-                    hasSearch = state.searchText.isNotBlank(),
-                    selectedFilter = state.selectedFilter,
-                )
                 else -> Column(modifier = Modifier.fillMaxSize()) {
                     SearchBar(
                         value = state.searchText,
@@ -104,25 +102,34 @@ fun ConversationsScreen(
                         unreadCount = unreadPillCount,
                         onSelect = viewModel::onFilterChange,
                     )
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            start = KajHobeTheme.spacing.md,
-                            end = KajHobeTheme.spacing.md,
-                            top = KajHobeTheme.spacing.xs,
-                            bottom = KajHobeTheme.spacing.md,
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
-                    ) {
-                        items(visible, key = { it.id }) { convo ->
-                            ArchiveSwipeRow(
-                                convo = convo,
-                                currentUserId = state.currentUserId,
-                                otherName = viewModel.otherNameFor(convo, state.currentUserId),
-                                unread = viewModel.unreadFor(convo),
-                                onClick = { onOpenChat(convo.id) },
-                                onArchive = { viewModel.setArchived(convo, archived = true) },
-                            )
+                    if (visible.isEmpty()) {
+                        // Show the pill row above the no-results message so the user can
+                        // switch back to All without a back gesture.
+                        NoResultsView(
+                            hasSearch = state.searchText.isNotBlank(),
+                            selectedFilter = state.selectedFilter,
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(
+                                start = KajHobeTheme.spacing.md,
+                                end = KajHobeTheme.spacing.md,
+                                top = KajHobeTheme.spacing.xs,
+                                bottom = KajHobeTheme.spacing.md,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+                        ) {
+                            items(visible, key = { it.id }) { convo ->
+                                ArchiveSwipeRow(
+                                    convo = convo,
+                                    currentUserId = state.currentUserId,
+                                    otherName = viewModel.otherNameFor(convo, state.currentUserId),
+                                    unread = viewModel.unreadFor(convo),
+                                    onClick = { onOpenChat(convo.id) },
+                                    onArchive = { viewModel.setArchived(convo, archived = true) },
+                                )
+                            }
                         }
                     }
                 }

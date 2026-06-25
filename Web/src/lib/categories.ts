@@ -88,6 +88,13 @@ export const getCategory = (name: string): ServiceCategory | undefined => {
   return serviceCategories.find(category => category.name === name);
 };
 
+// Display label for a category in the active language. Jobs are always stored
+// and looked up by the English `name`; this only affects what the user sees.
+export const categoryLabel = (
+  category: Pick<ServiceCategory, 'name' | 'bengaliName'>,
+  language: string,
+): string => (language === 'bn' ? category.bengaliName : category.name);
+
 // Color mapping for Tailwind classes
 export const getColorClasses = (color: string) => {
   const colorMap = {

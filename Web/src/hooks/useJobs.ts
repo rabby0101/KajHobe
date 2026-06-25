@@ -13,6 +13,7 @@ export interface Job {
   urgent: boolean;
   created_at: string;
   client_id: string;
+  media_urls?: unknown;
   profiles?: {
     full_name: string;
     location: string;

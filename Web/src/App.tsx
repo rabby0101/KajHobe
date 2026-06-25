@@ -10,6 +10,8 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
+import Deal from "./pages/Deal";
 import PostJob from "./pages/PostJob";
 import BrowseJobs from "./pages/BrowseJobs";
 import Category from "./pages/Category";
@@ -21,6 +23,7 @@ import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import ConditionalBottomNavigation from "./components/ConditionalBottomNavigation";
 import ErrorBoundary from "./components/ErrorBoundary";
+import PresenceTracker from "./components/PresenceTracker";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,11 +48,14 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <PresenceTracker />
                 <div className="min-h-screen bg-background">
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/provider/:id" element={<PublicProfile />} />
+                    <Route path="/deal/:id" element={<Deal />} />
                     <Route path="/post-job" element={<PostJob />} />
                     <Route path="/jobs" element={<BrowseJobs />} />
                     <Route path="/my-jobs" element={<MyJobs />} />

@@ -775,7 +775,7 @@ struct JobsListView: View {
             let channel = supabase.realtimeV2.channel("jobs:all")
             
             // Listen for job changes (INSERT, UPDATE, DELETE)
-            let _ = await channel.onPostgresChange(
+            let _ = channel.onPostgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "jobs"

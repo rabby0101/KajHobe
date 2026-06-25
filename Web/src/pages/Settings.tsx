@@ -81,6 +81,7 @@ const Settings = () => {
                       <SelectContent>
                         <SelectItem value="en">{t('language.english')}</SelectItem>
                         <SelectItem value="bn">{t('language.bengali')}</SelectItem>
+                        <SelectItem value="de">{t('language.german')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

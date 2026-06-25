@@ -1,6 +1,24 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__list_tables",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'docs\\(spec\\): web↔iOS feature parity design *)",
+      "Bash(grep -nE \"^      [a-z_]+: \\\\{$\" src/integrations/supabase/types.ts)",
+      "Bash(sed -n '418,470p' src/integrations/supabase/types.ts)",
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__generate_typescript_types",
+      "Bash(python3 -)",
+      "Bash(git commit -q -m 'chore\\(web\\): regenerate Supabase types from live DB *)",
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__execute_sql",
+      "Bash(git commit -q -m 'feat\\(web\\): public provider profiles + trust badges \\(W1\\) *)",
+      "Bash(git commit -q -m 'feat\\(web\\): reviews — submit, display, guards \\(W2\\) *)",
+      "Bash(awk '/^      deals: \\\\{/{f=1} f&&/Row: \\\\{/{p=1;next} p&&/\\\\}/{exit} p&&f{print}' src/integrations/supabase/types.ts)",
+      "Bash(grep -E \"\\\\.swift$\")",
+      "WebSearch"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

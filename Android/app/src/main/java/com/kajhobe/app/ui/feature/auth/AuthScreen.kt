@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -104,6 +106,32 @@ fun AuthScreen(viewModel: AuthViewModel = koinViewModel()) {
                 else "New here? Create an account",
                 onClick = viewModel::toggleMode,
             )
+
+            Spacer(Modifier.height(KajHobeTheme.spacing.lg))
+            Text(
+                text = "Or continue with",
+                style = MaterialTheme.typography.labelMedium,
+                color = KajHobeTheme.colors.textSecondary,
+            )
+            Spacer(Modifier.height(KajHobeTheme.spacing.sm))
+            OutlinedButton(
+                onClick = { viewModel.signInWithProvider(OAuthChoice.GOOGLE) },
+                enabled = !state.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Continue with Google") }
+            Spacer(Modifier.height(KajHobeTheme.spacing.sm))
+            OutlinedButton(
+                onClick = { viewModel.signInWithProvider(OAuthChoice.APPLE) },
+                enabled = !state.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Continue with Apple") }
+            Spacer(Modifier.height(KajHobeTheme.spacing.sm))
+            OutlinedButton(
+                onClick = { viewModel.signInWithProvider(OAuthChoice.FACEBOOK) },
+                enabled = !state.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Continue with Facebook") }
+
             Spacer(Modifier.height(48.dp))
         }
     }

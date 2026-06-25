@@ -56,6 +56,9 @@ struct PublicProfileCard: View {
                                 .font(.headline)
                                 .foregroundColor(.primary)
 
+                            if profile.is_verified_provider == true {
+                                VerifiedBadge(compact: true)
+                            }
                             TrustBadge(trustLevel: profile.trustLevelEnum)
                         }
 
@@ -667,6 +670,29 @@ struct TrustBadge: View {
     }
 }
 
+/// "Verified" badge — granted by admin approval (profiles.is_verified_provider),
+/// distinct from the auto-computed TrustBadge. Shown only for approved providers.
+struct VerifiedBadge: View {
+    var compact: Bool = false
+
+    var body: some View {
+        HStack(spacing: 2) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(compact ? .caption2 : .caption)
+            if !compact {
+                Text("verified".localized)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+            }
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, compact ? 4 : 7)
+        .padding(.vertical, compact ? 2 : 3)
+        .background(Color.blue)
+        .cornerRadius(compact ? 4 : 6)
+    }
+}
+
 /// Service category tags display
 struct ServiceCategoryTags: View {
     let categories: [String]
@@ -750,7 +776,12 @@ struct ProfileHeroSection: View {
                     .font(.title2)
                     .fontWeight(.bold)
 
-                TrustBadge(trustLevel: profile.trustLevelEnum)
+                HStack(spacing: 6) {
+                    if profile.is_verified_provider == true {
+                        VerifiedBadge()
+                    }
+                    TrustBadge(trustLevel: profile.trustLevelEnum)
+                }
 
                 if let location = profile.location {
                     HStack(spacing: 4) {
@@ -934,31 +965,11 @@ struct ProfileActivitySection: View {
     }
 
     private var formattedMemberSince: String {
-        guard let createdAt = profile.created_at else { return "Unknown" }
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: createdAt) else { return "Unknown" }
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "MMM yyyy"
-        return monthFormatter.string(from: date)
+        AppDateFormatter.monthYear(profile.created_at)
     }
 
     private var formattedLastUpdated: String {
-        guard let lastUpdated = profile.last_updated else { return "Unknown" }
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: lastUpdated) else { return "Unknown" }
-        let now = Date()
-        let interval = now.timeIntervalSince(date)
-        let days = Int(interval / 86400)
-
-        if days == 0 {
-            return "Today"
-        } else if days == 1 {
-            return "Yesterday"
-        } else if days < 7 {
-            return "\(days) days ago"
-        } else {
-            return "Over a week ago"
-        }
+        AppDateFormatter.lastUpdated(profile.last_updated)
     }
 }
 
@@ -973,6 +984,7 @@ struct PublicProfileComponents_Previews: PreviewProvider {
         location: "Khulna, Bangladesh",
         website: "https://johndoe.com",
         is_service_provider: true,
+        is_verified_provider: true,
         created_at: "2023-01-01T00:00:00Z",
         completed_jobs: 25,
         avg_job_value: 1500.0,

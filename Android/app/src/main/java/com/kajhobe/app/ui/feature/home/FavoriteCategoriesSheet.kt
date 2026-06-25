@@ -31,10 +31,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kajhobe.app.R
+import com.kajhobe.app.data.local.LanguageManager
 import com.kajhobe.app.data.model.HardcodedServiceCategory
 import com.kajhobe.app.ui.theme.KajHobeTheme
 
@@ -51,6 +55,7 @@ fun FavoriteCategoriesSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selected by remember { mutableStateOf(currentFavorites.take(MAX_FAVORITES).toSet()) }
     val categories = HardcodedServiceCategory.categories
+    val language by LanguageManager.language.collectAsStateWithLifecycle()
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(
@@ -61,14 +66,18 @@ fun FavoriteCategoriesSheet(
                 .padding(bottom = KajHobeTheme.spacing.xl),
             verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
         ) {
-            Text("Favorite Categories", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(
-                "Choose up to $MAX_FAVORITES favorite categories",
+                stringResource(R.string.fav_categories_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                stringResource(R.string.fav_categories_subtitle, MAX_FAVORITES),
                 style = MaterialTheme.typography.bodyMedium,
                 color = KajHobeTheme.colors.textSecondary,
             )
             Text(
-                "${selected.size}/$MAX_FAVORITES selected",
+                stringResource(R.string.selected_count, selected.size, MAX_FAVORITES),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = if (selected.size == MAX_FAVORITES) KajHobeTheme.colors.warning
@@ -82,6 +91,7 @@ fun FavoriteCategoriesSheet(
                         val atCap = selected.size >= MAX_FAVORITES && !isSelected
                         SelectableCategoryTile(
                             category = category,
+                            language = language,
                             isSelected = isSelected,
                             disabled = atCap,
                             onClick = {
@@ -102,11 +112,13 @@ fun FavoriteCategoriesSheet(
                 modifier = Modifier.fillMaxWidth().padding(top = KajHobeTheme.spacing.sm),
                 horizontalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.md),
             ) {
-                TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+                TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.cancel))
+                }
                 Button(
                     onClick = { onSave(selected.toList()) },
                     modifier = Modifier.weight(1f),
-                ) { Text("Save") }
+                ) { Text(stringResource(R.string.save)) }
             }
         }
     }
@@ -115,11 +127,15 @@ fun FavoriteCategoriesSheet(
 @Composable
 private fun SelectableCategoryTile(
     category: HardcodedServiceCategory,
+    language: String,
     isSelected: Boolean,
     disabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Lead with the active-language label; show the other language as the subtitle.
+    val primary = category.displayName(language)
+    val secondary = if (language == "bn") category.name else category.bengaliName
     val bg = when {
         isSelected -> MaterialTheme.colorScheme.primary
         else -> KajHobeTheme.colors.subtleBackground
@@ -145,7 +161,7 @@ private fun SelectableCategoryTile(
         ) {
             Text(category.icon, style = MaterialTheme.typography.headlineMedium)
             Text(
-                category.name,
+                primary,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -154,7 +170,7 @@ private fun SelectableCategoryTile(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                category.bengaliName,
+                secondary,
                 style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Center,
                 color = if (isSelected) Color.White.copy(alpha = 0.8f) else KajHobeTheme.colors.textSecondary,

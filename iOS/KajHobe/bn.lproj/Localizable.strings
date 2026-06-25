@@ -127,3 +127,86 @@
 "network_error" = "নেটওয়ার্ক ত্রুটি";
 "try_again" = "দয়া করে আবার চেষ্টা করুন";
 "something_went_wrong" = "কিছু ভুল হয়েছে";
+
+
+/* Reviews */
+"review_sheet_title" = "আপনার অভিজ্ঞতা মূল্যায়ন করুন";
+"review_sheet_subtitle" = "%@-এর সাথে কাজ কেমন ছিল?";
+"review_comment_label" = "আপনার রিভিউ (ঐচ্ছিক)";
+"review_comment_placeholder" = "কাজটি কেমন হয়েছে তা নিয়ে কয়েকটি কথা লিখুন — মান, যোগাযোগ, সময়ানুবর্তিতা।";
+"review_submit" = "রিভিউ জমা দিন";
+"review_maybe_later" = "পরে করব";
+"review_thanks" = "আপনার রিভিউয়ের জন্য ধন্যবাদ!";
+"review_error_already_reviewed" = "আপনি ইতিমধ্যে এই কাজের রিভিউ দিয়েছেন।";
+"review_error_job_not_completed" = "কাজ সম্পন্ন হওয়ার পরেই রিভিউ দেওয়া যাবে।";
+"review_error_generic" = "রিভিউ জমা দেওয়া যায়নি। আবার চেষ্টা করুন।";
+"review_rating_accessibility_label" = "রেটিং";
+"review_rating_accessibility_value" = "৫টির মধ্যে %dটি তারা";
+"leave_review" = "রিভিউ দিন";
+"review_submitted_badge" = "রিভিউ দেওয়া হয়েছে";
+
+/* Dashboard Analytics & Reputation */
+"dashboard_analytics" = "বিশ্লেষণ";
+"dashboard_money_flow" = "মাসভিত্তিক অর্থপ্রবাহ";
+"dashboard_deal_status" = "ডিলের অবস্থা";
+"dashboard_rating_trend" = "রেটিং প্রবণতা";
+"dashboard_chart_needs_history" = "সময়ের সাথে অর্থপ্রবাহ দেখতে কয়েকটি ডিল সম্পন্ন করুন।";
+"dashboard_chart_no_deals" = "এখনও কোনো ডিল নেই।";
+"dashboard_chart_needs_reviews" = "কয়েকটি রিভিউ পাওয়ার পর আপনার রেটিং প্রবণতা দেখা যাবে।";
+"dashboard_reputation" = "সুনাম";
+"dashboard_no_reviews_yet" = "এখনও কোনো রিভিউ নেই — ক্লায়েন্টরা রেটিং দিলে এখানে দেখা যাবে।";
+"dashboard_latest_reviews" = "সাম্প্রতিক রিভিউ";
+"dashboard_view_all_reviews" = "সবগুলো %dটি রিভিউ দেখুন";
+"dashboard_trust_progress" = "পরবর্তী স্তর: %@ (%dটি কাজ, %.1f+ রেটিং)";
+"dashboard_trust_top_tier" = "সর্বোচ্চ স্তরে পৌঁছেছেন — আপনি একজন বিশেষজ্ঞ!";
+"dashboard_reviews_title" = "রিভিউসমূহ";
+"deals_filter_active" = "চলমান";
+"deals_filter_completed" = "সম্পন্ন";
+"deals_filter_all" = "সব";
+"deals_list_title" = "আমার ডিলসমূহ";
+"deals_list_empty" = "দেখানোর মতো কোনো ডিল নেই।";
+
+/* --- Signup / phone OTP --- */
+"phone" = "ফোন";
+"verify" = "যাচাই করুন";
+"signup_identity" = "যেভাবে সাইন আপ করবেন";
+"phone_hint_bd" = "01XXXXXXXXX";
+"password_min_hint" = "কমপক্ষে ৬ অক্ষর।";
+"check_email_confirm" = "অ্যাকাউন্ট নিশ্চিত করতে আপনার ইমেইল দেখুন।";
+"signup_failed" = "সাইন আপ ব্যর্থ: %@";
+"signin_failed" = "সাইন ইন ব্যর্থ: %@";
+"otp_sent_to" = "%@ নম্বরে ৬-সংখ্যার কোড পাঠানো হয়েছে";
+"otp_code" = "ভেরিফিকেশন কোড";
+"otp_failed" = "যাচাই ব্যর্থ: %@";
+
+/* --- Provider verification --- */
+"verified" = "ভেরিফায়েড";
+"verify_title" = "ভেরিফায়েড প্রোভাইডার হোন";
+"verify_intro" = "সেবা দিতে হলে আপনার এনআইডি, একটি ভেরিফায়েড ফোন নম্বর এবং (ঐচ্ছিক) সার্টিফিকেট ও কাজের ডেমো ভিডিও জমা দিন। আমাদের টিম প্রতিটি আবেদন ম্যানুয়ালি যাচাই করে।";
+"verify_account_type" = "অ্যাকাউন্টের ধরন";
+"verify_service_provider" = "সেবা প্রদানকারী";
+"verify_status_verified" = "কাজ হবে কর্তৃক ভেরিফায়েড";
+"verify_status_pending_title" = "ভেরিফিকেশন অপেক্ষমাণ";
+"verify_status_pending_body" = "আপনার আবেদন পর্যালোচনাধীন। অনুমোদিত হলে আমরা জানাবো।";
+"verify_status_rejected_title" = "ভেরিফিকেশন প্রত্যাখ্যাত";
+"verify_reapply" = "পুনরায় আবেদন";
+"verify_become_subtitle" = "কাজের জন্য আবেদন করতে ও সেবা দিতে ভেরিফায়েড হোন।";
+"verify_become_button" = "ভেরিফায়েড হোন";
+"verify_nid_section" = "জাতীয় পরিচয়পত্র (এনআইডি)";
+"verify_nid_number" = "এনআইডি নম্বর";
+"verify_nid_front" = "এনআইডির সামনের ছবি";
+"verify_nid_back" = "এনআইডির পেছনের ছবি";
+"verify_phone_section" = "ফোন (ঐচ্ছিক)";
+"verify_phone_invalid" = "একটি সঠিক বাংলাদেশি মোবাইল নম্বর দিন (01XXXXXXXXX)।";
+"verify_send_otp" = "কোড পাঠান";
+"verify_certificates_section" = "সার্টিফিকেট (ঐচ্ছিক)";
+"verify_add_certificates" = "সার্টিফিকেট যোগ করুন";
+"verify_certificates_count" = "%d টি ফাইল নির্বাচিত";
+"verify_certificates_hint" = "আবেদন শক্তিশালী করতে ট্রেড সার্টিফিকেট বা প্রশিক্ষণের কাগজ আপলোড করুন।";
+"verify_demos_section" = "কাজের ডেমো (ঐচ্ছিক)";
+"verify_demos_hint" = "আপনার কাজ দেখায় এমন ইউটিউব, ফেসবুক বা ড্রাইভ লিংক দিন।";
+"verify_demo_url_placeholder" = "https://youtube.com/...";
+"verify_submit" = "পর্যালোচনার জন্য জমা দিন";
+"verify_submit_failed" = "জমা ব্যর্থ: %@";
+
+"continue_with" = "অথবা চালিয়ে যান";

@@ -128,7 +128,6 @@ struct NotificationsView: View {
     @State private var isLoadingProfile = false
 
     // Deal Details sheet (opened by tapping a "deal created" notification)
-    @State private var selectedDeal: DealWithCompletion?
 
     // MARK: - Job Interest Notifications (Convert existing to unified)
     private func convertJobInterestsToUnified() -> [UnifiedNotification] {
@@ -408,25 +407,22 @@ struct NotificationsView: View {
                           let status = item["status"] as? String,
                           let created_at = item["created_at"] as? String,
                           let deal_data = item["deals"] as? [String: Any],
-                          let client_id = deal_data["client_id"] as? String,
-                          let provider_id = deal_data["provider_id"] as? String,
                           let agreed_amount = deal_data["agreed_amount"] as? Int else {
                         continue
                     }
-                    
+
                     // Skip if the current user is the requester (they don't need to see their own request as notification)
                     if requester_id == user.id.uuidString {
                         continue
                     }
-                    
+
                     // Extract job info
                     let job_data = deal_data["jobs"] as? [String: Any]
                     let job_title = job_data?["title"] as? String ?? "Unknown Job"
                     let job_id = deal_data["job_id"] as? String
-                    
+
                     // Get requester name (we'll need to fetch this separately for now)
                     let requester_name = requester_type == "client" ? "Client" : "Provider"
-                    let request_message = item["request_message"] as? String
                     
                     // Create notification based on status and user role
                     let notificationType: DatabaseNotificationType
@@ -932,7 +928,7 @@ struct NotificationsView: View {
                 self.errorMessage = "Failed to process action: \(error.localizedDescription)"
             }
         }
-        await MainActor.run { processingNotificationIds.remove(interest.id) }
+        _ = await MainActor.run { processingNotificationIds.remove(interest.id) }
         await safeLoadUnifiedNotifications()
         await NotificationBadgeManager.shared.refreshCounts()
     }
@@ -983,6 +979,17 @@ struct NotificationsView: View {
             await MainActor.run {
                 self.businessNotifications = loadedNotifications
                 self.isLoadingBusiness = false
+
+                // Persist both feed sources for instant paint on the next visit.
+                if let uid = supabase.auth.currentUser?.id.uuidString {
+                    NotificationsCache.shared.save(
+                        NotificationsSnapshot(
+                            jobInterests: self.notifications,
+                            businessNotifications: loadedNotifications
+                        ),
+                        userId: uid
+                    )
+                }
             }
 
             print("📱 Loaded \(loadedNotifications.count) business notifications")
@@ -998,57 +1005,22 @@ struct NotificationsView: View {
     private func handleBusinessNotificationTap(_ notification: BusinessNotification) async {
         print("📱 Business notification tapped: \(notification.displayTitle)")
 
-        // Opening a notification mutes it (device-local read state).
+        // Opening a notification mutes it. Local state is the immediate UI
+        // source of truth; the server sync is best-effort so a flaky network
+        // never blocks navigation.
         localState.markRead(notification.id)
         NotificationBadgeManager.shared.recomputeFromLocal()
+        Task.detached {
+            try? await NotificationsNetworking.shared.markBusinessNotificationAsRead(notification.id)
+        }
 
-        // A "deal created" notification opens the Deal Details view (same as the Dashboard).
-        if notification.type == "deal_created", let jobId = notification.job_id {
-            await openDeal(forJobId: jobId)
-        }
-        // A completion-request notification opens the same Deal Details view, where the
-        // responder approves / requests changes (the approval surface moved here from the
-        // Dashboard). Reuses openDeal — all completion notifications carry a job_id.
-        else if notification.type == "completion_request" || notification.type == "completion_requested",
-                let jobId = notification.job_id {
-            await openDeal(forJobId: jobId)
-        }
-    }
-
-    /// Resolve the deal for a job and present Deal Details — mirrors the Dashboard's
-    /// active-deal tap (reuses DealsNetworking.fetchActiveDeals, which joins job + profiles).
-    private func openDeal(forJobId jobId: String) async {
-        do {
-            let deals = try await DealsNetworking.shared.fetchActiveDeals()
-            guard let deal = deals.first(where: { $0.job_id == jobId }) else {
-                print("ℹ️ No active deal found for job \(jobId); nothing to open.")
-                return
-            }
-            let dealWithCompletion = DealWithCompletion(
-                id: deal.id,
-                job_id: deal.job_id,
-                client_id: deal.client_id,
-                provider_id: deal.provider_id,
-                agreed_amount: deal.agreed_amount,
-                agreed_terms: deal.agreed_terms,
-                timeline: deal.timeline,
-                status: deal.status,
-                completion_status: deal.completion_status ?? "in_progress",
-                client_completion_requested: deal.client_completion_requested ?? false,
-                provider_completion_requested: deal.provider_completion_requested ?? false,
-                client_completion_requested_at: deal.client_completion_requested_at,
-                provider_completion_requested_at: deal.provider_completion_requested_at,
-                created_at: deal.created_at,
-                completed_at: deal.completed_at,
-                job: deal.job,
-                client_profile: deal.client_profile,
-                provider_profile: deal.provider_profile,
-                pending_completion_requests: nil
-            )
-            await MainActor.run { self.selectedDeal = dealWithCompletion }
-        } catch {
-            print("❌ Error opening deal for job \(jobId): \(error)")
-        }
+        // Every notification type routes through the central AppRouter, which
+        // switches tabs and presents the destination at the MainTabView level.
+        await AppRouter.shared.handleNotificationTap(
+            type: notification.type,
+            jobId: notification.job_id,
+            fromUserId: notification.from_user_id
+        )
     }
 
     private func markBusinessNotificationAsRead(_ notification: BusinessNotification) async {
@@ -1093,6 +1065,19 @@ struct NotificationsView: View {
                 loadingTask = Task {
                     if let uid = supabase.auth.currentUser?.id.uuidString {
                         await MainActor.run { NotificationLocalState.shared.configure(userId: uid) }
+
+                        // Seed instantly from cache (memory → disk) so the feed paints
+                        // on the first frame; the fetches below refresh silently.
+                        if notifications.isEmpty && businessNotifications.isEmpty {
+                            var snap = NotificationsCache.shared.peek(userId: uid)
+                            if snap == nil { snap = await NotificationsCache.shared.load(userId: uid) }
+                            if let snap {
+                                await MainActor.run {
+                                    notifications = snap.jobInterests
+                                    businessNotifications = snap.businessNotifications
+                                }
+                            }
+                        }
                     }
                     await safeLoadUnifiedNotifications()
                     await loadBusinessNotifications()
@@ -1101,9 +1086,6 @@ struct NotificationsView: View {
             .onDisappear {
                 loadingTask?.cancel()
                 loadingTask = nil
-            }
-            .sheet(item: $selectedDeal) { deal in
-                DealDetailView(deal: deal)
             }
         }
         .sheet(isPresented: $showingProviderProfile) {
@@ -1211,10 +1193,10 @@ struct NotificationsView: View {
                     print("ℹ️ Informational notification tapped: \(notification.source.rawValue)")
                 }
                 
-                await MainActor.run {
+                _ = await MainActor.run {
                     self.processingNotificationIds.remove(notification.id)
                 }
-                
+
                 // Refresh notifications after action
                 await safeLoadUnifiedNotifications()
                 
@@ -1233,7 +1215,7 @@ struct NotificationsView: View {
         let status = accept ? "accepted" : "rejected"
         
         do {
-            let updateResponse = try await supabase
+            _ = try await supabase
                 .from("job_interests")
                 .update([
                     "status": AnyEncodable(status),
@@ -1416,6 +1398,15 @@ struct NotificationsView: View {
                 await MainActor.run {
                     self.notifications = parsedNotifications
                     print("✅ Successfully loaded \(parsedNotifications.count) notifications with provider names")
+
+                    // Persist both feed sources for instant paint on the next visit.
+                    NotificationsCache.shared.save(
+                        NotificationsSnapshot(
+                            jobInterests: parsedNotifications,
+                            businessNotifications: self.businessNotifications
+                        ),
+                        userId: user.id.uuidString
+                    )
                 }
             } else {
                 await MainActor.run {
@@ -1521,11 +1512,11 @@ struct NotificationsView: View {
                     print("❌ Status is REJECTED - NOT creating conversation")
                 }
                 
-                await MainActor.run {
+                _ = await MainActor.run {
                     // Remove from processing set
                     self.processingNotificationIds.remove(notification.id)
                 }
-                
+
                 // Refresh the notifications list safely
                 await safeLoadNotifications()
                 
@@ -1647,19 +1638,15 @@ struct NotificationsView: View {
 
                         // Update UI on main actor with immediate sheet presentation
                         print("🚀 About to run MainActor.run block...")
-                        do {
-                            await MainActor.run {
-                                print("🎭 INSIDE MainActor.run - Setting profile for: \(profile.full_name ?? "Unknown")")
-                                print("🎭 Current selectedProfile before assignment: \(self.selectedProfile?.full_name ?? "nil")")
-                                self.selectedProfile = profile
-                                print("🎭 selectedProfile after assignment: \(self.selectedProfile?.full_name ?? "nil")")
-                                self.isLoadingProfile = false
-                                print("🎭 Profile successfully set and loading stopped")
-                            }
-                            print("🚀 MainActor.run completed successfully")
-                        } catch {
-                            print("❌ Error in MainActor.run: \(error)")
+                        await MainActor.run {
+                            print("🎭 INSIDE MainActor.run - Setting profile for: \(profile.full_name ?? "Unknown")")
+                            print("🎭 Current selectedProfile before assignment: \(self.selectedProfile?.full_name ?? "nil")")
+                            self.selectedProfile = profile
+                            print("🎭 selectedProfile after assignment: \(self.selectedProfile?.full_name ?? "nil")")
+                            self.isLoadingProfile = false
+                            print("🎭 Profile successfully set and loading stopped")
                         }
+                        print("🚀 MainActor.run completed successfully")
                     } else {
                         print("❌ No profile data found in response")
                         await MainActor.run {

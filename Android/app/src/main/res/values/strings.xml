@@ -1,4 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KajHobe</string>
+
+    <!-- Common -->
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="back">Back</string>
+    <string name="language">Language</string>
+    <string name="settings">Settings</string>
+    <string name="loading">Loading…</string>
+
+    <!-- Job list / search -->
+    <string name="search_type_hint">Type to search jobs.</string>
+    <string name="no_jobs_found">No jobs found.</string>
+
+    <!-- Notifications settings -->
+    <string name="notifications">Notifications</string>
+    <string name="notifications_coming_soon">Notification settings — coming soon</string>
+
+    <!-- Favorite categories sheet -->
+    <string name="fav_categories_title">Favorite Categories</string>
+    <string name="fav_categories_subtitle">Choose up to %1$d favorite categories</string>
+    <string name="selected_count">%1$d/%2$d selected</string>
+
+    <!-- Post a job -->
+    <string name="post_job_heading">Post a Job</string>
+    <string name="post_job_title_label">Title</string>
+    <string name="post_job_title_placeholder">Enter a clear, descriptive title</string>
+    <string name="post_job_description_label">Description</string>
+    <string name="post_job_category_label">Category</string>
+    <string name="post_job_photos_videos">Photos &amp; Videos</string>
+    <string name="post_job_optional">Optional</string>
+    <string name="post_job_location_label">Location</string>
+    <string name="post_job_budget_label">Budget (৳)</string>
+    <string name="post_job_mark_urgent">Mark as urgent</string>
+    <string name="post_job_urgent_subtitle">Urgent jobs are highlighted to providers</string>
+    <string name="post_job_uploading_media">Uploading media…</string>
+    <string name="post_job_posting">Posting…</string>
+    <string name="post_job_submit">Post Job</string>
+
+    <!-- Job search -->
+    <string name="search_jobs_placeholder">Search jobs</string>
+
+    <!-- Chat -->
+    <string name="chat_message_placeholder">Message</string>
+
+    <!-- Profile -->
+    <string name="profile_bio_label">Bio</string>
+    <string name="profile_bio_placeholder">Tell us about yourself…</string>
+    <string name="profile_no_bio">No bio yet</string>
 </resources>

@@ -11,6 +11,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { useInterestCooldown } from '@/hooks/useInterestCooldown';
+import CooldownTimer from '@/components/CooldownTimer';
+import MediaCarousel from '@/components/MediaCarousel';
+import { parseMediaItems } from '@/lib/media';
 
 interface JobCardProps {
   job: Job;
@@ -26,6 +30,17 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
   const [userType, setUserType] = useState<string | null>(null);
   const [showInterestDialog, setShowInterestDialog] = useState(false);
   const [interestMessage, setInterestMessage] = useState('');
+
+  // Interest cooldown (parity with iOS InterestCooldownManager): blocks repeat
+  // attempts after a rejection / rate-limits rapid retries / caps total attempts.
+  const isServiceProviderUser = userType === 'provider' || userType === 'both';
+  const { data: cooldown } = useInterestCooldown(
+    job.id,
+    user?.id,
+    isServiceProviderUser && job.client_id !== user?.id
+  );
+  const refreshCooldown = () =>
+    queryClient.invalidateQueries({ queryKey: ['interest-cooldown', job.id, user?.id] });
 
   // Check user's relationship to this job and get user type
   useEffect(() => {
@@ -115,6 +130,16 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
         title: "Service Provider Required",
         description: "You need to be a service provider to express interest in jobs.",
         variant: "destructive",
+      });
+      return;
+    }
+
+    // Respect the cooldown / attempt cap before opening the dialog.
+    if (cooldown && !cooldown.canShowInterest) {
+      toast({
+        title: cooldown.isPermanentlyBlocked ? 'Maximum attempts reached' : 'Please wait',
+        description: cooldown.statusDescription,
+        variant: 'destructive',
       });
       return;
     }
@@ -284,6 +309,11 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
           {job.title}
         </h3>
 
+        {(() => {
+          const media = parseMediaItems(job.media_urls);
+          return media.length > 0 ? <MediaCarousel items={media} className="mb-3" height={180} /> : null;
+        })()}
+
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-sm text-muted-foreground">
             <DollarSign className="w-4 h-4 mr-2" />
@@ -302,10 +332,30 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
         {!isOwnJob && job.status === 'open' && isServiceProvider && (
           <div className="space-y-2">
             {interestStatus === 'rejected' && (
-              <div className="text-center py-2">
-                <Badge variant="destructive" className="text-xs">
-                  Interest Rejected
-                </Badge>
+              <div className="space-y-2 py-2">
+                <div className="text-center">
+                  <Badge variant="destructive" className="text-xs">
+                    Interest Rejected
+                  </Badge>
+                </div>
+                {cooldown?.isPermanentlyBlocked ? (
+                  <p className="text-center text-xs text-muted-foreground">
+                    You've reached the maximum attempts for this job.
+                  </p>
+                ) : cooldown && !cooldown.canShowInterest && cooldown.nextAttemptTime ? (
+                  <CooldownTimer until={cooldown.nextAttemptTime} onComplete={refreshCooldown} />
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExpressInterest}
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    <Heart className="w-4 h-4 mr-1" />
+                    Show Interest Again
+                  </Button>
+                )}
               </div>
             )}
             

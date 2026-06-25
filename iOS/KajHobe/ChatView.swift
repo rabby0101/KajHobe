@@ -274,31 +274,59 @@ struct ChatView: View {
     
     private func loadChatData() async {
         print("🔍 CHAT DEBUG: Loading chat data for conversation: \(conversation.id)")
-        
+
+        // Seed instantly from the per-conversation cache (memory → disk) so the chat
+        // history paints on the first frame; the fetch below reconciles silently.
+        if messages.isEmpty, let uid = currentUserId {
+            let cache = ChatMessagesCache.cache(for: conversation.id)
+            if let cached = cache.peek(userId: uid) {
+                await MainActor.run {
+                    self.messages = cached
+                    self.isLoading = false
+                }
+            } else if let disk = await cache.load(userId: uid) {
+                await MainActor.run {
+                    self.messages = disk
+                    self.isLoading = false
+                }
+            }
+        }
+
         do {
             // The current user id is already resolved synchronously from the session, so we go
             // straight to fetching messages — no profile round-trip blocking the chat load.
             let fetchedMessages = try await MessagesNetworking.shared.fetchMessages(
                 conversationId: conversation.id
             )
-            
+
             await MainActor.run {
                 self.messages = fetchedMessages
                 self.isLoading = false
                 print("🔍 CHAT DEBUG: Chat data loaded with \(self.messages.count) messages")
-                
+
+                persistMessagesToCache(fetchedMessages)
+
                 // Mark unread messages as read for the current user
                 Task {
                     await markMessagesAsRead()
                 }
             }
-            
+
         } catch {
             print("❌ CHAT DEBUG: Error loading chat data: \(error)")
             await MainActor.run {
                 self.isLoading = false
             }
         }
+    }
+
+    /// Persist the most recent messages so the next open paints instantly.
+    /// Capped to `ChatMessagesCache.maxCachedMessages`; older history still
+    /// comes from the network exactly as before.
+    private func persistMessagesToCache(_ messages: [ChatMessage]) {
+        guard let uid = currentUserId else { return }
+        ChatMessagesCache.cache(for: conversation.id)
+            .save(Array(messages.suffix(ChatMessagesCache.maxCachedMessages)), userId: uid)
     }
     
     private func subscribeToMessages() {
@@ -392,6 +420,7 @@ struct ChatView: View {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         messages.append(newMessage)
                     }
+                    persistMessagesToCache(messages)
                     print("✅ CHAT REALTIME DEBUG: Added new message to chat. Total messages: \(messages.count)")
                     print("✅ CHAT REALTIME DEBUG: New message content: '\(newMessage.content)'")
                     
@@ -748,14 +777,7 @@ struct ChatMessageBubble: View {
     }
     
     private func formatMessageTime(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: dateString) else {
-            return ""
-        }
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        AppDateFormatter.shortTime(dateString)
     }
 }
 

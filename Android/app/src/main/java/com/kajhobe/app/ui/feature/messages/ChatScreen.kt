@@ -15,11 +15,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -66,13 +66,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.kajhobe.app.R
 import com.kajhobe.app.data.model.ChatMessage
+import com.kajhobe.app.ui.components.PhoneticTextField
 import com.kajhobe.app.ui.feature.payment.BkashCheckoutLauncher
 import com.kajhobe.app.ui.theme.KajHobeTheme
 import java.io.File
@@ -94,7 +97,7 @@ fun ChatScreen(
 
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages.size) {
-        if (state.messages.isNotEmpty()) listState.animateScrollToItem(state.messages.lastIndex)
+        if (state.messages.isNotEmpty()) listState.animateScrollToItem(0)
     }
 
     // Launch the bKash checkout in Chrome Custom Tabs as soon as the ViewModel
@@ -112,6 +115,7 @@ fun ChatScreen(
     var showDealSheet by remember { mutableStateOf(false) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = {
@@ -130,27 +134,47 @@ fun ChatScreen(
             )
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(KajHobeTheme.spacing.md),
-                verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .imePadding(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.BottomCenter,
             ) {
-                items(state.messages, key = { it.id }) { msg ->
-                    val isMine = msg.sender_id == state.currentUserId
-                    when (msg.message_type) {
-                        "deal_offer" -> DealOfferBubble(
-                            msg = msg,
-                            isMine = isMine,
-                            status = dealOfferId(msg)?.let { state.dealStatuses[it] } ?: "pending",
-                            canRespond = !isMine,
-                            isPaying = state.isPaying,
-                            onAccept = { viewModel.respondToDeal(msg, accept = true) },
-                            onReject = { viewModel.respondToDeal(msg, accept = false) },
-                        )
-                        "image" -> ImageBubble(msg = msg, isMine = isMine)
-                        else -> MessageBubble(msg = msg, isMine = isMine)
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(
+                        horizontal = KajHobeTheme.spacing.md,
+                        vertical = KajHobeTheme.spacing.sm,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(KajHobeTheme.spacing.sm),
+                    reverseLayout = true,
+                ) {
+                    // Messages are stored oldest→newest, but reverseLayout places
+                    // index 0 at the bottom — so render newest→oldest. This keeps the
+                    // newest message at the bottom and lets animateScrollToItem(0)
+                    // reveal freshly sent messages instead of scrolling to the oldest.
+                    items(state.messages.asReversed(), key = { it.id }) { msg ->
+                        val isMine = msg.sender_id == state.currentUserId
+                        when (msg.message_type) {
+                            "deal_offer" -> DealOfferBubble(
+                                msg = msg,
+                                isMine = isMine,
+                                status = dealOfferId(msg)?.let { state.dealStatuses[it] } ?: "pending",
+                                canRespond = !isMine,
+                                isPaying = state.isPaying,
+                                onAccept = { viewModel.respondToDeal(msg, accept = true) },
+                                onReject = { viewModel.respondToDeal(msg, accept = false) },
+                            )
+                            "image" -> ImageBubble(msg = msg, isMine = isMine)
+                            else -> MessageBubble(msg = msg, isMine = isMine)
+                        }
                     }
                 }
             }
@@ -231,8 +255,6 @@ private fun ChatInputBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
-            .imePadding()
             .padding(KajHobeTheme.spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -280,12 +302,12 @@ private fun ChatInputBar(
             }
         }
 
-        OutlinedTextField(
+        PhoneticTextField(
             value = state.draft,
             onValueChange = onDraftChange,
             modifier = Modifier.weight(1f),
-            placeholder = { Text("Message") },
-            shape = RoundedCornerShape(24.dp),
+            placeholder = stringResource(R.string.chat_message_placeholder),
+            singleLine = false,
             maxLines = 4,
             enabled = !state.isUploadingImage && !state.isSendingDealOffer,
         )

@@ -465,10 +465,49 @@ class DealsNetworking: ObservableObject {
     
     func respondToCompletionRequest(requestId: String, approve: Bool, message: String?) async throws {
         do {
-            let user = try supabase.auth.requireCurrentUser()
+            _ = try supabase.auth.requireCurrentUser()
             let status = approve ? "approved" : "rejected"
             let now = ISO8601DateFormatter().string(from: Date())
-            
+
+            // A3/A4 integrity guard: a deal must never be marked complete unless its
+            // payment was actually collected into escrow. We check this BEFORE writing
+            // anything (no partial state) and fail closed — if the escrow can't be read
+            // or isn't funded, completion is refused. The DB has a BEFORE UPDATE backstop
+            // trigger too; this client-side check exists for a clear, immediate message.
+            if approve {
+                let crResp = try await supabase
+                    .from("completion_requests")
+                    .select("deal_id")
+                    .eq("id", value: requestId)
+                    .single()
+                    .execute()
+                guard let crData = try? JSONSerialization.jsonObject(with: crResp.data) as? [String: Any],
+                      let guardDealId = crData["deal_id"] as? String else {
+                    throw NetworkingError.validationError("Couldn't load this completion request. Please try again.")
+                }
+
+                // A1: a disputed deal can't be completed through the normal path — it
+                // must be settled by an admin. (DB guard enforces this too.)
+                let dealStateResp = try await supabase
+                    .from("deals")
+                    .select("completion_status")
+                    .eq("id", value: guardDealId)
+                    .single()
+                    .execute()
+                if let ds = try? JSONSerialization.jsonObject(with: dealStateResp.data) as? [String: Any],
+                   (ds["completion_status"] as? String) == "disputed" {
+                    throw NetworkingError.validationError(
+                        "This deal is under dispute. It can't be marked complete until an admin resolves the dispute.")
+                }
+
+                let fundedStates: Set<EscrowState> = [.held, .released, .paid_out]
+                let escrow = try? await EscrowNetworking.shared.fetchEscrow(forDealId: guardDealId)
+                guard let escrow, fundedStates.contains(escrow.state) else {
+                    throw NetworkingError.validationError(
+                        "This deal can't be marked complete yet because the payment hasn't been collected into escrow. Make sure the client has paid for the deal, then try again — or contact support if the payment already went through.")
+                }
+            }
+
             let updateData = [
                 "status": status,
                 "responded_at": now,
@@ -544,13 +583,34 @@ class DealsNetworking: ObservableObject {
             }
             
             print("✅ Completion request \(status) for request: \(requestId)")
-            
+
         } catch {
             print("❌ Error responding to completion request: \(error)")
             throw error
         }
     }
-    
+
+    // MARK: - Disputes (A1)
+
+    /// Open a dispute on an active, funded deal. The `deal_open_dispute` RPC
+    /// validates that the caller is a participant, the deal is `active`, and its
+    /// escrow is `held`; it freezes the deal (`completion_status='disputed'`) and
+    /// notifies the other party. An admin then resolves it from the payout panel.
+    func openDispute(dealId: String, reason: String?) async throws {
+        do {
+            _ = try supabase.auth.requireCurrentUser()
+            let params = AnyEncodable([
+                "p_deal_id": dealId,
+                "p_reason": reason ?? ""
+            ])
+            try await supabase.rpc("deal_open_dispute", params: params).execute()
+            print("✅ Dispute opened for deal \(dealId)")
+        } catch {
+            print("❌ Error opening dispute: \(error)")
+            throw error
+        }
+    }
+
     // MARK: - Dashboard Data
     func fetchDashboardData(forceRefresh: Bool = false) async throws -> DashboardData {
         // Cache has been removed - always fetch fresh data

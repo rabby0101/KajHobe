@@ -105,7 +105,7 @@ class PushNotificationManager: NSObject, ObservableObject {
                 "updated_at": ISO8601DateFormatter().string(from: Date())
             ])
 
-            try await supabase.database
+            try await supabase
                 .from("profiles")
                 .update(updateData)
                 .eq("id", value: userId.uuidString)
@@ -308,7 +308,7 @@ class PushNotificationManager: NSObject, ObservableObject {
     // MARK: - Badge Management
     func updateBadgeCount(_ count: Int) {
         Task { @MainActor in
-            UIApplication.shared.applicationIconBadgeNumber = count
+            UNUserNotificationCenter.current().setBadgeCount(count)
         }
     }
     
@@ -418,19 +418,15 @@ extension PushNotificationManager: UNUserNotificationCenterDelegate {
         }
         
         // Handle offer acceptance/decline through networking layer
-        do {
-            // Assuming we have a method to handle offer responses
-            print("📱 Handling offer response: \(accept ? "accepted" : "declined") for offer: \(offerId)")
-            
-            let message = accept ? "Offer accepted!" : "Offer declined."
-            scheduleLocalNotification(
-                title: "Action Complete",
-                body: message,
-                timeInterval: 1.0
-            )
-        } catch {
-            print("❌ Failed to respond to offer: \(error)")
-        }
+        // Assuming we have a method to handle offer responses
+        print("📱 Handling offer response: \(accept ? "accepted" : "declined") for offer: \(offerId)")
+
+        let message = accept ? "Offer accepted!" : "Offer declined."
+        scheduleLocalNotification(
+            title: "Action Complete",
+            body: message,
+            timeInterval: 1.0
+        )
     }
     
     private func handleMessageReply(userInfo: [AnyHashable: Any]) {

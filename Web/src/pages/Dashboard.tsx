@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
   TrendingUp, 
@@ -20,39 +19,22 @@ import {
   BarChart3,
   RefreshCw
 } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-interface DashboardStats {
-  active_deals_count: number;
-  completed_deals_count: number;
-  total_earnings: number;
-  total_spent: number;
-  average_rating: number;
-  user_type: 'provider' | 'client';
-}
-
-interface ActiveDeal {
-  id: string;
-  job_title: string;
-  agreed_amount: number;
-  completion_status: string;
-  client_name?: string;
-  provider_name?: string;
-  created_at: string;
-  client_completion_requested: boolean;
-  provider_completion_requested: boolean;
-}
-
-interface CompletionRequest {
-  id: string;
-  deal_id: string;
-  job_title: string;
-  requester_type: 'client' | 'provider';
-  requester_name: string;
-  request_message: string;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-}
+import { useQueryClient } from '@tanstack/react-query';
+import { useDashboardData } from '@/hooks/useDashboardData';
+import {
+  MoneyFlowChart,
+  StatusDonut,
+  RatingTrendChart,
+  RatingDistributionChart,
+} from '@/components/dashboard/AnalyticsCharts';
+import ReputationCard from '@/components/dashboard/ReputationCard';
+import {
+  useActiveDeals,
+  usePendingCompletionRequests,
+  useRequestCompletion,
+  useRespondToCompletion,
+  CompletionError,
+} from '@/hooks/useCompletionRequests';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -60,128 +42,19 @@ const Dashboard: React.FC = () => {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Dashboard stats query
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['dashboard-stats', user?.id],
-    queryFn: async () => {
-      try {
-        if (!user?.id) return null;
-        
-        console.log('Fetching dashboard stats...');
-        
-        // Try to get basic stats from different tables
-        const [dealsResult, userResult] = await Promise.allSettled([
-          supabase
-            .from('deals')
-            .select('*')
-            .or(`client_id.eq.${user.id},provider_id.eq.${user.id}`),
-          supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single()
-        ]);
-        
-        let activeDealsCount = 0;
-        let completedDealsCount = 0;
-        let totalEarnings = 0;
-        let totalSpent = 0;
-        let userType = 'client' as const;
-        
-        if (dealsResult.status === 'fulfilled' && dealsResult.value.data) {
-          const deals = dealsResult.value.data;
-          activeDealsCount = deals.filter(d => d.status === 'active').length;
-          completedDealsCount = deals.filter(d => d.status === 'completed').length;
-          
-          deals.forEach(deal => {
-            if (deal.status === 'completed') {
-              if (deal.client_id === user.id) {
-                totalSpent += deal.amount || 0;
-              } else {
-                totalEarnings += deal.amount || 0;
-              }
-            }
-          });
-        }
-        
-        if (userResult.status === 'fulfilled' && userResult.value.data) {
-          // Determine user type based on activity
-          userType = totalEarnings > 0 ? 'provider' : 'client';
-        }
-        
-        const stats = {
-          active_deals_count: activeDealsCount,
-          completed_deals_count: completedDealsCount,
-          total_earnings: totalEarnings,
-          total_spent: totalSpent,
-          average_rating: 4.5,
-          user_type: userType,
-        };
-        
-        console.log('Dashboard stats:', stats);
-        return stats;
-      } catch (error) {
-        console.error('Dashboard stats error:', error);
-        // Return default stats on error
-        return {
-          active_deals_count: 0,
-          completed_deals_count: 0,
-          total_earnings: 0,
-          total_spent: 0,
-          average_rating: 4.5,
-          user_type: 'client' as const,
-        };
-      }
-    },
-    enabled: !!user?.id,
-    retry: 1,
-    staleTime: 60000, // 1 minute
-    refetchInterval: 60000, // Refetch every 1 minute
-    refetchOnWindowFocus: true,
-  });
+  // Real dashboard data + chart aggregations (replaces the old stubbed stats).
+  const { data: dash, isLoading: statsLoading } = useDashboardData();
 
-  // Active deals query - simplified
-  const { data: activeDeals, isLoading: dealsLoading } = useQuery({
-    queryKey: ['active-deals', user?.id],
-    queryFn: async () => {
-      try {
-        // Return empty array for now
-        return [] as ActiveDeal[];
-      } catch (error) {
-        console.error('Active deals error:', error);
-        throw error;
-      }
-    },
-    enabled: !!user?.id,
-    retry: 1,
-    staleTime: 60000, // 1 minute
-    refetchInterval: 60000, // Refetch every 1 minute
-    refetchOnWindowFocus: true,
-  });
-
-  // Completion requests query - simplified
-  const { data: completionRequests, isLoading: requestsLoading } = useQuery({
-    queryKey: ['completion-requests', user?.id],
-    queryFn: async () => {
-      try {
-        // Return empty array for now
-        return [] as CompletionRequest[];
-      } catch (error) {
-        console.error('Completion requests error:', error);
-        throw error;
-      }
-    },
-    enabled: !!user?.id,
-    retry: 1,
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 30000, // Refetch every 30 seconds
-    refetchOnWindowFocus: true,
-  });
+  // Real active deals + pending completion requests (parity with iOS).
+  const { data: activeDeals = [], isLoading: dealsLoading } = useActiveDeals();
+  const { data: completionRequests = [], isLoading: requestsLoading } = usePendingCompletionRequests();
+  const requestCompletion = useRequestCompletion();
+  const respondToCompletion = useRespondToCompletion();
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
       await queryClient.invalidateQueries({ queryKey: ['active-deals'] });
       await queryClient.invalidateQueries({ queryKey: ['completion-requests'] });
       toast({
@@ -199,33 +72,41 @@ const Dashboard: React.FC = () => {
     }
   }, [queryClient, toast]);
 
-  const handleCompletionRequest = async (dealId: string, approved: boolean, message?: string) => {
-    try {
-      const { error } = await supabase
-        .rpc('respond_to_completion_request', {
-          deal_id: dealId,
-          approved,
-          response_message: message || ''
-        });
+  // Ask the counterparty to approve completion of a deal.
+  const handleRequestCompletion = (dealId: string) => {
+    requestCompletion.mutate(
+      { dealId },
+      {
+        onSuccess: () =>
+          toast({ title: 'Completion requested', description: 'The other party has been asked to approve.' }),
+        onError: (e) =>
+          toast({
+            title: 'Could not request completion',
+            description: e instanceof CompletionError ? e.message : 'Please try again.',
+            variant: 'destructive',
+          }),
+      }
+    );
+  };
 
-      if (error) throw error;
-
-      toast({
-        title: approved ? "Deal completed!" : "Request rejected",
-        description: approved ? "The deal has been marked as completed" : "The completion request has been rejected",
-      });
-
-      // Refresh data
-      await queryClient.invalidateQueries({ queryKey: ['active-deals'] });
-      await queryClient.invalidateQueries({ queryKey: ['completion-requests'] });
-      await queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to process completion request",
-        variant: "destructive",
-      });
-    }
+  // Approve or reject a completion request from the counterparty.
+  const handleRespondToCompletion = (requestId: string, approve: boolean) => {
+    respondToCompletion.mutate(
+      { requestId, approve },
+      {
+        onSuccess: () =>
+          toast({
+            title: approve ? 'Deal completed!' : 'Request rejected',
+            description: approve ? 'The deal has been marked as completed.' : 'The completion request was rejected.',
+          }),
+        onError: (e) =>
+          toast({
+            title: 'Action failed',
+            description: e instanceof CompletionError ? e.message : 'Please try again.',
+            variant: 'destructive',
+          }),
+      }
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -284,7 +165,7 @@ const Dashboard: React.FC = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.active_deals_count || 0}</div>
+            <div className="text-2xl font-bold">{dash?.activeDealsCount || 0}</div>
             <p className="text-xs text-muted-foreground">
               Currently in progress
             </p>
@@ -297,7 +178,7 @@ const Dashboard: React.FC = () => {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.completed_deals_count || 0}</div>
+            <div className="text-2xl font-bold">{dash?.completedDealsCount || 0}</div>
             <p className="text-xs text-muted-foreground">
               Successfully finished
             </p>
@@ -307,16 +188,16 @@ const Dashboard: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {stats?.user_type === 'provider' ? 'Total Earned' : 'Total Spent'}
+              {dash?.userType === 'provider' ? 'Total Earned' : 'Total Spent'}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${Math.round(stats?.user_type === 'provider' ? stats?.total_earnings || 0 : stats?.total_spent || 0)}
+              ৳{Math.round(dash?.userType === 'provider' ? dash?.totalEarnings || 0 : dash?.totalSpent || 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats?.user_type === 'provider' ? 'From completed deals' : 'On completed deals'}
+              {dash?.userType === 'provider' ? 'From completed deals' : 'On completed deals'}
             </p>
           </CardContent>
         </Card>
@@ -327,17 +208,20 @@ const Dashboard: React.FC = () => {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.average_rating?.toFixed(1) || '4.5'}</div>
+            <div className="text-2xl font-bold">
+              {dash && dash.reviewCount > 0 ? dash.averageRating.toFixed(1) : '—'}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Average rating
+              {dash && dash.reviewCount > 0 ? `From ${dash.reviewCount} review${dash.reviewCount > 1 ? 's' : ''}` : 'No ratings yet'}
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="deals" className="space-y-4">
+      <Tabs defaultValue="analytics" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="deals">Active Deals</TabsTrigger>
           <TabsTrigger value="requests">
             Pending Requests
@@ -348,6 +232,26 @@ const Dashboard: React.FC = () => {
             )}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="analytics" className="space-y-4">
+          {!dash ? (
+            <div className="flex h-32 items-center justify-center">
+              <RefreshCw className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div className="lg:col-span-1"><ReputationCard data={dash} /></div>
+                <div className="lg:col-span-2"><MoneyFlowChart data={dash.moneyFlow} /></div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <StatusDonut data={dash.statusSlices} />
+                <RatingTrendChart data={dash.ratingTrend} />
+                <RatingDistributionChart data={dash.ratingDistribution} />
+              </div>
+            </>
+          )}
+        </TabsContent>
 
         <TabsContent value="deals" className="space-y-4">
           <Card>
@@ -368,27 +272,34 @@ const Dashboard: React.FC = () => {
                     <div key={deal.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold">{deal.job_title}</h3>
-                        <Badge variant="secondary">${deal.agreed_amount}</Badge>
+                        <Badge variant="secondary">৳{deal.agreed_amount}</Badge>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">
-                          with {deal.client_name || deal.provider_name}
+                          with {deal.counterpartyName}
                         </span>
                         <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 rounded-full ${getStatusColor(deal.completion_status)}`} />
-                          <span className="text-sm">{getStatusText(deal.completion_status)}</span>
+                          <div className={`w-2 h-2 rounded-full ${getStatusColor(deal.completion_status || deal.status)}`} />
+                          <span className="text-sm">{getStatusText(deal.completion_status || deal.status)}</span>
                         </div>
                       </div>
-                      {deal.completion_status === 'in_progress' && (
-                        <div className="mt-3">
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleCompletionRequest(deal.id, true)}
+                      <div className="mt-3 flex items-center gap-2">
+                        {deal.iRequestedCompletion ? (
+                          <Badge variant="outline">Completion requested</Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            disabled={requestCompletion.isPending}
+                            onClick={() => handleRequestCompletion(deal.id)}
                           >
+                            <CheckCircle className="h-4 w-4 mr-1" />
                             Mark as Complete
                           </Button>
-                        </div>
-                      )}
+                        )}
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={`/deal/${deal.id}`}>View deal</a>
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -434,17 +345,19 @@ const Dashboard: React.FC = () => {
                         </p>
                       )}
                       <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleCompletionRequest(request.deal_id, true)}
+                        <Button
+                          size="sm"
+                          disabled={respondToCompletion.isPending}
+                          onClick={() => handleRespondToCompletion(request.id, true)}
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
                           Approve
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="destructive"
-                          onClick={() => handleCompletionRequest(request.deal_id, false)}
+                          disabled={respondToCompletion.isPending}
+                          onClick={() => handleRespondToCompletion(request.id, false)}
                         >
                           <AlertCircle className="h-4 w-4 mr-1" />
                           Reject

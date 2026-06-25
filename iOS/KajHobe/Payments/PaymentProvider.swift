@@ -17,7 +17,7 @@ import Supabase
 // ---------------------------------------------------------------------------
 
 /// Decoded response from the `bkash-collect` Edge Function.
-struct CollectionStart: Decodable, Sendable {
+struct CollectionStart: nonisolated Decodable, Sendable {
     let bkash_url: String
     let payment_id: String
 }

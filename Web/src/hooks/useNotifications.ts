@@ -98,7 +98,7 @@ export const useNotifications = () => {
           .from('notifications')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
-          .eq('read', false);
+          .eq('notification_state', 'unread');
         
         if (error) {
           console.error('Error fetching pending notifications count:', error);
@@ -137,9 +137,9 @@ export const useMarkNotificationAsRead = () => {
       
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ read: true, notification_state: 'read', read_at: new Date().toISOString() })
         .eq('id', notificationId);
-      
+
       if (error) {
         console.error('Error marking notification as read:', error);
         throw error;
@@ -163,10 +163,10 @@ export const useMarkConversationNotificationsAsRead = () => {
       
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ read: true, notification_state: 'read', read_at: new Date().toISOString() })
         .eq('user_id', user.id)
         .eq('related_proposal_id', conversationId)
-        .eq('read', false);
+        .eq('notification_state', 'unread');
       
       if (error) {
         console.error('Error marking conversation notifications as read:', error);
@@ -191,10 +191,10 @@ export const useMarkAllNotificationsAsRead = () => {
       
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ read: true, notification_state: 'read', read_at: new Date().toISOString() })
         .eq('user_id', user.id)
-        .eq('read', false);
-      
+        .eq('notification_state', 'unread');
+
       if (error) {
         console.error('Error marking all notifications as read:', error);
         throw error;
@@ -202,6 +202,169 @@ export const useMarkAllNotificationsAsRead = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['enhanced-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
     }
+  });
+};
+
+// ---------------------------------------------------------------------------
+// Enhanced notifications (parity with iOS) — 3-state model (unread/read/archived),
+// interactive interest accept/reject, realtime updates.
+// ---------------------------------------------------------------------------
+
+export type NotificationState = 'unread' | 'read' | 'archived';
+
+export interface NotificationAction {
+  type: string;
+  label: string;
+  style?: string;
+}
+
+export interface NotificationActionData {
+  actions?: NotificationAction[];
+  job_title?: string;
+  interest_id?: string;
+  provider_name?: string;
+  interest_message?: string;
+}
+
+export interface EnhancedNotification {
+  id: string;
+  title: string | null;
+  message: string | null;
+  type: string | null;
+  notification_state: NotificationState;
+  interaction_type: string | null;
+  action_data: NotificationActionData | null;
+  priority: string | null;
+  avatar_url: string | null;
+  from_user_id: string | null;
+  related_job_id: string | null;
+  created_at: string;
+}
+
+/** Full enhanced-notification feed for the user, with a realtime subscription. */
+export const useEnhancedNotifications = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel(`notifications_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['enhanced-notifications'] });
+          queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
+
+  return useQuery({
+    queryKey: ['enhanced-notifications', user?.id],
+    queryFn: async (): Promise<EnhancedNotification[]> => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('notifications')
+        .select(
+          'id, title, message, type, notification_state, interaction_type, action_data, priority, avatar_url, from_user_id, related_job_id, created_at'
+        )
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) {
+        console.error('Error fetching enhanced notifications:', error);
+        return [];
+      }
+      return ((data ?? []) as unknown[]).map((row) => {
+        const r = row as Record<string, unknown>;
+        return {
+          id: String(r.id),
+          title: (r.title as string) ?? null,
+          message: (r.message as string) ?? null,
+          type: (r.type as string) ?? null,
+          notification_state: (r.notification_state as NotificationState) ?? 'unread',
+          interaction_type: (r.interaction_type as string) ?? null,
+          action_data: (r.action_data as NotificationActionData) ?? null,
+          priority: (r.priority as string) ?? null,
+          avatar_url: (r.avatar_url as string) ?? null,
+          from_user_id: (r.from_user_id as string) ?? null,
+          related_job_id: (r.related_job_id as string) ?? null,
+          created_at: String(r.created_at),
+        };
+      });
+    },
+    enabled: !!user?.id,
+    staleTime: 10000,
+    // Fallback polling in case Realtime isn't enabled on the table.
+    refetchInterval: 20000,
+    refetchOnWindowFocus: true,
+  });
+};
+
+/** Move a notification between states (read/archived/unread). */
+export const useSetNotificationState = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, state }: { id: string; state: NotificationState }) => {
+      const now = new Date().toISOString();
+      const patch: Record<string, unknown> = {
+        notification_state: state,
+        read: state !== 'unread',
+      };
+      if (state === 'read') patch.read_at = now;
+      if (state === 'archived') patch.archived_at = now;
+      const { error } = await supabase.from('notifications').update(patch).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enhanced-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
+    },
+  });
+};
+
+/**
+ * Accept or decline an interest-request notification. Updates the underlying
+ * job_interests row (a DB trigger creates the conversation on acceptance) and
+ * marks the notification read.
+ */
+export const useRespondToInterestNotification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      notificationId,
+      interestId,
+      accept,
+    }: {
+      notificationId: string;
+      interestId: string;
+      accept: boolean;
+    }) => {
+      const { error: interestErr } = await supabase
+        .from('job_interests')
+        .update({ status: accept ? 'accepted' : 'rejected', actioned_at: new Date().toISOString() })
+        .eq('id', interestId);
+      if (interestErr) throw interestErr;
+
+      await supabase
+        .from('notifications')
+        .update({ read: true, notification_state: 'read', read_at: new Date().toISOString() })
+        .eq('id', notificationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enhanced-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
   });
 };
