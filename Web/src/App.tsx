@@ -20,6 +20,9 @@ import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import Dashboard from "./pages/Dashboard";
 import Notifications from "./pages/Notifications";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import ConditionalBottomNavigation from "./components/ConditionalBottomNavigation";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -64,6 +67,9 @@ const App = () => (
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/category/:category" element={<Category />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/support" element={<Support />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <ConditionalBottomNavigation />

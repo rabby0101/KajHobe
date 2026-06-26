@@ -2,22 +2,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { useJobs } from "@/hooks/useJobs";
-import { serviceCategories, getColorClasses } from "@/lib/categories";
+import { serviceCategories, getColorClasses, getCategorySlug } from "@/lib/categories";
 
 const ServiceCategories = () => {
   const { data: jobs } = useJobs();
 
   const getCategoryJobCount = (categoryName: string) => {
-    return jobs?.filter(job => 
+    return jobs?.filter(job =>
       job.category.toLowerCase().includes(categoryName.toLowerCase())
     ).length || 0;
-  };
-
-  const getCategorySlug = (categoryName: string) => {
-    return categoryName.toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/&/g, 'and')
-      .replace(/[^\w-]/g, '');
   };
 
   return (
