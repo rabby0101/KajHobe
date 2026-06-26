@@ -28,12 +28,15 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
   const [interestStatus, setInterestStatus] = useState<'pending' | 'accepted' | 'rejected' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<string | null>(null);
+  const [isServiceProviderFlag, setIsServiceProviderFlag] = useState(false);
   const [showInterestDialog, setShowInterestDialog] = useState(false);
   const [interestMessage, setInterestMessage] = useState('');
 
-  // Interest cooldown (parity with iOS InterestCooldownManager): blocks repeat
-  // attempts after a rejection / rate-limits rapid retries / caps total attempts.
-  const isServiceProviderUser = userType === 'provider' || userType === 'both';
+  // A user can apply if they are a provider. Matches iOS JobDetailView: the
+  // verification flow sets profiles.is_service_provider, but legacy/self-serve
+  // accounts only have user_type — accept either signal.
+  const isServiceProviderUser =
+    isServiceProviderFlag || userType === 'provider' || userType === 'both';
   const { data: cooldown } = useInterestCooldown(
     job.id,
     user?.id,
@@ -50,13 +53,21 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
       // Get user profile to check user type
       const { data: profile } = await supabase
         .from('profiles')
-        .select('user_type')
+        .select('user_type, is_service_provider')
         .eq('id', user.id)
         .single();
 
       if (profile) {
         setUserType(profile.user_type);
+        setIsServiceProviderFlag(profile.is_service_provider === true);
       }
+
+      // Provider check from the freshly-fetched profile (state above is not yet
+      // applied within this same effect run).
+      const isProviderNow =
+        profile?.is_service_provider === true ||
+        profile?.user_type === 'provider' ||
+        profile?.user_type === 'both';
 
       // Check if user has already applied
       const { data: proposal } = await supabase
@@ -92,7 +103,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
       }
 
       // Check interest status like iOS app (gracefully handle if table doesn't exist)
-      if (userType === 'provider' || userType === 'both') {
+      if (isProviderNow) {
         try {
           const { data: interest, error } = await supabase
             .from('job_interests')
@@ -125,7 +136,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
     }
 
     // Check if user is a service provider
-    if (userType !== 'provider' && userType !== 'both') {
+    if (!isServiceProviderUser) {
       toast({
         title: "Service Provider Required",
         description: "You need to be a service provider to express interest in jobs.",
@@ -177,6 +188,11 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
         } else {
           throw error;
         }
+      } else if (data && (data as { success?: boolean }).success === false) {
+        // show_interest_in_job swallows server-side exceptions into a JSON
+        // payload, so a null PostgREST `error` does NOT mean success. Surface
+        // the real failure instead of falsely reporting "Interest Shown".
+        throw new Error((data as { error?: string }).error || 'Failed to express interest');
       } else {
         console.log('✅ Successfully showed interest using database function:', data);
         setInterestStatus('pending');
@@ -189,7 +205,9 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
       console.log('Force refreshing notifications for all users...');
       await queryClient.invalidateQueries({ queryKey: ['notifications'] });
       await queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
-      
+      // Refresh this provider's cooldown so the card reflects the new attempt.
+      refreshCooldown();
+
       // Additional aggressive refresh to ensure job owner sees notification
       setTimeout(() => {
         console.log('Secondary notification refresh...');
@@ -272,7 +290,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
   };
 
   const isOwnJob = user?.id === job.client_id;
-  const isServiceProvider = userType === 'provider' || userType === 'both';
+  const isServiceProvider = isServiceProviderUser;
 
   return (
     <Card className="hover-scale cursor-pointer group border border-border hover:shadow-lg transition-all duration-300">
