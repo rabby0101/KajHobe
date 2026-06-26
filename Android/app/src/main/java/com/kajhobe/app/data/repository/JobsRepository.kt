@@ -4,13 +4,20 @@ import com.kajhobe.app.data.cache.CachedJobs
 import com.kajhobe.app.data.cache.JobsCache
 import com.kajhobe.app.data.model.Bid
 import com.kajhobe.app.data.model.BidInsert
+import com.kajhobe.app.data.model.InterestRow
+import com.kajhobe.app.data.model.InterestState
 import com.kajhobe.app.data.model.Job
 import com.kajhobe.app.data.model.JobInsert
 import com.kajhobe.app.data.model.MediaItem
+import com.kajhobe.app.data.model.ShowInterestNotif
+import com.kajhobe.app.data.model.computeCooldownStatus
+import com.kajhobe.app.data.model.parseTimestampMs
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /** Jobs + bids + interest — mirrors iOS JobsNetworking. */
 class JobsRepository(
@@ -97,6 +104,11 @@ class JobsRepository(
                 eq("client_id", uid) // RLS-safe: only own jobs
             }
         }
+        // Drop it from the cached list so it doesn't flash back before the lists'
+        // silent resume-refresh refetches. Related rows cascade-delete in the DB.
+        cache.peek()?.let { snap ->
+            cache.save(snap.jobs.filterNot { it.id == jobId }, snap.viewedIds, snap.interestedIds)
+        }
     }
 
     suspend fun fetchBids(jobId: String): List<Bid> =
@@ -146,22 +158,69 @@ class JobsRepository(
     private data class IdRow(val id: String)
 
     @Serializable
-    private data class JobInterestInsert(
-        val job_id: String,
-        val provider_id: String,
-        val message: String,
-        val status: String = "pending",
+    private data class ShowInterestResult(
+        val success: Boolean = false,
+        val error: String? = null,
+        val interest_id: String? = null,
     )
 
     /**
-     * Show interest in a job with an optional message (iOS showInterestWithMessage →
-     * job_interests insert; the message is stored in job_interests.message).
+     * Show (or re-show) interest via the shared `show_interest_in_job` RPC — the
+     * same server-side function the web app uses, so reapply-after-rejection and
+     * the 2-attempt cap behave identically on every platform. The RPC creates the
+     * job_interests row (→ interest_request notification via trigger) and the
+     * `show_interest` notification the cooldown counts. Throws with the server's
+     * message on failure (e.g. "Maximum interest attempts reached for this job").
      */
     suspend fun showInterest(jobId: String, message: String = DEFAULT_INTEREST_MESSAGE) {
-        val uid = currentUserId ?: return
         val text = message.trim().ifBlank { DEFAULT_INTEREST_MESSAGE }
-        postgrest.from("job_interests")
-            .insert(JobInterestInsert(job_id = jobId, provider_id = uid, message = text))
+        val result = postgrest.rpc(
+            "show_interest_in_job",
+            buildJsonObject {
+                put("p_job_id", jobId)
+                put("p_message", text)
+            },
+        ).decodeAs<ShowInterestResult>()
+        if (!result.success) {
+            throw IllegalStateException(result.error ?: "Could not send interest")
+        }
+    }
+
+    @Serializable
+    private data class InterestStatusRow(val status: String? = null)
+
+    @Serializable
+    private data class ShowInterestNotifRow(
+        val status: String? = null,
+        val created_at: String? = null,
+        val actioned_at: String? = null,
+    )
+
+    /**
+     * Current interest status + cooldown for this provider on this job. Reads
+     * job_interests (a pending/accepted interest blocks) and `show_interest`
+     * notifications (rejected count + timing), then computes via the shared pure
+     * helper. Scoped per (job, provider) — independent of other providers.
+     */
+    suspend fun fetchInterestState(jobId: String): InterestState {
+        val uid = currentUserId
+            ?: return InterestState(null, computeCooldownStatus(emptyList(), emptyList()))
+        val interestRows = postgrest.from("job_interests")
+            .select(Columns.list("status")) {
+                filter { eq("job_id", jobId); eq("provider_id", uid) }
+            }
+            .decodeList<InterestStatusRow>()
+        val interests = interestRows.mapNotNull { row -> row.status?.let { InterestRow(it) } }
+        val notifs = postgrest.from("notifications")
+            .select(Columns.list("status", "created_at", "actioned_at")) {
+                filter { eq("job_id", jobId); eq("from_user_id", uid); eq("type", "show_interest") }
+            }
+            .decodeList<ShowInterestNotifRow>()
+            .map { ShowInterestNotif(it.status, parseTimestampMs(it.created_at), parseTimestampMs(it.actioned_at)) }
+        return InterestState(
+            currentStatus = interestRows.firstOrNull()?.status,
+            cooldown = computeCooldownStatus(interests, notifs),
+        )
     }
 
     // MARK: - Job views ("New" indicator, mirrors iOS job_views table)
