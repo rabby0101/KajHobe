@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import ConditionalBottomNavigation from "./components/ConditionalBottomNavigation";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PresenceTracker from "./components/PresenceTracker";
+import { Analytics } from "@vercel/analytics/react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +70,7 @@ const App = () => (
                   <ConditionalBottomNavigation />
                 </div>
               </BrowserRouter>
+              <Analytics />
             </TooltipProvider>
           </AuthProvider>
         </LanguageProvider>
