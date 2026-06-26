@@ -23,6 +23,7 @@ interface Profile {
   location: string | null;
   avatar_url: string | null;
   user_type: string | null; // Changed from literal union to string to match database
+  is_service_provider?: boolean | null;
   is_verified_provider?: boolean | null;
 }
 
@@ -123,7 +124,10 @@ const Profile = () => {
     }
   };
 
-  const isServiceProvider = profile?.user_type === 'provider' || profile?.user_type === 'both';
+  const isServiceProvider =
+    profile?.is_service_provider === true ||
+    profile?.user_type === 'provider' ||
+    profile?.user_type === 'both';
 
   if (loading) {
     return (

@@ -58,6 +58,18 @@ export default function ProviderVerificationDialog({
   };
 
   const submit = async () => {
+    // Phone is optional: send NULL when blank so the BD-format CHECK constraint
+    // (phone IS NULL OR phone ~ '^01[0-9]{9}$') passes. An empty string fails it.
+    const trimmedPhone = phone.trim();
+    if (trimmedPhone !== '' && !/^01[0-9]{9}$/.test(trimmedPhone)) {
+      toast({
+        title: 'Invalid phone number',
+        description: 'Enter an 11-digit Bangladeshi mobile number like 01XXXXXXXXX, or leave it blank.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const frontPath = nidFront ? await uploadDoc('provider-nid', nidFront, 'nid-front') : null;
@@ -75,7 +87,7 @@ export default function ProviderVerificationDialog({
           nid_number: nidNumber.trim(),
           nid_front_path: frontPath,
           nid_back_path: backPath,
-          phone,
+          phone: trimmedPhone === '' ? null : trimmedPhone,
           phone_verified: phoneVerified,
           certificate_paths: certPaths,
           demo_video_urls: demoUrls,

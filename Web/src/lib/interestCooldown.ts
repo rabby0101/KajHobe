@@ -119,6 +119,8 @@ export function computeCooldownStatus(
       attemptCount,
       isRateLimited: true,
       rateLimitRemainingMs: RATE_LIMIT_MS - (now - lastCreated),
+      // Absolute target so a UI countdown doesn't drift between fetch and render.
+      nextAttemptTime: lastCreated + RATE_LIMIT_MS,
     });
   }
 

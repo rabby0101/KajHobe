@@ -95,11 +95,15 @@ const BrowseJobs = () => {
     // Check if user is a service provider
     const { data: profile } = await supabase
       .from('profiles')
-      .select('user_type')
+      .select('user_type, is_service_provider')
       .eq('id', user.id)
       .single();
 
-    if (!profile || (profile.user_type !== 'provider' && profile.user_type !== 'both')) {
+    const isProvider =
+      profile?.is_service_provider === true ||
+      profile?.user_type === 'provider' ||
+      profile?.user_type === 'both';
+    if (!isProvider) {
       toast({
         title: "Service Provider Required",
         description: "You need to be a service provider to chat about jobs.",
