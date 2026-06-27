@@ -12,20 +12,7 @@ import JobCard from '@/components/JobCard';
 import ChatDialog from '@/components/chat/ChatDialog';
 import { useGetOrCreateConversation } from '@/hooks/useChat';
 import { supabase } from '@/integrations/supabase/client';
-
-// Category mapping to match the ServiceCategories component
-const categoryMapping: { [key: string]: string } = {
-  'home-repair-maintenance': 'Home Repair & Maintenance',
-  'home-services': 'Home Services', 
-  'education-tutoring': 'Education & Tutoring',
-  'technology-it': 'Technology & IT',
-  'automotive': 'Automotive',
-  'personal-services': 'Personal Services',
-  'construction-renovation': 'Construction & Renovation',
-  'food-catering': 'Food & Catering',
-  'mobile-electronics': 'Mobile & Electronics',
-  'events-entertainment': 'Events & Entertainment'
-};
+import { categoryFromSlug } from '@/lib/categories';
 
 const Category = () => {
   const { category } = useParams<{ category: string }>();
@@ -101,8 +88,9 @@ const Category = () => {
     }
   };
 
-  // Use the category mapping to get the correct category name
-  const categoryName = category ? categoryMapping[category] || category : '';
+  // Resolve the URL slug back to the canonical category name (single source of
+  // truth in lib/categories, so links and this page always agree).
+  const categoryName = category ? categoryFromSlug(category)?.name ?? category : '';
   
   const categoryJobs = jobs?.filter(job => 
     job.category === categoryName && job.status === 'open'

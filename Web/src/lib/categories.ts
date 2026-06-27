@@ -88,6 +88,19 @@ export const getCategory = (name: string): ServiceCategory | undefined => {
   return serviceCategories.find(category => category.name === name);
 };
 
+// Canonical URL slug for a category name (used by /category/:slug links).
+// Single source of truth so links and the Category page always agree.
+export const getCategorySlug = (categoryName: string): string =>
+  categoryName
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/&/g, 'and')
+    .replace(/[^\w-]/g, '');
+
+// Resolve a slug back to its category (inverse of getCategorySlug).
+export const categoryFromSlug = (slug: string): ServiceCategory | undefined =>
+  serviceCategories.find(category => getCategorySlug(category.name) === slug);
+
 // Display label for a category in the active language. Jobs are always stored
 // and looked up by the English `name`; this only affects what the user sees.
 export const categoryLabel = (
