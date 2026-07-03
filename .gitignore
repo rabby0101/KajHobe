@@ -11,3 +11,6 @@ iOS/build/
 Android/app/release/
 Android/app/build/
 node_modules/
+
+# Admin panel — localhost-only, must never be pushed to GitHub
+Web/admin-payout-prototype/
