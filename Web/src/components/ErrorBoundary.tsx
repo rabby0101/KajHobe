@@ -28,13 +28,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center p-8">
-            <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-2xl font-bold text-destructive mb-4">Something went wrong</h2>
+            <p className="text-muted-foreground mb-4">
               An error occurred while loading the application.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
             >
               Reload Page
             </button>

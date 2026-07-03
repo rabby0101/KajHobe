@@ -19,7 +19,7 @@ interface JobPreviewProps {
 
 const JobPreview: React.FC<JobPreviewProps> = ({ job }) => {
   return (
-    <Card className="bg-blue-50 border-blue-200">
+    <Card className="bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900">
       <CardContent className="p-4">
         <div className="space-y-2">
           <div className="flex items-start justify-between">
