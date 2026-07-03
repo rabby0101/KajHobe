@@ -1,48 +1,28 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, MessageCircle, UserCheck, Star } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const steps = [
-  {
-    step: 1,
-    icon: Plus,
-    title: "Post Your Need",
-    description: "Describe what service you need with details, budget, and timeline",
-    color: "bg-blue-50 text-blue-600"
-  },
-  {
-    step: 2,
-    icon: MessageCircle,
-    title: "Get Proposals",
-    description: "Qualified service providers will contact you with quotes and offers",
-    color: "bg-green-50 text-green-600"
-  },
-  {
-    step: 3,
-    icon: UserCheck,
-    title: "Choose & Connect",
-    description: "Review profiles, ratings, and select the best provider for your job",
-    color: "bg-orange-50 text-orange-600"
-  },
-  {
-    step: 4,
-    icon: Star,
-    title: "Get It Done",
-    description: "Complete the service and rate your experience to help others",
-    color: "bg-purple-50 text-purple-600"
-  }
+const stepMeta = [
+  { step: 1, icon: Plus, titleKey: "howItWorks.step1.title", descKey: "howItWorks.step1.desc", color: "bg-blue-50 text-blue-600" },
+  { step: 2, icon: MessageCircle, titleKey: "howItWorks.step2.title", descKey: "howItWorks.step2.desc", color: "bg-green-50 text-green-600" },
+  { step: 3, icon: UserCheck, titleKey: "howItWorks.step3.title", descKey: "howItWorks.step3.desc", color: "bg-orange-50 text-orange-600" },
+  { step: 4, icon: Star, titleKey: "howItWorks.step4.title", descKey: "howItWorks.step4.desc", color: "bg-purple-50 text-purple-600" },
 ];
 
 const HowItWorks = () => {
+  const { t } = useLanguage();
+  const steps = stepMeta.map((s) => ({ ...s, title: t(s.titleKey), description: t(s.descKey) }));
+
   return (
     <section id="how-it-works" className="py-16 bg-muted/50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            How It Works
+            {t('howItWorks.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Getting your service needs fulfilled is simple and straightforward
+            {t('howItWorks.subtitle')}
           </p>
         </div>
 

@@ -1,16 +1,19 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FeaturedProviders = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Featured Service Providers
+            {t('featuredProviders.title')}
           </h2>
           <p className="text-xl text-muted-foreground">
-            Top-rated, verified professionals from the KajHobe community
+            {t('featuredProviders.subtitle')}
           </p>
         </div>
 
@@ -20,10 +23,9 @@ const FeaturedProviders = () => {
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <Sparkles className="h-7 w-7 text-primary" />
             </div>
-            <h3 className="text-xl font-semibold text-foreground">Coming soon</h3>
+            <h3 className="text-xl font-semibold text-foreground">{t('featuredProviders.comingSoon')}</h3>
             <p className="max-w-md text-muted-foreground">
-              We're onboarding and verifying providers across Khulna. Featured
-              profiles will appear here once they're ready.
+              {t('featuredProviders.comingSoonDesc')}
             </p>
           </CardContent>
         </Card>
