@@ -29,16 +29,16 @@ const DealSummary: React.FC<DealSummaryProps> = ({
   const getStatusBadge = () => {
     switch (deal.status) {
       case 'active':
-        return <Badge className="bg-blue-100 text-blue-800">📋 In Progress</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">📋 In Progress</Badge>;
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">✅ Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">✅ Completed</Badge>;
       default:
         return <Badge variant="outline">{deal.status}</Badge>;
     }
   };
 
   return (
-    <Card className="bg-green-50 border-green-200">
+    <Card className="bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-900">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-base">
           <div className="flex items-center gap-2">

@@ -113,72 +113,72 @@ export const getColorClasses = (color: string) => {
   const colorMap = {
     blue: {
       bg: 'bg-blue-500',
-      bgLight: 'bg-blue-50',
-      text: 'text-blue-600',
-      border: 'border-blue-200',
+      bgLight: 'bg-blue-50 dark:bg-blue-950/30',
+      text: 'text-blue-600 dark:text-blue-300',
+      border: 'border-blue-200 dark:border-blue-800',
       hover: 'hover:bg-blue-100'
     },
     green: {
       bg: 'bg-green-500',
-      bgLight: 'bg-green-50',
-      text: 'text-green-600',
-      border: 'border-green-200',
+      bgLight: 'bg-green-50 dark:bg-green-950/30',
+      text: 'text-green-600 dark:text-green-300',
+      border: 'border-green-200 dark:border-green-800',
       hover: 'hover:bg-green-100'
     },
     purple: {
       bg: 'bg-purple-500',
-      bgLight: 'bg-purple-50',
-      text: 'text-purple-600',
-      border: 'border-purple-200',
+      bgLight: 'bg-purple-50 dark:bg-purple-950/30',
+      text: 'text-purple-600 dark:text-purple-300',
+      border: 'border-purple-200 dark:border-purple-800',
       hover: 'hover:bg-purple-100'
     },
     indigo: {
       bg: 'bg-indigo-500',
-      bgLight: 'bg-indigo-50',
-      text: 'text-indigo-600',
-      border: 'border-indigo-200',
+      bgLight: 'bg-indigo-50 dark:bg-indigo-950/30',
+      text: 'text-indigo-600 dark:text-indigo-300',
+      border: 'border-indigo-200 dark:border-indigo-800',
       hover: 'hover:bg-indigo-100'
     },
     red: {
       bg: 'bg-red-500',
-      bgLight: 'bg-red-50',
-      text: 'text-red-600',
-      border: 'border-red-200',
+      bgLight: 'bg-red-50 dark:bg-red-950/30',
+      text: 'text-red-600 dark:text-red-300',
+      border: 'border-red-200 dark:border-red-800',
       hover: 'hover:bg-red-100'
     },
     pink: {
       bg: 'bg-pink-500',
-      bgLight: 'bg-pink-50',
-      text: 'text-pink-600',
-      border: 'border-pink-200',
+      bgLight: 'bg-pink-50 dark:bg-pink-950/30',
+      text: 'text-pink-600 dark:text-pink-300',
+      border: 'border-pink-200 dark:border-pink-800',
       hover: 'hover:bg-pink-100'
     },
     orange: {
       bg: 'bg-orange-500',
-      bgLight: 'bg-orange-50',
-      text: 'text-orange-600',
-      border: 'border-orange-200',
+      bgLight: 'bg-orange-50 dark:bg-orange-950/30',
+      text: 'text-orange-600 dark:text-orange-300',
+      border: 'border-orange-200 dark:border-orange-800',
       hover: 'hover:bg-orange-100'
     },
     yellow: {
       bg: 'bg-yellow-500',
-      bgLight: 'bg-yellow-50',
-      text: 'text-yellow-600',
-      border: 'border-yellow-200',
+      bgLight: 'bg-yellow-50 dark:bg-yellow-950/30',
+      text: 'text-yellow-600 dark:text-yellow-300',
+      border: 'border-yellow-200 dark:border-yellow-800',
       hover: 'hover:bg-yellow-100'
     },
     teal: {
       bg: 'bg-teal-500',
-      bgLight: 'bg-teal-50',
-      text: 'text-teal-600',
-      border: 'border-teal-200',
+      bgLight: 'bg-teal-50 dark:bg-teal-950/30',
+      text: 'text-teal-600 dark:text-teal-300',
+      border: 'border-teal-200 dark:border-teal-800',
       hover: 'hover:bg-teal-100'
     },
     cyan: {
       bg: 'bg-cyan-500',
-      bgLight: 'bg-cyan-50',
-      text: 'text-cyan-600',
-      border: 'border-cyan-200',
+      bgLight: 'bg-cyan-50 dark:bg-cyan-950/30',
+      text: 'text-cyan-600 dark:text-cyan-300',
+      border: 'border-cyan-200 dark:border-cyan-800',
       hover: 'hover:bg-cyan-100'
     }
   };

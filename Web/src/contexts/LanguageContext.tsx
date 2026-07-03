@@ -102,6 +102,42 @@ const translations = {
     'post.urgent': 'This is urgent',
     'post.submit': 'Post Job',
     'post.submitting': 'Posting...',
+
+    // How It Works
+    'howItWorks.title': 'How It Works',
+    'howItWorks.subtitle': 'Getting your service needs fulfilled is simple and straightforward',
+    'howItWorks.step1.title': 'Post Your Need',
+    'howItWorks.step1.desc': 'Describe what service you need with details, budget, and timeline',
+    'howItWorks.step2.title': 'Get Proposals',
+    'howItWorks.step2.desc': 'Qualified service providers will contact you with quotes and offers',
+    'howItWorks.step3.title': 'Choose & Connect',
+    'howItWorks.step3.desc': 'Review profiles, ratings, and select the best provider for your job',
+    'howItWorks.step4.title': 'Get It Done',
+    'howItWorks.step4.desc': 'Complete the service and rate your experience to help others',
+
+    // Featured Providers
+    'featuredProviders.title': 'Featured Service Providers',
+    'featuredProviders.subtitle': 'Top-rated, verified professionals from the KajHobe community',
+    'featuredProviders.comingSoon': 'Coming soon',
+    'featuredProviders.comingSoonDesc': "We're onboarding and verifying providers across Khulna. Featured profiles will appear here once they're ready.",
+
+    // Footer
+    'footer.tagline': 'Connecting Khulna residents with trusted local service providers. Your one-stop solution for getting work done.',
+    'footer.quickLinks': 'Quick Links',
+    'footer.browseServices': 'Browse Services',
+    'footer.postJob': 'Post a Job',
+    'footer.becomeProvider': 'Become a Provider',
+    'footer.howItWorks': 'How It Works',
+    'footer.safetyGuidelines': 'Safety Guidelines',
+    'footer.popularCategories': 'Popular Categories',
+    'footer.contactUs': 'Contact Us',
+    'footer.location': 'Khulna, Bangladesh',
+    'footer.areasWeServe': 'Areas We Serve',
+    'footer.areasList': 'Sonadanga • Daulatpur • Khalishpur • Khan Jahan Ali • Boyra • Rupsha • All areas in Khulna',
+    'footer.rights': '© 2026 KajHobe. All rights reserved.',
+    'footer.privacyPolicy': 'Privacy Policy',
+    'footer.termsOfService': 'Terms of Service',
+    'footer.support': 'Support',
   },
   bn: {
     // Header
@@ -192,6 +228,42 @@ const translations = {
     'post.urgent': 'এটি জরুরি',
     'post.submit': 'কাজ পোস্ট করুন',
     'post.submitting': 'পোস্ট করা হচ্ছে...',
+
+    // How It Works
+    'howItWorks.title': 'কীভাবে কাজ করে',
+    'howItWorks.subtitle': 'আপনার সেবার প্রয়োজন পূরণ করা সহজ এবং সরল',
+    'howItWorks.step1.title': 'আপনার প্রয়োজন পোস্ট করুন',
+    'howItWorks.step1.desc': 'বিস্তারিত, বাজেট এবং সময়সীমাসহ আপনার প্রয়োজনীয় সেবা বর্ণনা করুন',
+    'howItWorks.step2.title': 'প্রস্তাব পান',
+    'howItWorks.step2.desc': 'যোগ্য সেবা প্রদানকারীরা কোটেশন ও অফার নিয়ে আপনার সাথে যোগাযোগ করবে',
+    'howItWorks.step3.title': 'বেছে নিন ও যোগাযোগ করুন',
+    'howItWorks.step3.desc': 'প্রোফাইল, রেটিং পর্যালোচনা করুন এবং আপনার কাজের জন্য সেরা প্রদানকারী নির্বাচন করুন',
+    'howItWorks.step4.title': 'কাজ সম্পন্ন করুন',
+    'howItWorks.step4.desc': 'সেবা সম্পন্ন করুন এবং অন্যদের সাহায্য করতে আপনার অভিজ্ঞতা রেট করুন',
+
+    // Featured Providers
+    'featuredProviders.title': 'ফিচার্ড সেবা প্রদানকারী',
+    'featuredProviders.subtitle': 'KajHobe কমিউনিটির সেরা রেটিংপ্রাপ্ত, যাচাইকৃত পেশাদাররা',
+    'featuredProviders.comingSoon': 'শীঘ্রই আসছে',
+    'featuredProviders.comingSoonDesc': 'আমরা খুলনা জুড়ে প্রদানকারীদের অন্তর্ভুক্ত ও যাচাই করছি। প্রস্তুত হলে ফিচার্ড প্রোফাইল এখানে দেখা যাবে।',
+
+    // Footer
+    'footer.tagline': 'খুলনার বাসিন্দাদের বিশ্বস্ত স্থানীয় সেবা প্রদানকারীদের সাথে সংযুক্ত করা। কাজ সম্পন্ন করার জন্য আপনার এক-স্টপ সমাধান।',
+    'footer.quickLinks': 'দ্রুত লিংক',
+    'footer.browseServices': 'সেবা ব্রাউজ করুন',
+    'footer.postJob': 'কাজ পোস্ট করুন',
+    'footer.becomeProvider': 'প্রদানকারী হন',
+    'footer.howItWorks': 'কীভাবে কাজ করে',
+    'footer.safetyGuidelines': 'নিরাপত্তা নির্দেশিকা',
+    'footer.popularCategories': 'জনপ্রিয় ক্যাটাগরি',
+    'footer.contactUs': 'যোগাযোগ করুন',
+    'footer.location': 'খুলনা, বাংলাদেশ',
+    'footer.areasWeServe': 'আমরা যেসব এলাকায় সেবা দিই',
+    'footer.areasList': 'সোনাডাঙ্গা • দৌলতপুর • খালিশপুর • খান জাহান আলী • বয়রা • রূপসা • খুলনার সকল এলাকা',
+    'footer.rights': '© ২০২৬ KajHobe। সর্বস্বত্ব সংরক্ষিত।',
+    'footer.privacyPolicy': 'গোপনীয়তা নীতি',
+    'footer.termsOfService': 'সেবার শর্তাবলী',
+    'footer.support': 'সহায়তা',
   },
   de: {
     // Header
@@ -282,6 +354,42 @@ const translations = {
     'post.urgent': 'Das ist dringend',
     'post.submit': 'Job einstellen',
     'post.submitting': 'Wird eingestellt...',
+
+    // How It Works
+    'howItWorks.title': 'So funktioniert es',
+    'howItWorks.subtitle': 'Deine Servicebedürfnisse einfach und unkompliziert erfüllt bekommen',
+    'howItWorks.step1.title': 'Stelle deinen Bedarf ein',
+    'howItWorks.step1.desc': 'Beschreibe, welchen Service du brauchst, mit Details, Budget und Zeitrahmen',
+    'howItWorks.step2.title': 'Erhalte Angebote',
+    'howItWorks.step2.desc': 'Qualifizierte Dienstleister kontaktieren dich mit Angeboten',
+    'howItWorks.step3.title': 'Auswählen & Verbinden',
+    'howItWorks.step3.desc': 'Prüfe Profile, Bewertungen und wähle den besten Anbieter für deinen Job',
+    'howItWorks.step4.title': 'Erledigen lassen',
+    'howItWorks.step4.desc': 'Schließe den Service ab und bewerte deine Erfahrung, um anderen zu helfen',
+
+    // Featured Providers
+    'featuredProviders.title': 'Empfohlene Dienstleister',
+    'featuredProviders.subtitle': 'Top bewertete, verifizierte Fachkräfte aus der KajHobe-Community',
+    'featuredProviders.comingSoon': 'Demnächst verfügbar',
+    'featuredProviders.comingSoonDesc': 'Wir nehmen Dienstleister in ganz Khulna auf und verifizieren sie. Empfohlene Profile erscheinen hier, sobald sie bereit sind.',
+
+    // Footer
+    'footer.tagline': 'Wir verbinden Bewohner von Khulna mit vertrauenswürdigen lokalen Dienstleistern. Deine Komplettlösung, um Dinge erledigt zu bekommen.',
+    'footer.quickLinks': 'Schnellzugriff',
+    'footer.browseServices': 'Dienste durchsuchen',
+    'footer.postJob': 'Job einstellen',
+    'footer.becomeProvider': 'Dienstleister werden',
+    'footer.howItWorks': 'So funktioniert es',
+    'footer.safetyGuidelines': 'Sicherheitsrichtlinien',
+    'footer.popularCategories': 'Beliebte Kategorien',
+    'footer.contactUs': 'Kontaktiere uns',
+    'footer.location': 'Khulna, Bangladesch',
+    'footer.areasWeServe': 'Von uns bediente Gebiete',
+    'footer.areasList': 'Sonadanga • Daulatpur • Khalishpur • Khan Jahan Ali • Boyra • Rupsha • Alle Gebiete in Khulna',
+    'footer.rights': '© 2026 KajHobe. Alle Rechte vorbehalten.',
+    'footer.privacyPolicy': 'Datenschutzrichtlinie',
+    'footer.termsOfService': 'Nutzungsbedingungen',
+    'footer.support': 'Support',
   },
 };
 
