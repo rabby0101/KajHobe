@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,7 @@ import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 import ProposalManager from '@/components/ProposalManager';
 import DealManager from '@/components/DealManager';
 import { useJobProposals } from '@/hooks/useProposals';
@@ -27,6 +28,7 @@ import {
 
 const MyJobs = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: deals = [] } = useMyDeals();
 
   const { data: myJobs, isLoading } = useQuery({
@@ -93,9 +95,12 @@ const MyJobs = () => {
           
           <TabsContent value="job-proposals" className="mt-6">
             {myJobs?.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 space-y-4">
                 <h3 className="text-xl font-semibold text-foreground mb-2">No jobs posted yet</h3>
-                <p className="text-muted-foreground">Start by posting your first job!</p>
+                <p className="text-muted-foreground">Post your first job to start getting proposals.</p>
+                <Button onClick={() => navigate('/post-job')}>
+                  <Plus className="h-4 w-4 mr-2" /> Post a Job
+                </Button>
               </div>
             ) : (
               <div className="space-y-6">

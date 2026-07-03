@@ -21,6 +21,8 @@ import { Search, RefreshCw, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import WelcomeModal from "@/components/onboarding/WelcomeModal";
+import ProviderVerificationBanner from "@/components/onboarding/ProviderVerificationBanner";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -161,10 +163,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header />
-      
+      {user && <WelcomeModal />}
+
       {/* Main Content - matching iOS JobsListView */}
       <div className="container mx-auto px-4 py-6 space-y-8">
-        
+        {user && <ProviderVerificationBanner variant="compact" />}
+
         {/* Search Section */}
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />

@@ -28,6 +28,7 @@ import {
   RatingDistributionChart,
 } from '@/components/dashboard/AnalyticsCharts';
 import ReputationCard from '@/components/dashboard/ReputationCard';
+import ProviderVerificationBanner from '@/components/onboarding/ProviderVerificationBanner';
 import {
   useActiveDeals,
   usePendingCompletionRequests,
@@ -156,6 +157,8 @@ const Dashboard: React.FC = () => {
           Refresh
         </Button>
       </div>
+
+      <ProviderVerificationBanner variant="compact" />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
