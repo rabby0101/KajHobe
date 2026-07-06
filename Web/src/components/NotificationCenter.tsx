@@ -180,7 +180,7 @@ const NotificationCenter = () => {
               variant="ghost"
               size="sm"
               onClick={testNotification}
-              className="h-auto p-1 text-xs bg-blue-100"
+              className="h-auto p-1 text-xs bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200"
             >
               Test
             </Button>
@@ -188,7 +188,7 @@ const NotificationCenter = () => {
               variant="ghost"
               size="sm"
               onClick={manualRefresh}
-              className="h-auto p-1 text-xs bg-green-100"
+              className="h-auto p-1 text-xs bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-200"
             >
               Refresh
             </Button>
