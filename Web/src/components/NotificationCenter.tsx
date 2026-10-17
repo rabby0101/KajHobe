@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,139 +10,78 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { BellIcon, CheckCheck, Clock } from 'lucide-react';
-import { 
-  useNotifications, 
-  useMarkNotificationAsRead, 
+import { BellIcon, CheckCheck, Clock, User } from 'lucide-react';
+import {
+  useNotifications,
+  useMarkNotificationAsRead,
   useMarkAllNotificationsAsRead,
-  useMarkConversationNotificationsAsRead,
-  type GroupedNotification 
+  type GroupedNotification
 } from '@/hooks/useNotifications';
+import { useEnrichedJobInterests, EXCLUDED_BUSINESS_TYPES } from '@/hooks/useJobInterests';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import ChatDialog from '@/components/chat/ChatDialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 const NotificationCenter = () => {
-  const { user } = useAuth();
-  const { data: notifications = [], isLoading, refetch } = useNotifications();
-  
-  // Debug: Log when notifications change
-  React.useEffect(() => {
-    console.log('NotificationCenter: notifications updated:', notifications.length, 'items');
-    if (notifications.length > 0) {
-      console.log('Latest notification:', notifications[0]);
-    }
-  }, [notifications]);
+  const { data: notifications = [], isLoading } = useNotifications();
+  const { data: interests = [] } = useEnrichedJobInterests();
   const markAsRead = useMarkNotificationAsRead();
   const markAllAsRead = useMarkAllNotificationsAsRead();
-  const markConversationAsRead = useMarkConversationNotificationsAsRead();
   const navigate = useNavigate();
-  const [chatDialogOpen, setChatDialogOpen] = useState(false);
-  const [selectedConversation, setSelectedConversation] = useState<any>(null);
 
-  const unreadCount = notifications.filter(n => !n.read || (n.count && n.count > 0)).length;
+  // Same feed rules as iOS/Android: chat lives in Messages, interest requests
+  // come from job_interests, offer types are superseded by deal_created.
+  const business = notifications.filter((n) => !EXCLUDED_BUSINESS_TYPES.has(n.type ?? ''));
 
-  const handleNotificationClick = async (notification: GroupedNotification) => {
-    // Handle message notifications specially - open chat dialog
-    if (notification.type === 'message_received' && notification.conversation_id) {
-      try {
-        // Mark all notifications for this conversation as read
-        markConversationAsRead.mutate(notification.conversation_id);
+  // Badge math mirrors iOS NotificationBadgeManager:
+  // unread business notifications + pending interest requests on my jobs.
+  const unreadBusiness = business.filter((n) => n.notification_state === 'unread').length;
+  const unreadCount = unreadBusiness + interests.length;
 
-        // Get conversation details
-        const { data: conversation } = await supabase
-          .from('conversations')
-          .select(`
-            *,
-            jobs(title),
-            client_profile:profiles!conversations_client_id_fkey(id, full_name),
-            provider_profile:profiles!conversations_provider_id_fkey(id, full_name)
-          `)
-          .eq('id', notification.conversation_id)
-          .single();
+  const handleNotificationClick = (notification: GroupedNotification) => {
+    if (notification.notification_state === 'unread') {
+      markAsRead.mutate(notification.id);
+    }
 
-        if (conversation) {
-          setSelectedConversation(conversation);
-          setChatDialogOpen(true);
-          return;
-        }
-      } catch (error) {
-        console.error('Error fetching conversation:', error);
-      }
-    } else {
-      // Mark as read if not already read
-      if (!notification.read) {
-        markAsRead.mutate(notification.id);
-      }
-
-      // Navigate based on notification type and related data
-      if (notification.related_job_id) {
-        if (notification.type === 'proposal_received' || 
-            notification.type === 'proposal_accepted' || 
-            notification.type === 'proposal_rejected' ||
-            notification.type === 'deal_created' ||
-            notification.type === 'deal_completed' ||
-            notification.type === 'counter_proposal') {
-          navigate('/my-jobs');
-        }
-      }
+    // Navigate based on notification type and related data
+    const type = notification.type ?? '';
+    if (type.includes('interest')) {
+      navigate('/notifications');
+    } else if (notification.related_job_id || notification.job_id) {
+      navigate('/my-jobs');
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    markAllAsRead.mutate();
-  };
-
-  // Debug function to test notification system
-  const testNotification = async () => {
-    if (!user) return;
-    
-    console.log('Creating test notification for user:', user.id);
-    try {
-      const { data, error } = await supabase.rpc('create_notification', {
-        p_user_id: user.id,
-        p_title: 'Test Notification',
-        p_message: 'This is a test notification to verify the system is working',
-        p_type: 'test',
-        p_related_job_id: null
-      });
-      
-      if (error) {
-        console.error('Test notification error:', error);
-      } else {
-        console.log('Test notification created:', data);
-        // Force refresh without page reload
-        await refetch();
-      }
-    } catch (error) {
-      console.error('Test notification failed:', error);
-    }
-  };
-
-  // Manual refresh function
-  const manualRefresh = async () => {
-    console.log('Manual refresh triggered...');
-    await refetch();
-  };
+  // Mobile-written rows (e.g. interest_accepted/rejected) carry no title —
+  // render a label from the type, matching the mobile apps.
+  const fallbackTitle = (type: string | null) =>
+    ({
+      interest_accepted: 'Interest Accepted',
+      interest_rejected: 'Interest Declined',
+      deal_created: 'Deal Created',
+      deal_accepted: 'Deal Accepted',
+      deal_completed: 'Deal Completed',
+      completion_request: 'Completion Request',
+    } as Record<string, string>)[type ?? ''] ?? 'Notification';
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'proposal_received':
         return '📝';
       case 'proposal_accepted':
+      case 'interest_accepted':
         return '✅';
       case 'proposal_rejected':
+      case 'interest_rejected':
         return '❌';
       case 'deal_created':
+      case 'deal_accepted':
         return '🤝';
       case 'deal_completed':
         return '🎉';
+      case 'completion_request':
+        return '🏁';
       case 'counter_proposal':
         return '🔄';
-      case 'message_received':
-        return '💬';
       default:
         return '📢';
     }
@@ -162,8 +101,8 @@ const NotificationCenter = () => {
         <Button variant="ghost" size="icon" className="relative">
           <BellIcon className="h-5 w-5 fill-current" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -174,6 +113,14 @@ const NotificationCenter = () => {
       <DropdownMenuContent className="w-80" align="end">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notifications</span>
+ reviews-routing-dashboard
+          {unreadBusiness > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => markAllAsRead.mutate()}
+              className="h-auto p-1 text-xs"
+
           <div className="flex gap-1">
             {/* Temporary debug buttons - remove after debugging */}
             <Button
@@ -189,35 +136,43 @@ const NotificationCenter = () => {
               size="sm"
               onClick={manualRefresh}
               className="h-auto p-1 text-xs bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-200"
+ main
             >
-              Refresh
+              <CheckCheck className="h-3 w-3 mr-1" />
+              Mark all read
             </Button>
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                className="h-auto p-1 text-xs"
-              >
-                <CheckCheck className="h-3 w-3 mr-1" />
-                Mark all read
-              </Button>
-            )}
-          </div>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
-        {notifications.length === 0 ? (
+
+        {/* Pending interest requests — actioned on the Notifications page. */}
+        {interests.length > 0 && (
+          <>
+            <DropdownMenuItem
+              className="flex cursor-pointer items-center gap-2 bg-blue-50/60 p-3 dark:bg-blue-950/20"
+              onClick={() => navigate('/notifications')}
+            >
+              <User className="h-4 w-4 text-blue-600" />
+              <span className="flex-1 text-sm font-medium">
+                {interests.length} pending interest request{interests.length > 1 ? 's' : ''}
+              </span>
+              <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {business.length === 0 && interests.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
             No notifications yet
           </div>
         ) : (
           <div className="max-h-96 overflow-y-auto">
-            {notifications.map((notification) => (
+            {business.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
                 className={`flex flex-col items-start p-3 cursor-pointer ${
-                  (!notification.read || (notification.count && notification.count > 0)) ? 'bg-muted/50' : ''
+                  notification.notification_state === 'unread' ? 'bg-muted/50' : ''
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
@@ -226,7 +181,7 @@ const NotificationCenter = () => {
                     <span className="text-lg">{getNotificationIcon(notification.type)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm flex items-center gap-2">
-                        {notification.title}
+                        {notification.title || fallbackTitle(notification.type)}
                         {notification.count && notification.count > 1 && (
                           <Badge variant="secondary" className="text-xs">
                             {notification.count}
@@ -242,7 +197,7 @@ const NotificationCenter = () => {
                       </div>
                     </div>
                   </div>
-                  {(!notification.read || (notification.count && notification.count > 0)) && (
+                  {notification.notification_state === 'unread' && (
                     <div className="h-2 w-2 bg-blue-500 rounded-full mt-1 flex-shrink-0" />
                   )}
                 </div>
@@ -251,24 +206,6 @@ const NotificationCenter = () => {
           </div>
         )}
       </DropdownMenuContent>
-      
-      {/* Chat Dialog for message notifications */}
-      {selectedConversation && (
-        <ChatDialog
-          open={chatDialogOpen}
-          onOpenChange={setChatDialogOpen}
-          conversationId={selectedConversation.id}
-          jobTitle={selectedConversation.jobs?.title || 'Unknown Job'}
-          otherParticipant={{
-            id: user?.id === selectedConversation.client_id 
-              ? selectedConversation.provider_id 
-              : selectedConversation.client_id,
-            name: user?.id === selectedConversation.client_id
-              ? selectedConversation.provider_profile?.full_name || 'Unknown Provider'
-              : selectedConversation.client_profile?.full_name || 'Unknown Client'
-          }}
-        />
-      )}
     </DropdownMenu>
   );
 };

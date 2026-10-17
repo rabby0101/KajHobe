@@ -14,7 +14,17 @@
       "Bash(git commit -q -m 'feat\\(web\\): reviews — submit, display, guards \\(W2\\) *)",
       "Bash(awk '/^      deals: \\\\{/{f=1} f&&/Row: \\\\{/{p=1;next} p&&/\\\\}/{exit} p&&f{print}' src/integrations/supabase/types.ts)",
       "Bash(grep -E \"\\\\.swift$\")",
-      "WebSearch"
+      "WebSearch",
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__list_edge_functions",
+      "mcp__e441e65a-f188-4b13-bcad-c5d1b90b3ea4__get_logs",
+      "WebFetch(domain:developer.sslcommerz.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(textutil -convert txt '/Volumes/Experiment/Downloads/Implementation Guide for Android SDK of SSLCOMMERZ V1.0.docx' -output /private/tmp/claude-501/-Volumes-Experiment-GitHub-KajHobe/2f8e8f8d-a0d4-4ffe-9f5c-4b8c5e1e4076/scratchpad/sslc-android.txt)",
+      "Bash(python3 -c \"import pypdf; print\\('pypdf ok'\\)\")",
+      "Bash(python3 -c \"import PyPDF2; print\\('PyPDF2 ok'\\)\")",
+      "Bash(python3 -c \"import fitz; print\\('fitz ok'\\)\")",
+      "Bash(python3 -m pip install --quiet --target __TRACKED_VAR__/pylibs pypdf)",
+      "Bash(PYTHONPATH=/private/tmp/claude-501/-Volumes-Experiment-GitHub-KajHobe/2f8e8f8d-a0d4-4ffe-9f5c-4b8c5e1e4076/scratchpad/pylibs python3 -)"
     ]
   },
   "enableAllProjectMcpServers": true,

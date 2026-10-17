@@ -336,38 +336,114 @@ export const useSetNotificationState = () => {
 };
 
 /**
- * Accept or decline an interest-request notification. Updates the underlying
- * job_interests row (a DB trigger creates the conversation on acceptance) and
- * marks the notification read.
+ * Accept or decline an interest request — full parity with iOS
+ * `respondToInterest` (NotificationsNetworking.swift) and Android
+ * `NotificationsRepository.respondToInterest`:
+ *
+ * 1. Update the `job_interests` row (status + actioned_at). A DB trigger syncs
+ *    the outcome onto the provider's `show_interest` notification (cooldown).
+ * 2. Update the matching `interest_request` notification's status — this also
+ *    arms the DB `handle_interest_acceptance` backstop.
+ * 3. On accept: create the conversation client-side (existence check first),
+ *    exactly like both mobile apps.
+ * 4. Insert an `interest_accepted` / `interest_rejected` notification for the
+ *    provider (iOS parity).
  */
 export const useRespondToInterestNotification = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: async ({
       notificationId,
       interestId,
+      jobId,
+      providerId,
       accept,
     }: {
-      notificationId: string;
+      /** Set when responding from a notification card; matched by job/provider otherwise. */
+      notificationId?: string;
       interestId: string;
+      jobId: string;
+      providerId: string;
       accept: boolean;
-    }) => {
+    }): Promise<string | null> => {
+      if (!user) throw new Error('Must be signed in');
+      const status = accept ? 'accepted' : 'rejected';
+      const now = new Date().toISOString();
+
+      // 1. Decide the interest (fires the show_interest sync trigger).
       const { error: interestErr } = await supabase
         .from('job_interests')
-        .update({ status: accept ? 'accepted' : 'rejected', actioned_at: new Date().toISOString() })
+        .update({ status, actioned_at: now })
         .eq('id', interestId);
       if (interestErr) throw interestErr;
 
-      await supabase
-        .from('notifications')
-        .update({ read: true, notification_state: 'read', read_at: new Date().toISOString() })
-        .eq('id', notificationId);
+      // 2. Stamp the interactive interest_request notification (status +
+      //    read state). Non-fatal — the interest row is the source of truth.
+      const notifPatch = {
+        status,
+        actioned_at: now,
+        read: true,
+        notification_state: 'read',
+        read_at: now,
+      };
+      if (notificationId) {
+        await supabase.from('notifications').update(notifPatch).eq('id', notificationId);
+      } else {
+        await supabase
+          .from('notifications')
+          .update(notifPatch)
+          .eq('job_id', jobId)
+          .eq('from_user_id', providerId)
+          .eq('type', 'interest_request')
+          .eq('status', 'pending');
+      }
+
+      let conversationId: string | null = null;
+      if (accept) {
+        // 3. Create the conversation if none exists (mirrors iOS/Android).
+        const { data: existing } = await supabase
+          .from('conversations')
+          .select('id')
+          .eq('job_id', jobId)
+          .eq('client_id', user.id)
+          .eq('provider_id', providerId)
+          .limit(1)
+          .maybeSingle();
+        if (existing?.id) {
+          conversationId = existing.id;
+        } else {
+          const { data: created, error: convErr } = await supabase
+            .from('conversations')
+            .insert({ job_id: jobId, client_id: user.id, provider_id: providerId, status: 'active' })
+            .select('id')
+            .single();
+          if (convErr) throw convErr;
+          conversationId = created.id;
+        }
+      }
+
+      // 4. Notify the provider of the outcome (iOS parity). Non-fatal.
+      const { error: responseErr } = await supabase.from('notifications').insert({
+        type: accept ? 'interest_accepted' : 'interest_rejected',
+        job_id: jobId,
+        from_user_id: user.id,
+        to_user_id: providerId,
+        status: 'pending',
+        message: accept
+          ? 'Your interest has been accepted! You can now chat with the client.'
+          : 'Thank you for your interest. The client has chosen to proceed with other providers.',
+      });
+      if (responseErr) console.error('Error creating interest response notification:', responseErr);
+
+      return conversationId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enhanced-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['pending-notifications-count'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['enriched-job-interests'] });
     },
   });
 };

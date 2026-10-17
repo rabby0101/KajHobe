@@ -103,18 +103,19 @@ export const useUpsertPayoutNumber = () => {
 };
 
 /**
- * Start a bKash sandbox checkout for a deal OFFER. Returns the checkout URL to
- * redirect to; the webhook creates the deal + holds escrow on capture.
+ * Start an SSLCommerz hosted checkout for a deal OFFER. Returns the checkout
+ * URL to redirect to; the webhook validates the payment, then creates the deal
+ * + holds escrow.
  */
 export const useStartCollection = () =>
   useMutation({
     mutationFn: async (dealOfferId: string): Promise<string> => {
-      const { data, error } = await supabase.functions.invoke('bkash-collect', {
-        body: { deal_offer_id: dealOfferId },
+      const { data, error } = await supabase.functions.invoke('sslcommerz-collect', {
+        body: { deal_offer_id: dealOfferId, platform: 'web' },
       });
       if (error) throw error;
-      const url = (data as { bkash_url?: string })?.bkash_url;
-      if (!url) throw new Error('bKash did not return a checkout URL.');
+      const url = (data as { checkout_url?: string })?.checkout_url;
+      if (!url) throw new Error('Payment gateway did not return a checkout URL.');
       return url;
     },
   });

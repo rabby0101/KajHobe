@@ -10,7 +10,7 @@ import DealOfferBubble from './DealOfferBubble';
 import JobPreview from './JobPreview';
 import DealSummary from './DealSummary';
 import OfferForm, { OfferData } from './OfferForm';
-import { useDealOfferStatuses, useRejectDealOffer } from '@/hooks/useDealOffers';
+import { useDealOfferStatuses, useAcceptDealOffer, useRejectDealOffer } from '@/hooks/useDealOffers';
 import {
   Dialog,
   DialogContent,
@@ -48,13 +48,15 @@ const MessageList: React.FC<MessageListProps> = ({
     message: Message | null;
   }>({ open: false, message: null });
 
-  // Live deal-offer statuses (the bKash webhook flips status out of band, so we
-  // must read it from the deal_offers table rather than the message payload).
+  // Live deal-offer statuses, read from the deal_offers table rather than the
+  // message payload: the other party's accept/reject has to show up here, and
+  // on the escrow path the webhook still flips status out of band entirely.
   const dealOfferIds = messages
     .filter((m) => m.message_type === 'deal_offer')
     .map((m) => (m.negotiation_data as Record<string, unknown> | undefined)?.deal_offer_id as string)
     .filter(Boolean);
   const { data: dealStatuses = {} } = useDealOfferStatuses(dealOfferIds);
+  const acceptDealOffer = useAcceptDealOffer();
   const rejectDealOffer = useRejectDealOffer();
 
   const handleCounterOffer = (message: Message) => {
@@ -109,6 +111,8 @@ const MessageList: React.FC<MessageListProps> = ({
                 message={message}
                 isOwnMessage={isOwnMessage}
                 status={status}
+                onAccept={(id) => acceptDealOffer.mutate(id)}
+                isAccepting={acceptDealOffer.isPending}
                 onReject={(id) => rejectDealOffer.mutate(id)}
                 isRejecting={rejectDealOffer.isPending}
               />
