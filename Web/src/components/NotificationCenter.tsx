@@ -113,12 +113,30 @@ const NotificationCenter = () => {
       <DropdownMenuContent className="w-80" align="end">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notifications</span>
+ reviews-routing-dashboard
           {unreadBusiness > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => markAllAsRead.mutate()}
               className="h-auto p-1 text-xs"
+
+          <div className="flex gap-1">
+            {/* Temporary debug buttons - remove after debugging */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={testNotification}
+              className="h-auto p-1 text-xs bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200"
+            >
+              Test
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={manualRefresh}
+              className="h-auto p-1 text-xs bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-200"
+ main
             >
               <CheckCheck className="h-3 w-3 mr-1" />
               Mark all read
