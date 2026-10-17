@@ -5,12 +5,19 @@ import { useAuth } from '@/contexts/AuthContext';
 /**
  * Deal-offer flow — parity with iOS (`MessagesNetworking.createDealOffer` /
  * `respondToDealOffer`) and Android (`MessagesRepository`). A deal offer is a real
- * row in `deal_offers` (the source of truth for status + bKash escrow) plus a
+ * row in `deal_offers` (the source of truth for status + escrow) plus a
  * `deal_offer` chat message that links to it via `deal_offer_id`.
  *
- * Accepting is NOT done here: the client pays into escrow via `AcceptAndPayButton`
- * → `bkash-collect` → `bkash-webhook`, which flips `deal_offers.status` to
- * 'accepted' atomically with creating the deal. Web must never write 'accepted'.
+ * CASH-ONLY (Oct 2026): the client accepts directly here — see
+ * `useAcceptDealOffer`. Payment is settled in cash between client and provider
+ * after the work; KajHobe is not a party to it and takes nothing.
+ *
+ * The escrow path is dormant, not deleted. Previously accepting was only
+ * possible via `AcceptAndPayButton` → `sslcommerz-collect` →
+ * `sslcommerz-webhook`, which flipped the status atomically with creating the
+ * deal and holding the escrow. That chain still works end to end for offers
+ * with `payment_method = 'escrow'`; only the default changed. When the gateway
+ * comes back after the trade licence, this is the file to revisit first.
  */
 
 export interface SendDealOfferInput {
@@ -118,7 +125,41 @@ export const useDealOfferStatuses = (dealOfferIds: string[]) => {
   });
 };
 
-/** Client rejects a deal offer (mirrors mobile reject — accept goes through bKash). */
+/**
+ * Client accepts a cash deal offer.
+ *
+ * Flipping `status` to 'accepted' is all this does: the existing
+ * `handle_deal_offer_responded` trigger sees the pending->accepted transition
+ * and inserts the deal, carrying `payment_method` across. For a cash deal no
+ * escrow row is created, and the completion guard exempts it — see
+ * 20261017120000-cash-payment-method.sql.
+ *
+ * Nothing is charged, and no money moves through the platform at any point.
+ */
+export const useAcceptDealOffer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (dealOfferId: string) => {
+      const { error } = await supabase
+        .from('deal_offers')
+        .update({ status: 'accepted', responded_at: new Date().toISOString() })
+        .eq('id', dealOfferId)
+        // Only a still-pending offer may be accepted. Without this an accept
+        // racing a reject (two devices, or a double tap) could reopen a closed
+        // offer and create a second deal.
+        .eq('status', 'pending');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deal-offer-statuses'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    },
+  });
+};
+
+/** Client rejects a deal offer (mirrors mobile reject). */
 export const useRejectDealOffer = () => {
   const queryClient = useQueryClient();
 

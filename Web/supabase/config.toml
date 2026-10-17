@@ -1,13 +1,15 @@
 project_id = "xatlqnbrvgukuqewsxux"
 
 # --- Edge Functions ---------------------------------------------------------
-# bkash-collect: buyer-initiated; requires a valid user JWT.
-[functions.bkash-collect]
+# sslcommerz-collect: buyer-initiated; requires a valid user JWT.
+[functions.sslcommerz-collect]
 verify_jwt = true
 
-# bkash-webhook: hit by bKash's browser redirect, so no JWT is present.
-# Security boundary is the server-side bKash credentials + service_role RPC.
-[functions.bkash-webhook]
+# sslcommerz-webhook: hit by SSLCommerz's browser redirects (success/fail/
+# cancel) and server-to-server IPN — all POSTs with no JWT. Security boundary
+# is the validation API (val_id + store credentials) with an exact amount/
+# currency match, then the service_role-only escrow_finalize_offer RPC.
+[functions.sslcommerz-webhook]
 verify_jwt = false
 
 # bkash-payout: inert scaffold until B2C disbursement onboarding exists.

@@ -232,54 +232,49 @@ const JobCard: React.FC<JobCardProps> = ({ job, onOpenChat }) => {
     }
   };
 
+  /**
+   * Fallback when the show_interest_in_job RPC is unavailable — mirrors the iOS
+   * direct path (NotificationsNetworking.createInterestAttempt): update an
+   * existing job_interests row back to pending (reapply) or insert a new one,
+   * then create a `show_interest` notification addressed via to_user_id.
+   * A DB trigger on job_interests creates the interactive interest_request
+   * notification for the client automatically.
+   */
   const createInterestManually = async () => {
-    // Manual fallback - try to create job_interests entry, but don't fail if table doesn't exist
-    try {
-      const { error: interestError } = await supabase
+    // Reapply if a previous interest row exists (iOS parity), else insert.
+    const { data: existing } = await supabase
+      .from('job_interests')
+      .select('id')
+      .eq('job_id', job.id)
+      .eq('provider_id', user!.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing?.id) {
+      const { error } = await supabase
         .from('job_interests')
-        .insert([{
-          job_id: job.id,
-          provider_id: user!.id,
-          message: interestMessage,
-          status: 'pending'
-        }]);
-
-      if (!interestError) {
-        setInterestStatus('pending');
-      }
-    } catch (error) {
-      console.log('job_interests table not available, continuing with notification only');
+        .update({ status: 'pending', message: interestMessage, actioned_at: null })
+        .eq('id', existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('job_interests')
+        .insert([{ job_id: job.id, provider_id: user!.id, message: interestMessage, status: 'pending' }]);
+      if (error) throw error;
     }
+    setInterestStatus('pending');
 
-    // Get user profile for notification
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user!.id)
-      .single();
-
-    const providerName = profile?.full_name || 'A service provider';
-
-    // Create notification (this should always work)
-    console.log('Creating notification for job owner:', job.client_id);
-    console.log('Provider name:', providerName);
-    console.log('Job title:', job.title);
-    console.log('Message:', interestMessage);
-    
-    const { data: notificationResult, error: notificationError } = await supabase.rpc('create_notification', {
-      p_user_id: job.client_id,
-      p_title: 'New Interest in Your Job',
-      p_message: `${providerName} has expressed interest in your job "${job.title}": ${interestMessage}`,
-      p_type: 'proposal_received',
-      p_related_job_id: job.id
+    // show_interest notification for the client — also the provider's cooldown
+    // attempt record (queried by from_user_id). Same shape iOS writes.
+    const { error: notifError } = await supabase.from('notifications').insert({
+      type: 'show_interest',
+      job_id: job.id,
+      from_user_id: user!.id,
+      to_user_id: job.client_id,
+      status: 'pending',
+      message: `Someone showed interest in your job: ${job.title}`,
     });
-
-    if (notificationError) {
-      console.error('Error creating notification:', notificationError);
-      throw notificationError;
-    }
-
-    console.log('Notification created successfully:', notificationResult);
+    if (notifError) console.error('Error creating show_interest notification:', notifError);
   };
 
 

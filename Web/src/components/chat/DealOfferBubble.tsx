@@ -5,28 +5,37 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Message } from '@/hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
-import { DollarSign, XCircle, Clock } from 'lucide-react';
-import AcceptAndPayButton from '@/components/payments/AcceptAndPayButton';
+import { DollarSign, XCircle, Clock, CheckCircle2, Banknote } from 'lucide-react';
 
 interface DealOfferBubbleProps {
   message: Message;
   isOwnMessage: boolean;
   /** Live status from the `deal_offers` row (not the message payload). */
   status: string;
+  onAccept?: (dealOfferId: string) => void;
+  isAccepting?: boolean;
   onReject?: (dealOfferId: string) => void;
   isRejecting?: boolean;
 }
 
 /**
  * Renders a `deal_offer` chat message identically to the iOS/Android `DealOfferBubble`:
- * amount (৳), terms, duration and message. The recipient (client) sees Accept & Pay
- * (bKash escrow) + Reject while the offer is pending; status comes from the live
- * `deal_offers` row so the webhook's accept flip is reflected.
+ * amount (৳), terms, duration and message. The recipient (client) sees Accept +
+ * Reject while the offer is pending; status comes from the live `deal_offers`
+ * row rather than the message payload, so it stays right across devices.
+ *
+ * CASH-ONLY (Oct 2026): accepting no longer starts a gateway checkout. It flips
+ * the offer, which creates the deal; the money is handed over in person. The
+ * note under the buttons is deliberate — the single most common support
+ * question on a cash marketplace is "have I just paid?", and answering it in
+ * the UI costs nothing.
  */
 const DealOfferBubble: React.FC<DealOfferBubbleProps> = ({
   message,
   isOwnMessage,
   status,
+  onAccept,
+  isAccepting = false,
   onReject,
   isRejecting = false,
 }) => {
@@ -91,20 +100,38 @@ const DealOfferBubble: React.FC<DealOfferBubbleProps> = ({
             </>
           )}
 
-          {/* The recipient (client) accepts by paying into escrow, or rejects. */}
+          {/* The recipient (client) accepts or rejects. Payment happens in cash,
+              in person, and never through the platform. */}
           {!isOwnMessage && status === 'pending' && dealOfferId && (
-            <div className="flex gap-2 pt-2">
-              <AcceptAndPayButton dealOfferId={dealOfferId} className="flex-1" size="sm" />
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => onReject?.(dealOfferId)}
-                disabled={isRejecting}
-              >
-                <XCircle className="h-3 w-3 mr-1" />
-                Reject
-              </Button>
-            </div>
+            <>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => onAccept?.(dealOfferId)}
+                  disabled={isAccepting || isRejecting}
+                >
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  {isAccepting ? 'Accepting…' : 'Accept'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => onReject?.(dealOfferId)}
+                  disabled={isAccepting || isRejecting}
+                >
+                  <XCircle className="h-3 w-3 mr-1" />
+                  Reject
+                </Button>
+              </div>
+              <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                <Banknote className="h-3.5 w-3.5 mt-px shrink-0" />
+                <span>
+                  Accepting does not charge you. Pay ৳{amount} in cash directly to the
+                  provider once the work is done.
+                </span>
+              </p>
+            </>
           )}
 
           <div className="text-xs text-muted-foreground">

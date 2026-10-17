@@ -10,9 +10,10 @@ interface AcceptAndPayButtonProps {
 }
 
 /**
- * Accept an offer and pay into escrow. Starts a bKash sandbox checkout for the
- * deal offer, then redirects to the returned URL. On capture the webhook creates
- * the deal and holds the escrow (parity with iOS "Accept & Pay").
+ * Accept an offer and pay into escrow. Starts an SSLCommerz hosted checkout
+ * (cards + bKash/Nagad/Rocket) for the deal offer, then redirects to the
+ * returned URL. On a validated payment the webhook creates the deal and holds
+ * the escrow (parity with iOS "Accept & Pay").
  */
 export default function AcceptAndPayButton({ dealOfferId, className, size = 'default' }: AcceptAndPayButtonProps) {
   const startCollection = useStartCollection();
@@ -20,7 +21,8 @@ export default function AcceptAndPayButton({ dealOfferId, className, size = 'def
   const handleClick = () => {
     startCollection.mutate(dealOfferId, {
       onSuccess: (url) => {
-        // Full-page redirect to bKash checkout (web flow vs iOS in-app session).
+        // Full-page redirect to the SSLCommerz gateway page (web flow vs iOS
+        // in-app session); the buyer picks card/bKash/Nagad there.
         window.location.href = url;
       },
       onError: (e) =>
