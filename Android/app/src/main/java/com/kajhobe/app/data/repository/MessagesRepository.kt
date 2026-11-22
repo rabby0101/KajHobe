@@ -243,27 +243,36 @@ class MessagesRepository(client: SupabaseClient) : BaseRepository(client) {
         )
     }
     /**
-     * Respond to a deal offer (client). Mirrors iOS `respondToDealOffer` +
-     * `respondToDeal` (the non-bKash path) — i.e. the REJECT path. The ACCEPT
-     * path is handled by [PaymentRepository.startCollection] + the bKash
-     * webhook, which atomically accepts the offer, creates the deal, and
-     * holds the escrow. No deal row is created client-side.
+     * Respond to a deal offer (client). Both paths are direct now.
      *
-     * Also no longer posts a `deal_response` chat message — the bubble
-     * re-reads `deal_offers.status` directly (mirroring iOS).
+     * CASH-ONLY (Oct 2026): accepting flips the offer to 'accepted' here, and
+     * the `handle_deal_offer_responded` trigger creates the deal from it. No
+     * money moves through the app — client and provider settle in cash after
+     * the work.
+     *
+     * Previously accept was NOT done here: it required a bKash/SSLCommerz
+     * capture, and the webhook called `escrow_finalize_offer` to accept,
+     * create the deal and hold the escrow in one transaction. That path is
+     * dormant rather than removed — it still works for offers with
+     * `payment_method = 'escrow'`.
+     *
+     * Neither path posts a `deal_response` chat message; the bubble re-reads
+     * `deal_offers.status` directly (mirroring iOS).
      */
     suspend fun respondToDealOffer(dealOfferId: String, conversationId: String, accept: Boolean) {
-        if (!accept) {
-            // Reject is direct: flip the offer to 'rejected'. No chat message.
-            postgrest.from("deal_offers").update({
-                set("status", "rejected")
-                set("responded_at", Instant.now().toString())
-            }) { filter { eq("id", dealOfferId) } }
+        val newStatus = if (accept) "accepted" else "rejected"
+        postgrest.from("deal_offers").update({
+            set("status", newStatus)
+            set("responded_at", Instant.now().toString())
+        }) {
+            filter {
+                eq("id", dealOfferId)
+                // Only a still-pending offer may be responded to. Without this,
+                // an accept racing a reject across two devices could reopen a
+                // closed offer and create a second deal.
+                eq("status", "pending")
+            }
         }
-        // On accept we DO NOT update deal_offers here. The bKash webhook
-        // (escrow_finalize_offer) flips the offer to 'accepted' atomically
-        // with creating the deal and holding the escrow. The chat re-renders
-        // from the live deal_offers row.
     }
     /** Send a photo message (the image is already uploaded; we just store its URL). */
     suspend fun sendImageMessage(conversationId: String, attachmentUrl: String): ChatMessage =

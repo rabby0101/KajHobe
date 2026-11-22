@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
@@ -455,12 +454,20 @@ private fun DealOfferBubble(
                         style = MaterialTheme.typography.labelSmall,
                         color = KajHobeTheme.colors.textTertiary,
                     )
+                    // Cash-only: say so at the point of decision. "Have I just
+                    // paid?" is the commonest support question on a cash
+                    // marketplace, and answering it here costs nothing.
+                    Text(
+                        "Accepting does not charge you — pay in cash after the work.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = KajHobeTheme.colors.textTertiary,
+                    )
                 }
             }
             DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                 DropdownMenuItem(
-                    text = { Text("Accept & Pay") },
-                    leadingIcon = { Icon(Icons.Filled.CreditCard, contentDescription = null, tint = KajHobeTheme.colors.success) },
+                    text = { Text("Accept Offer") },
+                    leadingIcon = { Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = KajHobeTheme.colors.success) },
                     onClick = { showMenu = false; onAccept() },
                 )
                 DropdownMenuItem(

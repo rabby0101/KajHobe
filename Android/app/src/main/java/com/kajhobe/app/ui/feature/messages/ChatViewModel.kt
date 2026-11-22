@@ -268,20 +268,28 @@ class ChatViewModel(
     fun respondToDeal(message: ChatMessage, accept: Boolean) {
         val convId = conversationId ?: return
         val offerId = message.negotiation_data?.jsonObject?.get("deal_offer_id")?.jsonPrimitive?.contentOrNull ?: return
-        if (!accept) {
-            // Reject path is direct (mirrors iOS).
-            viewModelScope.launch {
-                runCatching { repository.respondToDealOffer(offerId, convId, accept = false) }
-                    .onSuccess { refreshOfferStatus() }
-                    .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message ?: "Failed to reject offer") } }
-            }
-        } else {
-            // Accept path goes through bKash.
-            acceptAndPay(offerId)
+        // CASH-ONLY (Oct 2026): both accept and reject are direct writes now.
+        // Accept used to route through acceptAndPay() -> bKash checkout, and the
+        // webhook did the accepting server-side. acceptAndPay is kept below for
+        // when the gateway returns; nothing calls it today.
+        viewModelScope.launch {
+            runCatching { repository.respondToDealOffer(offerId, convId, accept = accept) }
+                .onSuccess { refreshOfferStatus() }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            errorMessage = e.message
+                                ?: if (accept) "Failed to accept offer" else "Failed to reject offer",
+                        )
+                    }
+                }
         }
     }
 
     /**
+     * DORMANT while the platform is cash-only — nothing calls this. Kept intact
+     * so the gateway can be switched back on without rebuilding the flow.
+     *
      * Open the bKash sandbox checkout for a deal OFFER (the iOS "Accept & Pay"
      * path). The bKash webhook handles acceptance + deal creation server-side.
      * The actual Chrome Custom Tabs launch is done by the UI layer (which has
